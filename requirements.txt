@@ -1,11 +1,11 @@
 # --------- pytorch --------- #
 torch==1.8.1
 torchvision==0.9.1
-pytorch-lightning>=1.2.7
+pytorch-lightning>=1.2.8
 
 # --------- hydra --------- #
-hydra-core==1.1.0.dev5
-hydra-colorlog==1.1.0.dev1
+hydra-core==1.0.6
+hydra-colorlog==1.0.1
 hydra-optuna-sweeper==1.1.0.dev1
 # hydra-ray-launcher==0.1.2
 # hydra-submitit-launcher==1.1.0
@@ -20,10 +20,10 @@ wandb>=0.10.26
 rich
 python-dotenv
 pre-commit
-scikit-learn
+scikit-learn>=0.23.2
 pandas
 matplotlib
 seaborn
 # pudb
-# pytest
+pytest
 # dvc

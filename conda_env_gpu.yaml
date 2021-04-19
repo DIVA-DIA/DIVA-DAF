@@ -1,4 +1,4 @@
-name: myenv
+name: unsupervised_learning
 
 channels:
   - pytorch
@@ -7,9 +7,7 @@ channels:
 dependencies:
   - python=3.8
   - pip
-  - notebook
-  - ipython
-  - cudatoolkit
+  - cudatoolkit=10.2
   - pytorch=1.8.1
   - torchvision=0.9.1
   - pip:
