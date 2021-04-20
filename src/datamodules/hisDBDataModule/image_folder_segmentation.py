@@ -13,8 +13,8 @@ import sys
 import torch.utils.data as data
 from torchvision.transforms import ToTensor
 
-from hisDBDataModule.util.misc import has_extension, pil_loader
-from hisDBDataModule.util.transformations.transforms import ToTensorSlidingWindowCrop
+from src.datamodules.hisDBDataModule.util.misc import has_extension, pil_loader
+from src.datamodules.hisDBDataModule.util.transformations.transforms import ToTensorSlidingWindowCrop
 
 IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm']
 

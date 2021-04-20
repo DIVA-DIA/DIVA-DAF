@@ -3,8 +3,8 @@ import os
 import pytest
 from pytest import fixture
 
-from hisDBDataModule.util.exceptions import PathNone, PathNotDir, PathMissingSplitDir, PathMissingDirinSplitDir
-from hisDBDataModule.util.misc import validate_path
+from src.datamodules.hisDBDataModule.util.exceptions import PathNone, PathNotDir, PathMissingSplitDir, PathMissingDirinSplitDir
+from src.datamodules.hisDBDataModule.util.misc import validate_path
 
 
 @fixture

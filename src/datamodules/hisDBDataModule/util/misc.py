@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-from hisDBDataModule.util.exceptions import PathMissingDirinSplitDir, PathNone, PathNotDir, PathMissingSplitDir
+from src.datamodules.hisDBDataModule.util.exceptions import PathMissingDirinSplitDir, PathNone, PathNotDir, PathMissingSplitDir
 
 try:
     import accimage

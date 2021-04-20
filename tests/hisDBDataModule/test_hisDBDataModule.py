@@ -5,8 +5,8 @@ import numpy as np
 from numpy import uint8
 from pytest import fixture
 
-from hisDBDataModule.DIVAHisDBDataModule import DIVAHisDBDataModuleCB55, DIVAHisDBDataModuleCropped
-from tests.dummy_data.dummy_data import data_dir, data_dir_cropped
+from src.datamodules.hisDBDataModule.DIVAHisDBDataModule import DIVAHisDBDataModuleCB55, DIVAHisDBDataModuleCropped
+from tests.hisDBDataModule.dummy_data.dummy_data import data_dir, data_dir_cropped
 
 
 @fixture

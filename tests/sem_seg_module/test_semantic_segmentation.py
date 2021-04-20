@@ -1,11 +1,11 @@
 import numpy as np
 import pytorch_lightning as pl
-from hisDBDataModule.DIVAHisDBDataModule import DIVAHisDBDataModuleCB55
-from pl_bolts.models import UNet
+from src.datamodules.hisDBDataModule.DIVAHisDBDataModule import DIVAHisDBDataModuleCB55
+from pl_bolts.models.vision import UNet
 from pytorch_lightning import seed_everything
 
-from src.semantic_segmentation import SemanticSegmentation
-from tests.dummy_dataset.dummy_data import data_dir
+from src.models.semantic_segmentation.semantic_segmentation import SemanticSegmentation
+from tests.sem_seg_module.dummy_dataset.dummy_data import data_dir
 
 
 def test_semantic_segmentation(data_dir):

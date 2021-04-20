@@ -12,7 +12,7 @@ import torch.utils.data as data
 from torch import is_tensor
 from torchvision.transforms import ToTensor
 
-from hisDBDataModule.util.misc import has_extension, pil_loader
+from src.datamodules.hisDBDataModule.util.misc import has_extension, pil_loader
 
 IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm']
 

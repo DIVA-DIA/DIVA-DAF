@@ -5,12 +5,12 @@ import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from hisDBDataModule.cropped_hisdb_dataset import CroppedHisDBDataset
-from hisDBDataModule.image_folder_segmentation import ImageFolderSegmentationDataset
-from hisDBDataModule.util.analytics.image_analytics import get_analytics
-from hisDBDataModule.util.misc import validate_path
-from hisDBDataModule.util.transformations import transforms as custom_transforms
-from hisDBDataModule.util.transformations.transforms import TwinRandomCrop, OnlyTarget, OnlyImage
+from src.datamodules.hisDBDataModule.cropped_hisdb_dataset import CroppedHisDBDataset
+from src.datamodules.hisDBDataModule.image_folder_segmentation import ImageFolderSegmentationDataset
+from src.datamodules.hisDBDataModule.util.analytics.image_analytics import get_analytics
+from src.datamodules.hisDBDataModule.util.misc import validate_path
+from src.datamodules.hisDBDataModule.util.transformations import transforms as custom_transforms
+from src.datamodules.hisDBDataModule.util.transformations.transforms import TwinRandomCrop, OnlyTarget, OnlyImage
 
 
 class DIVAHisDBDataModuleCropped(pl.LightningDataModule):

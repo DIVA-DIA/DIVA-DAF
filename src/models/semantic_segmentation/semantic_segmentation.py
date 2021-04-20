@@ -10,15 +10,15 @@ import pytorch_lightning as pl
 import seaborn as sn
 import wandb
 from PIL import Image
-from hisDBDataModule.DIVAHisDBDataModule import DIVAHisDBDataModuleCropped
+from src.datamodules.hisDBDataModule.DIVAHisDBDataModule import DIVAHisDBDataModuleCropped
 from matplotlib.patches import Rectangle
 from pl_bolts.models.vision import UNet
 from pytorch_lightning import seed_everything
 from torch.nn import Module, functional as F
 from torch.optim.adam import Adam
 
-from src.utils.accuracy import accuracy_segmentation
-from src.utils.output_tools import save_output_page_image, merge_patches, _get_argmax
+from src.models.semantic_segmentation.utils.accuracy import accuracy_segmentation
+from src.models.semantic_segmentation.utils.output_tools import save_output_page_image, merge_patches, _get_argmax
 
 
 class SemanticSegmentation(pl.LightningModule):

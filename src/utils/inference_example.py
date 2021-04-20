@@ -1,7 +1,7 @@
 from PIL import Image
 from torchvision import transforms
 
-from src.models.mnist_model import MNISTLitModel
+from models.semantic_segmentation.mnist_model import MNISTLitModel
 
 
 def predict():

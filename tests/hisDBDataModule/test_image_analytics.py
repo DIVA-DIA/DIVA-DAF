@@ -2,9 +2,9 @@ import json
 
 import numpy as np
 
-from hisDBDataModule.image_folder_segmentation import ImageFolderSegmentationDataset
-from hisDBDataModule.util.analytics.image_analytics import get_analytics
-from tests.dummy_data.dummy_data import data_dir
+from src.datamodules.hisDBDataModule.image_folder_segmentation import ImageFolderSegmentationDataset
+from src.datamodules.hisDBDataModule.util.analytics.image_analytics import get_analytics
+from tests.hisDBDataModule.dummy_data.dummy_data import data_dir
 
 TEST_JSON = {'mean': [0.66136009, 0.60807059, 0.51881776],
              'std': [0.35094071, 0.33749921, 0.30937039],
