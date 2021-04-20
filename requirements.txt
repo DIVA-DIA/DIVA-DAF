@@ -2,19 +2,15 @@
 torch==1.8.1
 torchvision==0.9.1
 pytorch-lightning>=1.2.8
+lightning-bolts==0.3.2
 
 # --------- hydra --------- #
 hydra-core==1.0.6
 hydra-colorlog==1.0.1
 hydra-optuna-sweeper==1.1.0.dev1
-# hydra-ray-launcher==0.1.2
-# hydra-submitit-launcher==1.1.0
 
 # --------- loggers --------- #
 wandb>=0.10.26
-# neptune-client
-# comet-ml
-# mlflow
 
 # --------- others --------- #
 rich
@@ -24,6 +20,4 @@ scikit-learn>=0.23.2
 pandas
 matplotlib
 seaborn
-# pudb
 pytest
-# dvc
