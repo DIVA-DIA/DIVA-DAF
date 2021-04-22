@@ -23,7 +23,9 @@ from src.models.semantic_segmentation.utils.output_tools import save_output_page
 
 class SemanticSegmentation(pl.LightningModule):
 
-    def __init__(self, datamodule: pl.LightningDataModule, model: Module,
+    def __init__(self,
+                 # datamodule: pl.LightningDataModule,
+                 model: Module,
                  output_path: str = './output', create_confusion_matrix=False,
                  calc_his_miou_train_val=False, calc_his_miou_test=False):
         """
@@ -39,40 +41,45 @@ class SemanticSegmentation(pl.LightningModule):
         super().__init__()
         self.save_hyperparameters()
 
-        if not hasattr(datamodule, 'get_img_name_coordinates'):
-            raise NotImplementedError('DataModule needs to implement get_img_name_coordinates function')
-        self.datamodule = datamodule
         self.model = model
         # this is the dictionary to collect the different crops during testing
         self.canvas = {}
         # list of tuples -> (gt_img_name, img_size (H, W))
-        self.class_encodings = self.datamodule.class_encodings
-        self.num_classes = len(self.datamodule.class_encodings)
+
+        self.class_encodings = []
+        self.num_classes = -1
 
         self.create_confusion_matrix = create_confusion_matrix
         self.calc_his_miou_train_val = calc_his_miou_train_val
-        if calc_his_miou_train_val:
-            if not hasattr(self.datamodule, 'use_mask_train_val'):
-                raise NotImplementedError('Dataset does not provide a boundary mask.')
-            self.datamodule.use_mask_train_val = True
-
         self.calc_his_miou_test = calc_his_miou_test
-        if calc_his_miou_train_val:
-            if not hasattr(self.datamodule, 'use_mask_test'):
-                raise NotImplementedError('Dataset does not provide a boundary mask.')
-            self.datamodule.use_mask_test = True
 
         # paths
         self.output_path = Path(output_path)  # / f'{datetime.now():%Y-%m-%d_%H-%M-%S}'
         self.output_path.mkdir(parents=True, exist_ok=True)
 
-        # metrics
         if self.create_confusion_matrix:
             self.output_path_analysis = self.output_path / 'analysis'
+            self.train_cm = None
+            self.val_cm = None
+            self.test_cm = None
+
+    def setup(self, stage: str) -> None:
+        super().setup(stage)
+
+        if not hasattr(self.trainer.datamodule, 'get_img_name_coordinates'):
+            raise NotImplementedError('DataModule needs to implement get_img_name_coordinates function')
+
+        self.class_encodings = self.trainer.datamodule.class_encodings
+        self.num_classes = len(self.trainer.datamodule.class_encodings)
+
+        # metrics
+        if self.create_confusion_matrix:
             self.output_path_analysis.mkdir(parents=True, exist_ok=True)
             self.train_cm = pl.metrics.ConfusionMatrix(num_classes=self.num_classes, normalize='true')
             self.val_cm = pl.metrics.ConfusionMatrix(num_classes=self.num_classes, normalize='true')
             self.test_cm = pl.metrics.ConfusionMatrix(num_classes=self.num_classes, normalize='true')
+
+        print("Setup done!")
 
     def forward(self, x):
         return self.model(x)
@@ -80,15 +87,11 @@ class SemanticSegmentation(pl.LightningModule):
     #############################################################################################
     ########################################### TRAIN ###########################################
     #############################################################################################
-
     def training_step(self, batch, batch_idx, **kwargs):
         return_dict = {}
         # TODO assert check that the target_raw has len 2 (gt and mask)
         # get image and gt
-        if self.calc_his_miou_train_val:
-            img, target, mask = batch
-        else:
-            img, target = batch
+        img, target, mask = batch
         y_hat = self.model(img)
         loss = F.cross_entropy(y_hat, target)
         return_dict['loss'] = loss
@@ -104,7 +107,8 @@ class SemanticSegmentation(pl.LightningModule):
         if self.calc_his_miou_train_val:
             _, _, his_miou, _ = accuracy_segmentation(label_trues=target,
                                                       label_preds=y_hat_encoded,
-                                                      n_class=self.num_classes,
+                                                      # n_class=self.num_classes,
+                                                      n_class=len(self.trainer.datamodule.class_encodings),
                                                       mask=mask,
                                                       calc_mean_iu=True)
             self.log('train-hisdb-iou', his_miou, on_epoch=True)
@@ -122,10 +126,7 @@ class SemanticSegmentation(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         return_dict = {}
-        if self.calc_his_miou_train_val:
-            img, target, mask = batch
-        else:
-            img, target = batch
+        img, target, mask = batch
         y_hat = self.model(img)
         loss = F.cross_entropy(y_hat, target)
         return_dict['loss'] = loss
@@ -141,7 +142,8 @@ class SemanticSegmentation(pl.LightningModule):
         if self.calc_his_miou_train_val:
             _, _, his_miou, _ = accuracy_segmentation(label_trues=target,
                                                       label_preds=y_hat_encoded,
-                                                      n_class=self.num_classes,
+                                                      # n_class=self.num_classes,
+                                                      n_class=len(self.trainer.datamodule.class_encodings),
                                                       mask=mask,
                                                       calc_mean_iu=True)
             self.log('val-hisdb-iou', his_miou, on_epoch=True)
@@ -161,11 +163,7 @@ class SemanticSegmentation(pl.LightningModule):
 
     def test_step(self, batch, batch_idx, **kwargs):
         return_dict = {}
-        if self.calc_his_miou_train_val:
-            input_batch, target, mask, input_idx = batch
-        else:
-            input_batch, target, input_idx = batch
-
+        input_batch, target, mask, input_idx = batch
         y_hat = self.model(input_batch)
         loss = F.cross_entropy(y_hat, target)
         return_dict['loss'] = loss
@@ -186,12 +184,12 @@ class SemanticSegmentation(pl.LightningModule):
                                                       calc_mean_iu=True)
             self.log('test-hisdb-iou', his_miou, on_epoch=True, on_step=True)
 
-        if not hasattr(self.datamodule, 'get_img_name_coordinates'):
+        if not hasattr(self.trainer.datamodule, 'get_img_name_coordinates'):
             raise NotImplementedError('Datamodule does not provide detailed information of the crop')
 
         for patch, idx in zip(y_hat.data.detach().cpu().numpy(),
                               input_idx.detach().cpu().numpy()):
-            patch_info = self.datamodule.get_img_name_coordinates(idx)
+            patch_info = self.trainer.datamodule.get_img_name_coordinates(idx)
             img_name = patch_info[0]
             patch_name = patch_info[1]
             dest_folder = self.output_path / 'patches' / img_name
@@ -242,7 +240,9 @@ class SemanticSegmentation(pl.LightningModule):
             if not np.isnan(np.sum(canvas)):
                 # Save the final image (image_name, output_image, output_folder, class_encoding)
                 save_output_page_image(image_name=img_name, output_image=canvas,
-                                       output_folder=self.output_path, class_encoding=self.class_encodings)
+                                       output_folder=self.output_path,
+                                       class_encoding=self.trainer.datamodule.class_encodings)
+                                       # class_encoding=self.class_encodings)
             else:
                 print(f'WARNING: Test image {img_name} was not written! It still contains NaN values.')
 
@@ -279,10 +279,17 @@ if __name__ == '__main__':
     # because of ddp
     seed_everything(42)
     # datamodule
+    # data_module = DIVAHisDBDataModuleCropped(
+    #     data_dir='/data/usl_experiments/semantic_segmentation/datasets_cropped/CB55',
+    #     batch_size=16, num_workers=4)
+
     data_module = DIVAHisDBDataModuleCropped(
-        data_dir='/data/usl_experiments/semantic_segmentation/datasets_cropped/CB55',
+        data_dir='/data/usl_experiments/semantic_segmentation/datasets_cropped/CB55-10-segmentation',
         batch_size=16, num_workers=4)
 
+    # import pickle
+    # with open('/data/usl_experiments/tmp_testing_output/temp_v2021_04_21.pkl', 'wb') as f:
+    #     pickle.dump(data_module, f)
 
     # # load the img_names_sizes information as suggested here
     # # https://pytorch-lightning.readthedocs.io/en/latest/datamodules.html#using-a-datamodule
@@ -292,14 +299,23 @@ if __name__ == '__main__':
         return UNet(num_classes=len(data_module.class_encodings), num_layers=2, features_start=32)
 
 
-    segmentation = SemanticSegmentation(UNet(num_classes=len(data_module.class_encodings)),
-                                        class_encodings=data_module.class_encodings,
-                                        img_names_sizes_testset=[],
+    # segmentation = SemanticSegmentation(model=UNet(num_classes=len(data_module.class_encodings)),
+    #                                     datamodule=data_module,
+    #                                     # create_confusion_matrix=True,
+    #                                     output_path='/data/usl_experiments/tmp_testing_output/unet_cropped_cb55_v2021_04_21/')
+
+    segmentation = SemanticSegmentation(model=baby_unet(),
+                                        # datamodule=data_module,
                                         # create_confusion_matrix=True,
-                                        output_path='/data/usl_experiments/tmp_testing_output/unet_cropped_cb55/')
+                                        output_path='/data/usl_experiments/tmp_testing_output/baby_unet_cropped_cb55_v2021_04_22a/',
+                                        create_confusion_matrix=True,
+                                        calc_his_miou_train_val=True,
+                                        calc_his_miou_test=True
+                                        )
+
 
     # logger
-    wandb_logger = pl.loggers.WandbLogger(name="unet_cropped_cb55", project='unsupervised',
+    wandb_logger = pl.loggers.WandbLogger(name="baby_unet_cropped_cb55_v2021_04_22a", project='unsupervised',
                                           # log_model=True, save_dir=segmentation.output_path
                                           )
 
@@ -308,7 +324,7 @@ if __name__ == '__main__':
 
     trainer = pl.Trainer(gpus=-1,
                          accelerator='ddp',
-                         max_epochs=50,
+                         max_epochs=5,
                          log_every_n_steps=10,
                          logger=wandb_logger,
                          callbacks=[checkpoint_callback])

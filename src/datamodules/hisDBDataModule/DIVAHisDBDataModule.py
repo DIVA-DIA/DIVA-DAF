@@ -14,8 +14,7 @@ from src.datamodules.hisDBDataModule.util.transformations.transforms import Twin
 
 
 class DIVAHisDBDataModuleCropped(pl.LightningDataModule):
-    def __init__(self, data_dir: str = None, crop_size: int = 256, num_workers: int = 4, batch_size: int = 8,
-                 use_mask_train_val=False, use_mask_test=False):
+    def __init__(self, data_dir: str = None, crop_size: int = 256, num_workers: int = 4, batch_size: int = 8):
         super().__init__()
 
         analytics = get_analytics(input_path=Path(data_dir),
@@ -38,8 +37,6 @@ class DIVAHisDBDataModuleCropped(pl.LightningDataModule):
 
         self.num_workers = num_workers
         self.batch_size = batch_size
-        self.use_mask_train_val = use_mask_train_val
-        self.use_mask_test = use_mask_test
 
         self.data_dir = validate_path(data_dir)
 
@@ -76,8 +73,6 @@ class DIVAHisDBDataModuleCropped(pl.LightningDataModule):
                 'target_transform': self.target_transform,
                 'twin_transform': self.twin_transform,
                 'classes': self.class_encodings,
-                'use_mask_train_val': self.use_mask_train_val,
-                'use_mask_test': self.use_mask_test,
                 'is_test': is_test}
 
     def get_img_name_coordinates(self, index):

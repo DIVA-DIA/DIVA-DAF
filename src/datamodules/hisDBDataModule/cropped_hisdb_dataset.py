@@ -31,7 +31,7 @@ class CroppedHisDBDataset(data.Dataset):
 
     def __init__(self, path: Path,
                  is_test=False, image_transform=None, target_transform=None, twin_transform=None,
-                 classes=None, use_mask_train_val=False, use_mask_test=False, **kwargs):
+                 classes=None, **kwargs):
         """
         #TODO doc
         Parameters
@@ -53,8 +53,6 @@ class CroppedHisDBDataset(data.Dataset):
         # Init list
         self.classes = classes
         # self.crops_per_image = crops_per_image
-        self.use_mask_train_val = use_mask_train_val
-        self.use_mask_test = use_mask_test
 
         # transformations
         self.image_transform = image_transform
@@ -93,21 +91,13 @@ class CroppedHisDBDataset(data.Dataset):
 
     def _get_train_val_items(self, index):
         data_img, gt_img = self._load_data_and_gt(index=index)
-
         img, gt, boundary_mask = self.apply_transformation(data_img, gt_img)
-        if self.use_mask_train_val:
-            return img, gt, boundary_mask
-        else:
-            return img, gt
+        return img, gt, boundary_mask
 
     def _get_test_items(self, index):
         data_img, gt_img = self._load_data_and_gt(index=index)
         img, gt, boundary_mask = self.apply_transformation(data_img, gt_img)
-
-        if self.use_mask_test:
-            return img, gt, boundary_mask, index
-        else:
-            return img, gt, index
+        return img, gt, boundary_mask, index
 
     def _load_data_and_gt(self, index):
         data_img = pil_loader(self.img_paths_per_page[index][0])
