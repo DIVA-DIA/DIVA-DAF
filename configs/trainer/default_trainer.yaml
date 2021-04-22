@@ -1,12 +1,14 @@
+# trainer api: https://pytorch-lightning.readthedocs.io/en/latest/common/trainer.html#trainer-class-api
 _target_: pytorch_lightning.Trainer
 
-# set `1` to train on GPU, `0` to train on CPU only
-gpus: 0
+# technical
+gpus: -1
+accelerator: 'ddp'
 
+# training routine
 min_epochs: 1
-max_epochs: 10
+max_epochs: 50
 
-weights_summary: null
-progress_bar_refresh_rate: 10
-
-terminate_on_nan: False
+# logging
+log_every_n_steps: 10
+weights_summary: top # information about the model
