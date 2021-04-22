@@ -1,12 +1,14 @@
 import numpy as np
 import torch
 
-from src.utils.accuracy import accuracy_segmentation, _fast_hist
+from src.models.semantic_segmentation.utils.accuracy import accuracy_segmentation, _fast_hist
 
 
 def test_accuracy_segmentation_boundary_identical():
     label_preds, label_trues, nb_classes, mask = _get_test_data(with_boundary=True, identical=True)
-    accuracy, mean_accuracy, miou, fwavacc = accuracy_segmentation(label_trues, label_preds, nb_classes, mask)
+    accuracy, mean_accuracy, miou, fwavacc = accuracy_segmentation(label_trues, label_preds, nb_classes, mask,
+                                                                   calc_acc=True, calc_acc_cls=True,
+                                                                   calc_mean_iu=True, calc_fwavacc=True)
     assert accuracy == 100.
     assert mean_accuracy == 100.0
     assert miou == 100.
@@ -15,7 +17,9 @@ def test_accuracy_segmentation_boundary_identical():
 
 def test_accuracy_segmentation_identical():
     label_preds, label_trues, nb_classes, mask = _get_test_data(with_boundary=False, identical=True)
-    accuracy, mean_accuracy, miou, fwavacc = accuracy_segmentation(label_trues, label_preds, nb_classes, mask)
+    accuracy, mean_accuracy, miou, fwavacc = accuracy_segmentation(label_trues, label_preds, nb_classes, mask,
+                                                                   calc_acc=True, calc_acc_cls=True,
+                                                                   calc_mean_iu=True, calc_fwavacc=True)
     assert accuracy == 100.
     assert mean_accuracy == 100.0
     assert miou == 100.
@@ -24,7 +28,9 @@ def test_accuracy_segmentation_identical():
 
 def test_accuracy_segmentation_boundary():
     label_preds, label_trues, nb_classes, mask = _get_test_data(with_boundary=True, identical=False)
-    accuracy, mean_accuracy, miou, fwavacc = accuracy_segmentation(label_trues, label_preds, nb_classes, mask)
+    accuracy, mean_accuracy, miou, fwavacc = accuracy_segmentation(label_trues, label_preds, nb_classes, mask,
+                                                                   calc_acc=True, calc_acc_cls=True,
+                                                                   calc_mean_iu=True, calc_fwavacc=True)
     assert np.isclose(accuracy.numpy(), 100 * 17 / 18)
     assert np.isclose(mean_accuracy, 100 * (13 / 13 + 4 / 5) / 2)
     assert np.isclose(miou, 100 * (13 / 14 + 4 / 5) / 2)
@@ -33,7 +39,9 @@ def test_accuracy_segmentation_boundary():
 
 def test_accuracy_segmentation():
     label_preds, label_trues, nb_classes, mask = _get_test_data(with_boundary=False, identical=False)
-    accuracy, mean_accuracy, miou, fwavacc = accuracy_segmentation(label_trues, label_preds, nb_classes, mask)
+    accuracy, mean_accuracy, miou, fwavacc = accuracy_segmentation(label_trues, label_preds, nb_classes, mask,
+                                                                   calc_acc=True, calc_acc_cls=True,
+                                                                   calc_mean_iu=True, calc_fwavacc=True)
     assert np.isclose(accuracy.numpy(), 100 * 16 / 18)
     assert np.isclose(mean_accuracy, 100 * (12 / 12 + 4 / 6) / 2)
     assert np.isclose(miou, 100 * (12 / 14 + 4 / 6) / 2)
@@ -42,7 +50,9 @@ def test_accuracy_segmentation():
 
 def test_accuracy_segmentation_identical_mask_None():
     label_preds, label_trues, nb_classes, _ = _get_test_data(identical=True)
-    accuracy, mean_accuracy, miou, fwavacc = accuracy_segmentation(label_trues, label_preds, nb_classes, None)
+    accuracy, mean_accuracy, miou, fwavacc = accuracy_segmentation(label_trues, label_preds, nb_classes, None,
+                                                                   calc_acc=True, calc_acc_cls=True,
+                                                                   calc_mean_iu=True, calc_fwavacc=True)
     assert accuracy == 100.
     assert mean_accuracy == 100.0
     assert miou == 100.
@@ -51,7 +61,9 @@ def test_accuracy_segmentation_identical_mask_None():
 
 def test_accuracy_segmentation():
     label_preds, label_trues, nb_classes, _ = _get_test_data(with_boundary=False, identical=False)
-    accuracy, mean_accuracy, miou, fwavacc = accuracy_segmentation(label_trues, label_preds, nb_classes, None)
+    accuracy, mean_accuracy, miou, fwavacc = accuracy_segmentation(label_trues, label_preds, nb_classes, None,
+                                                                   calc_acc=True, calc_acc_cls=True,
+                                                                   calc_mean_iu=True, calc_fwavacc=True)
     assert np.isclose(accuracy.numpy(), 100 * 16 / 18)
     assert np.isclose(mean_accuracy, 100 * (12 / 12 + 4 / 6) / 2)
     assert np.isclose(miou, 100 * (12 / 14 + 4 / 6) / 2)

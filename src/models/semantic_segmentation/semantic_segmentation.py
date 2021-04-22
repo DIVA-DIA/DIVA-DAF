@@ -313,7 +313,6 @@ if __name__ == '__main__':
                                         calc_his_miou_test=True
                                         )
 
-
     # logger
     wandb_logger = pl.loggers.WandbLogger(name="baby_unet_cropped_cb55_v2021_04_22a", project='unsupervised',
                                           # log_model=True, save_dir=segmentation.output_path
