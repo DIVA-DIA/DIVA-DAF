@@ -1,8 +1,8 @@
+import argparse
 import matplotlib
 import matplotlib.cm
 import numpy as np
 import os
-import fire
 
 from PIL import Image
 
@@ -88,5 +88,10 @@ def make_colour_legend_image(img_name, colour_encoding):
 
 
 if __name__ == '__main__':
-
-    fire.Fire(main)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-i', '--img',
+                        help='Path to the gt image',
+                        type=str,
+                        required=True)
+    args = parser.parse_args()
+    main(**args.__dict__)
