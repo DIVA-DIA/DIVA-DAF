@@ -22,3 +22,6 @@ pandas
 matplotlib
 seaborn
 pytest
+
+# --------- tools ---------- #
+fire==0.3.1
