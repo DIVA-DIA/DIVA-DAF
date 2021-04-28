@@ -208,43 +208,44 @@ class SemanticSegmentation(pl.LightningModule):
             self.test_cm.reset()
 
     def on_test_epoch_end(self) -> None:
-        # Merge patches on canvas
-        img_name_list = [n for n in self.output_path.iterdir() if n.is_dir()]
-        for img_name in img_name_list:
-            patches_folder = self.output_path / 'patches' / img_name
-            coordinates = re.compile(r'.+_x(\d+)_y(\d+)\.npy$')
-
-            if not patches_folder.is_dir():
-                continue
-
-            patches_list = []
-            for patch_file in patches_folder.glob(f'{img_name}*.npy'):
-                m = coordinates.match(patch_file.name)
-                if m is None:
-                    continue
-                x = int(m.group(1))
-                y = int(m.group(2))
-                patch = np.load(str(patch_file))
-                patches_list.append((patch, x, y))
-            patches_list = sorted(patches_list, key=lambda v: (v[2], v[1]))
-
-            # Create new canvas
-            canvas = np.empty((self.num_classes, *img_size_dict[img_name]))
-            canvas.fill(np.nan)
-
-            for patch, x, y in patches_list:
-                # Add the patch to the image
-                canvas = merge_patches(patch, (x, y), canvas)
-
-            # Save the image when done
-            if not np.isnan(np.sum(canvas)):
-                # Save the final image (image_name, output_image, output_folder, class_encoding)
-                save_output_page_image(image_name=img_name, output_image=canvas,
-                                       output_folder=self.output_path,
-                                       class_encoding=self.trainer.datamodule.class_encodings)
-                                       # class_encoding=self.class_encodings)
-            else:
-                print(f'WARNING: Test image {img_name} was not written! It still contains NaN values.')
+        pass
+        # # Merge patches on canvas
+        # img_name_list = [n for n in self.output_path.iterdir() if n.is_dir()]
+        # for img_name in img_name_list:
+        #     patches_folder = self.output_path / 'patches' / img_name
+        #     coordinates = re.compile(r'.+_x(\d+)_y(\d+)\.npy$')
+        #
+        #     if not patches_folder.is_dir():
+        #         continue
+        #
+        #     patches_list = []
+        #     for patch_file in patches_folder.glob(f'{img_name}*.npy'):
+        #         m = coordinates.match(patch_file.name)
+        #         if m is None:
+        #             continue
+        #         x = int(m.group(1))
+        #         y = int(m.group(2))
+        #         patch = np.load(str(patch_file))
+        #         patches_list.append((patch, x, y))
+        #     patches_list = sorted(patches_list, key=lambda v: (v[2], v[1]))
+        #
+        #     # Create new canvas
+        #     canvas = np.empty((self.num_classes, *img_size_dict[img_name]))
+        #     canvas.fill(np.nan)
+        #
+        #     for patch, x, y in patches_list:
+        #         # Add the patch to the image
+        #         canvas = merge_patches(patch, (x, y), canvas)
+        #
+        #     # Save the image when done
+        #     if not np.isnan(np.sum(canvas)):
+        #         # Save the final image (image_name, output_image, output_folder, class_encoding)
+        #         save_output_page_image(image_name=img_name, output_image=canvas,
+        #                                output_folder=self.output_path,
+        #                                class_encoding=self.trainer.datamodule.class_encodings)
+        #                                # class_encoding=self.class_encodings)
+        #     else:
+        #         print(f'WARNING: Test image {img_name} was not written! It still contains NaN values.')
 
     def configure_optimizers(self):
         return Adam(self.model.parameters())
