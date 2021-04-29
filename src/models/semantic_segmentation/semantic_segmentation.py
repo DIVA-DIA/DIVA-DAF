@@ -204,7 +204,7 @@ class SemanticSegmentation(pl.LightningModule):
         if self.create_confusion_matrix:
             # y_hat_epoch = cat([batch['y_hat'] for batch in outputs])
             # target_epoch = cat([batch['target'] for batch in outputs])
-            self._create_and_save_conf_mat(cm=self.test_cm, status='val')
+            self._create_and_save_conf_mat(cm=self.test_cm, status='test')
             self.test_cm.reset()
 
     def on_test_epoch_end(self) -> None:
