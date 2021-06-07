@@ -103,7 +103,7 @@ class SemanticSegmentation(pl.LightningModule):
             self.train_cm(y_hat_encoded, target)
 
         # Metric Logging
-        self.log('train-loss', loss, on_epoch=True)
+        self.log('train/loss', loss, on_epoch=True)
         if self.calc_his_miou_train_val:
             _, _, his_miou, _ = accuracy_segmentation(label_trues=target,
                                                       label_preds=y_hat_encoded,
@@ -111,7 +111,7 @@ class SemanticSegmentation(pl.LightningModule):
                                                       n_class=len(self.trainer.datamodule.class_encodings),
                                                       mask=mask,
                                                       calc_mean_iu=True)
-            self.log('train-hisdb-iou', his_miou, on_epoch=True)
+            self.log('train/iou', his_miou, on_epoch=True)
 
         return return_dict
 
@@ -138,7 +138,7 @@ class SemanticSegmentation(pl.LightningModule):
             self.val_cm(y_hat_encoded, target)
 
         # Metric Logging
-        self.log('val-loss', loss, on_epoch=True)
+        self.log('val/loss', loss, on_epoch=True)
         if self.calc_his_miou_train_val:
             _, _, his_miou, _ = accuracy_segmentation(label_trues=target,
                                                       label_preds=y_hat_encoded,
@@ -146,7 +146,7 @@ class SemanticSegmentation(pl.LightningModule):
                                                       n_class=len(self.trainer.datamodule.class_encodings),
                                                       mask=mask,
                                                       calc_mean_iu=True)
-            self.log('val-hisdb-iou', his_miou, on_epoch=True)
+            self.log('val/iou', his_miou, on_epoch=True)
 
         return return_dict
 
@@ -175,14 +175,14 @@ class SemanticSegmentation(pl.LightningModule):
             self.test_cm(y_hat_encoded, target)
 
         # Metric Logging
-        self.log('test-loss', loss, on_epoch=True, on_step=True)
+        self.log('test/loss', loss, on_epoch=True, on_step=True)
         if self.calc_his_miou_test:
             _, _, his_miou, _ = accuracy_segmentation(label_trues=target,
                                                       label_preds=y_hat_encoded,
                                                       n_class=self.num_classes,
                                                       mask=mask,
                                                       calc_mean_iu=True)
-            self.log('test-hisdb-iou', his_miou, on_epoch=True, on_step=True)
+            self.log('test/iou', his_miou, on_epoch=True, on_step=True)
 
         if not hasattr(self.trainer.datamodule, 'get_img_name_coordinates'):
             raise NotImplementedError('Datamodule does not provide detailed information of the crop')
@@ -320,7 +320,7 @@ if __name__ == '__main__':
                                           )
 
     # checkpoint requirements
-    checkpoint_callback = pl.callbacks.ModelCheckpoint(monitor='val-loss', dirpath=segmentation.output_path)
+    checkpoint_callback = pl.callbacks.ModelCheckpoint(monitor='val/loss', dirpath=segmentation.output_path)
 
     trainer = pl.Trainer(gpus=-1,
                          accelerator='ddp',
