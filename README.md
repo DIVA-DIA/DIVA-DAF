@@ -647,7 +647,7 @@ Use metrics api objects, e.g. `pytorch_lightning.metrics.classification.Accuracy
 ### Extra Features
 List of extra utilities available in the template:
 - loading environment variables from [.env](.env.template) file
-- automatic virtual environment setup with [.autoenv](.autoenv.template) file
+- automatic virtual environment setup with [.autoenv](.autoenv) file
 - pretty printing config with [Rich](https://github.com/willmcgugan/rich) library
 - disabling python warnings
 - easier access to debug mode
