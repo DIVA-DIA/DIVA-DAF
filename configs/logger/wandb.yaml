@@ -4,8 +4,10 @@
 wandb:
     _target_: pytorch_lightning.loggers.wandb.WandbLogger
     project: "unsupervised"
-    # offline: False  # set True to store all logs only locally
-    # job_type: "train" # specifies the type of run
-    # group: "" # organize multiple experiments into one group
+    name: null
+    offline: False  # set True to store all logs only locally
+    job_type: "train" # specifies the type of run
+    group: "" # organize multiple experiments into one group
+    tags: []
     save_dir: "."
     log_model: False
