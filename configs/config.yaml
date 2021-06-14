@@ -3,7 +3,8 @@
 # specify here default training configuration
 defaults:
     - trainer: default_trainer.yaml
-    - model: semantic_segmentation_task.yaml
+    - task: semantic_segmentation_task.yaml
+    - model: unet_model.yaml
     - datamodule: cb55_cropped_datamodule.yaml
     - callbacks: default_callbacks.yaml  # set this to null if you don't want to use callbacks
     - logger: null #wandb.yaml # set logger here or use command line (e.g. `python run.py logger=wandb`)

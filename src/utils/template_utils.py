@@ -119,6 +119,7 @@ def empty(*args, **kwargs):
 @rank_zero_only
 def log_hyperparameters(
     config: DictConfig,
+    task: pl.LightningModule,
     model: pl.LightningModule,
     datamodule: pl.LightningDataModule,
     trainer: pl.Trainer,
@@ -136,6 +137,7 @@ def log_hyperparameters(
 
     # choose which parts of hydra config will be saved to loggers
     hparams["trainer"] = config["trainer"]
+    hparams["task"] = config["task"]
     hparams["model"] = config["model"]
     hparams["datamodule"] = config["datamodule"]
     if "optimizer" in config:
@@ -172,6 +174,7 @@ def log_hyperparameters(
 
 def finish(
     config: DictConfig,
+    task: pl.LightningModule,
     model: pl.LightningModule,
     datamodule: pl.LightningDataModule,
     trainer: pl.Trainer,

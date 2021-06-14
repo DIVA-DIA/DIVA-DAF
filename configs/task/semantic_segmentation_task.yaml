@@ -1,8 +1,6 @@
 _target_: src.models.semantic_segmentation.semantic_segmentation.SemanticSegmentation
 
-model:
-    _target_: pl_bolts.models.vision.UNet
-    num_classes: 8
+model: null
 #output_path: './output'  # looks like we dont need it (remove everywhere)
 create_confusion_matrix: False
 calc_his_miou_train_val: False
