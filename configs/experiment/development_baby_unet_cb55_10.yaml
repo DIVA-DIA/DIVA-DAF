@@ -9,7 +9,6 @@ defaults:
     - override /model: baby_unet_model.yaml
     - override /datamodule: null
     - override /callbacks: null
-    - override /logger: null
 
 # we override default configurations with nulls to prevent them from loading at all
 # instead we define all modules and their paths directly in this config,
