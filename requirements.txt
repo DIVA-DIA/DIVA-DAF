@@ -6,9 +6,9 @@ lightning-bolts==0.3.2
 gym==0.18.0
 
 # --------- hydra --------- #
-hydra-core==1.1.0.rc1
-hydra-colorlog==1.1.0.dev1
-hydra-optuna-sweeper==1.1.0.dev2
+hydra-core==1.1.0
+hydra-colorlog==1.1.0
+hydra-optuna-sweeper==1.1.0
 
 # --------- loggers --------- #
 wandb>=0.10.31
