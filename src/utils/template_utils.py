@@ -79,6 +79,7 @@ def print_config(
     config: DictConfig,
     fields: Sequence[str] = (
         "trainer",
+        "task",
         "model",
         "datamodule",
         "callbacks",
