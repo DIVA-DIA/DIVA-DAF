@@ -6,7 +6,7 @@
 defaults:
     - override /trainer: null  # override trainer to null so it's not loaded from main config defaults...
     - override /task: null
-    - override /model: null
+    - override /model: baby_unet_model.yaml
     - override /datamodule: null
     - override /callbacks: null
     - override /logger: null
@@ -20,6 +20,7 @@ seed: 42
 trainer:
     _target_: pytorch_lightning.Trainer
     gpus: -1
+    accelerator: 'ddp'
     min_epochs: 1
     max_epochs: 50
     weights_summary: full
@@ -28,12 +29,6 @@ task:
    _target_: src.models.semantic_segmentation.semantic_segmentation.SemanticSegmentation
    calc_his_miou_train_val: False
    calc_his_miou_test: False
-
-model:
-    _target_: pl_bolts.models.vision.UNet
-    num_classes: 8
-    num_layers: 2
-    features_start: 32
 
 datamodule:
     _target_: src.datamodules.hisDBDataModule.DIVAHisDBDataModule.DIVAHisDBDataModuleCropped
@@ -58,5 +53,3 @@ logger:
         name: 'dev-baby-unet-cb55-10-${now:%Y-%m-%d}-${now:%H-%M-%S}'
         tags: ["best_model", "USL"]
         notes: "Testing"
-    csv_logger:
-        save_dir: "."
