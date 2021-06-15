@@ -1,5 +1,6 @@
 import io
 import re
+import os
 from pathlib import Path
 from typing import List, Any
 
@@ -26,7 +27,7 @@ class SemanticSegmentation(pl.LightningModule):
     def __init__(self,
                  # datamodule: pl.LightningDataModule,
                  model: Module,
-                 output_path: str = './output', create_confusion_matrix=False,
+                 output_path: str = 'test_images', create_confusion_matrix=False,
                  calc_his_miou_train_val=False, calc_his_miou_test=False):
         """
         pixelvise semantic segmentation. The output of the network during test is a DIVAHisDB encoded image
@@ -54,7 +55,7 @@ class SemanticSegmentation(pl.LightningModule):
         self.calc_his_miou_test = calc_his_miou_test
 
         # paths
-        self.output_path = Path(output_path)  # / f'{datetime.now():%Y-%m-%d_%H-%M-%S}'
+        self.output_path = Path(os.getcwd()) / Path(output_path)  # / f'{datetime.now():%Y-%m-%d_%H-%M-%S}'
         self.output_path.mkdir(parents=True, exist_ok=True)
 
         if self.create_confusion_matrix:
