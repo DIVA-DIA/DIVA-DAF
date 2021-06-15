@@ -144,4 +144,3 @@ data/
 logs/
 wandb/
 .env
-.autoenv
