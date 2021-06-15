@@ -12,7 +12,7 @@ defaults:
     - experiment: null
     - hparams_search: null
 
-    - hydra: deafult.yaml
+    - hydra: default.yaml
 
     # enable color logging
     - override hydra/job_logging: colorlog
