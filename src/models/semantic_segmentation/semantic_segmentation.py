@@ -55,7 +55,7 @@ class SemanticSegmentation(pl.LightningModule):
         self.calc_his_miou_test = calc_his_miou_test
 
         # paths
-        self.output_path = Path(os.getcwd()) / Path(output_path)  # / f'{datetime.now():%Y-%m-%d_%H-%M-%S}'
+        self.output_path = Path(output_path)  # / f'{datetime.now():%Y-%m-%d_%H-%M-%S}'
         self.output_path.mkdir(parents=True, exist_ok=True)
 
         if self.create_confusion_matrix:
