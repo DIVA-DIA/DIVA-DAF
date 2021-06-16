@@ -65,7 +65,7 @@ def convert_to_rgb(pic):
     return pic
 
 
-def get_gt_data_paths(directory):
+def get_gt_data_paths_uncropped(directory):
     """
     Parameters
     ----------
@@ -89,11 +89,11 @@ def get_gt_data_paths(directory):
 
     for img_name, gt_name in zip(sorted(path_imgs.iterdir()), sorted(path_gts.iterdir())):
         assert has_extension(str(img_name), IMG_EXTENSIONS) == has_extension(str(gt_name), IMG_EXTENSIONS), \
-            'get_gt_data_paths(): image file aligned with non-image file'
+            'get_gt_data_paths_uncropped(): image file aligned with non-image file'
 
         if has_extension(str(img_name), IMG_EXTENSIONS) and has_extension(str(gt_name), IMG_EXTENSIONS):
             assert img_name.suffix[0] == gt_name.suffix[0], \
-                'get_gt_data_paths(): mismatch between data filename and gt filename'
+                'get_gt_data_paths_uncropped(): mismatch between data filename and gt filename'
             paths.append((path_imgs / img_name, path_gts / gt_name))
 
     return paths
@@ -205,7 +205,7 @@ class CropGenerator:
         self.progress_title = progress_title
 
         # List of tuples that contain the path to the gt and image that belong together
-        self.img_paths = get_gt_data_paths(input_path)
+        self.img_paths = get_gt_data_paths_uncropped(input_path)
         self.num_imgs_in_set = len(self.img_paths)
         if self.num_imgs_in_set == 0:
             raise RuntimeError("Found 0 images in subfolders of: {} \n Supported image extensions are: {}".format(
@@ -354,6 +354,18 @@ if __name__ == '__main__':
     # /Users/voegtlil/Documents/04_Datasets/003-DataSet/CB55-10-segmentation
     # -o
     # /Users/voegtlil/Desktop/fun
+    # -tr
+    # 300
+    # -v
+    # 300
+    # -te
+    # 256
+
+    # example call arguments
+    # -i
+    # /dataset/DIVA-HisDB/segmentation/CB55
+    # -o
+    # /data/usl_experiments/semantic_segmentation/datasets_cropped/temp-CB55
     # -tr
     # 300
     # -v

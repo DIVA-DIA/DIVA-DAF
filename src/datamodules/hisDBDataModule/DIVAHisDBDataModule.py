@@ -18,7 +18,7 @@ class DIVAHisDBDataModuleCropped(pl.LightningDataModule):
         super().__init__()
 
         analytics = get_analytics(input_path=Path(data_dir),
-                                  get_gt_data_paths_func=CroppedHisDBDataset.get_gt_data_paths)
+                                  get_gt_data_paths_func=CroppedHisDBDataset.get_gt_data_paths_cropped)
 
         self.mean = analytics['mean']
         self.std = analytics['std']

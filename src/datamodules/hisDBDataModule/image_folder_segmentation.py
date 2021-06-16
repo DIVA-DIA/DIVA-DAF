@@ -288,11 +288,11 @@ class ImageFolderSegmentationDataset(data.Dataset):
 
         for img_name, gt_name in zip(sorted(os.listdir(path_imgs)), sorted(os.listdir(path_gts))):
             assert has_extension(img_name, IMG_EXTENSIONS) == has_extension(gt_name, IMG_EXTENSIONS), \
-                'get_gt_data_paths(): image file aligned with non-image file'
+                'get_gt_data_paths_uncropped(): image file aligned with non-image file'
 
             if has_extension(img_name, IMG_EXTENSIONS) and has_extension(gt_name, IMG_EXTENSIONS):
                 assert os.path.splitext(img_name)[0] == os.path.splitext(gt_name)[0], \
-                    'get_gt_data_paths(): mismatch between data filename and gt filename'
+                    'get_gt_data_paths_uncropped(): mismatch between data filename and gt filename'
                 paths.append((os.path.join(path_imgs, img_name), os.path.join(path_gts, gt_name)))
 
         return paths

@@ -62,7 +62,7 @@ class CroppedHisDBDataset(data.Dataset):
         self.is_test = is_test
 
         # List of tuples that contain the path to the gt and image that belong together
-        self.img_paths_per_page = self.get_gt_data_paths(path)
+        self.img_paths_per_page = self.get_gt_data_paths_cropped(path)
 
         # TODO: make more fanzy stuff here
         # self.img_paths = [pair for page in self.img_paths_per_page for pair in page]
@@ -142,7 +142,7 @@ class CroppedHisDBDataset(data.Dataset):
         return img, gt, border_mask
 
     @staticmethod
-    def get_gt_data_paths(directory: Path) -> List[Tuple[Path, Path, str, str, Tuple[int, int]]]:
+    def get_gt_data_paths_cropped(directory: Path) -> List[Tuple[Path, Path, str, str, Tuple[int, int]]]:
         """
         Structure of the folder
 
@@ -175,12 +175,12 @@ class CroppedHisDBDataset(data.Dataset):
                                                     sorted(path_gt_subdir.iterdir())):
                 assert has_extension(path_data_file.name, IMG_EXTENSIONS) == \
                        has_extension(path_gt_file.name, IMG_EXTENSIONS), \
-                       'get_gt_data_paths(): image file aligned with non-image file'
+                       'get_gt_data_paths_cropped(): image file aligned with non-image file'
 
                 if has_extension(path_data_file.name, IMG_EXTENSIONS) and has_extension(path_gt_file.name,
                                                                                         IMG_EXTENSIONS):
                     assert path_data_file.stem == path_gt_file.stem, \
-                        'get_gt_data_paths(): mismatch between data filename and gt filename'
+                        'get_gt_data_paths_cropped(): mismatch between data filename and gt filename'
                     coordinates = re.compile(r'.+_x(\d+)_y(\d+)\.')
                     m = coordinates.match(path_data_file.name)
                     if m is None:
