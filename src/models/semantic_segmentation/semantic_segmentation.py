@@ -1,6 +1,5 @@
 import io
 import re
-import os
 from pathlib import Path
 from typing import List, Any
 
@@ -129,11 +128,13 @@ class SemanticSegmentation(pl.LightningModule):
         return_dict = {}
         img, target, mask = batch
         y_hat = self.model(img)
+        return_dict['targets'] = target
         loss = F.cross_entropy(y_hat, target)
         return_dict['loss'] = loss
 
         # takes from the prediction array the highest value like in the gt
         y_hat_encoded = _get_argmax(y_hat)
+        return_dict['preds'] = y_hat_encoded
 
         if self.create_confusion_matrix:
             self.val_cm(y_hat_encoded, target)

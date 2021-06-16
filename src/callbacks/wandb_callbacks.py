@@ -4,8 +4,10 @@ from typing import List
 
 import matplotlib.pyplot as plt
 import seaborn as sn
+import numpy as np
 import torch
 import wandb
+from matplotlib.patches import Rectangle
 from pytorch_lightning import Callback, Trainer
 from pytorch_lightning.loggers import LoggerCollection, WandbLogger
 from sklearn import metrics
@@ -99,40 +101,49 @@ class LogConfusionMatrixToWandb(Callback):
     ):
         """Gather data from single batch."""
         if self.ready:
-            self.preds.append(outputs["preds"])
-            self.targets.append(outputs["targets"])
+            self.preds.append(outputs["preds"].detach().cpu().numpy())
+            self.targets.append(outputs["targets"].detach().cpu().numpy())
 
     def on_validation_epoch_end(self, trainer, pl_module):
         """Generate confusion matrix."""
-        if self.ready:
-            logger = get_wandb_logger(trainer)
-            experiment = logger.experiment
+        if not self.ready:
+            return
 
-            preds = torch.cat(self.preds).cpu().numpy()
-            targets = torch.cat(self.targets).cpu().numpy()
+        conf_mat_name = f'CM_epoch_{trainer.current_epoch}'
+        logger = get_wandb_logger(trainer)
+        experiment = logger.experiment
 
-            confusion_matrix = metrics.confusion_matrix(y_true=targets, y_pred=preds)
+        preds = np.concatenate(self.preds).flatten()
+        targets = np.concatenate(self.targets).flatten()
 
-            # set figure size
-            plt.figure(figsize=(14, 8))
+        confusion_matrix = metrics.confusion_matrix(y_true=targets, y_pred=preds, normalize='true')
 
-            # set labels size
-            sn.set(font_scale=1.4)
+        # set figure size
+        plt.figure(figsize=(14, 8))
 
-            # set font size
-            sn.heatmap(confusion_matrix, annot=True, annot_kws={"size": 8}, fmt="g")
+        # set labels size
+        sn.set(font_scale=1.4)
 
-            # names should be uniqe or else charts from different experiments in wandb will overlap
-            experiment.log({f"confusion_matrix/{experiment.name}": wandb.Image(plt)}, commit=False)
+        # set font size
+        fig = sn.heatmap(confusion_matrix, annot=True, annot_kws={"size": 8}, fmt="g")
 
-            # according to wandb docs this should also work but it crashes
-            # experiment.log(f{"confusion_matrix/{experiment.name}": plt})
+        for i in range(confusion_matrix.shape[0]):
+            fig.add_patch(Rectangle((i, i), 1, 1, fill=False, edgecolor='yellow', lw=3))
+        plt.xlabel('Predictions')
+        plt.ylabel('Targets')
+        plt.title(conf_mat_name)
 
-            # reset plot
-            plt.clf()
+        # names should be uniqe or else charts from different experiments in wandb will overlap
+        experiment.log({f"confusion_matrix/{experiment.name}_ep_{trainer.current_epoch}": wandb.Image(plt)}, commit=False)
 
-            self.preds.clear()
-            self.targets.clear()
+        # according to wandb docs this should also work but it crashes
+        # experiment.log(f{"confusion_matrix/{experiment.name}": plt})
+
+        # reset plot
+        plt.clf()
+
+        self.preds.clear()
+        self.targets.clear()
 
 
 class LogF1PrecRecHeatmapToWandb(Callback):
@@ -157,42 +168,44 @@ class LogF1PrecRecHeatmapToWandb(Callback):
     ):
         """Gather data from single batch."""
         if self.ready:
-            self.preds.append(outputs["preds"])
-            self.targets.append(outputs["targets"])
+            self.preds.append(outputs["preds"].detach().cpu().numpy())
+            self.targets.append(outputs["targets"].detach().cpu().numpy())
 
     def on_validation_epoch_end(self, trainer, pl_module):
         """Generate f1, precision and recall heatmap."""
-        if self.ready:
-            logger = get_wandb_logger(trainer=trainer)
-            experiment = logger.experiment
+        if not self.ready:
+            return
 
-            preds = torch.cat(self.preds).cpu().numpy()
-            targets = torch.cat(self.targets).cpu().numpy()
-            f1 = f1_score(preds, targets, average=None)
-            r = recall_score(preds, targets, average=None)
-            p = precision_score(preds, targets, average=None)
-            data = [f1, p, r]
+        logger = get_wandb_logger(trainer=trainer)
+        experiment = logger.experiment
 
-            # set figure size
-            plt.figure(figsize=(14, 3))
+        preds = np.concatenate(self.preds).flatten()
+        targets = np.concatenate(self.targets).flatten()
+        f1 = f1_score(preds, targets, average=None)
+        r = recall_score(preds, targets, average=None)
+        p = precision_score(preds, targets, average=None)
+        data = [f1, p, r]
 
-            # set labels size
-            sn.set(font_scale=1.2)
+        # set figure size
+        plt.figure(figsize=(14, 3))
 
-            # set font size
-            sn.heatmap(
-                data,
-                annot=True,
-                annot_kws={"size": 10},
-                fmt=".3f",
-                yticklabels=["F1", "Precision", "Recall"],
-            )
+        # set labels size
+        sn.set(font_scale=1.2)
 
-            # names should be uniqe or else charts from different experiments in wandb will overlap
-            experiment.log({f"f1_p_r_heatmap/{experiment.name}": wandb.Image(plt)}, commit=False)
+        # set font size
+        sn.heatmap(
+            data,
+            annot=True,
+            annot_kws={"size": 10},
+            fmt=".3f",
+            yticklabels=["F1", "Precision", "Recall"],
+        )
 
-            # reset plot
-            plt.clf()
+        # names should be uniqe or else charts from different experiments in wandb will overlap
+        experiment.log({f"f1_p_r_heatmap/{experiment.name}_ep{trainer.current_epoch}": wandb.Image(plt)}, commit=False)
 
-            self.preds.clear()
-            self.targets.clear()
+        # reset plot
+        plt.clf()
+
+        self.preds.clear()
+        self.targets.clear()
