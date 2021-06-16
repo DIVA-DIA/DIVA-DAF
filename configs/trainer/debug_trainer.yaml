@@ -5,7 +5,7 @@ _target_: pytorch_lightning.Trainer
 
 # technical
 gpus: 0
-accelerator: ddp_cpu
+accelerator: 'ddp_cpu'
 
 min_epochs: 1
 max_epochs: 3
