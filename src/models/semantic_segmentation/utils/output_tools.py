@@ -51,7 +51,7 @@ def merge_patches(patch, coordinates, full_output):
     return full_output
 
 
-def save_output_page_image(image_name, output_image, output_folder, class_encoding):
+def save_output_page_image(image_name, output_image, output_folder: Path, class_encoding):
     """
     Helper function to save the output during testing in the DIVAHisDB format
 
@@ -74,9 +74,9 @@ def save_output_page_image(image_name, output_image, output_folder, class_encodi
 
     output_encoded = output_to_class_encodings(output_image, class_encoding)
 
-    dest_folder = output_folder / 'images'
+    dest_folder = output_folder
     dest_folder.mkdir(parents=True, exist_ok=True)
-    dest_filename = dest_folder / f'output_{image_name}'
+    dest_filename = dest_folder / image_name
 
     # Save the output
     Image.fromarray(output_encoded.astype(np.uint8)).save(str(dest_filename))
