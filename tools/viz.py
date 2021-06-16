@@ -9,8 +9,15 @@ from PIL import Image
 
 def main(img):
     read_img = np.asarray(Image.open(img))
-    class_encodings = [(1, 'Background'), (2, 'Comment'), (4, 'Decoration'), (6, 'Comment + Decoration'),
-                       (8, 'Main Text'), (10, 'Main Text + Comment'), (12, 'Main Text + Decoration')]
+    # class_encodings = [(1, 'Background'), (2, 'Comment'), (4, 'Decoration'), (6, 'Comment + Decoration'),
+    #                    (8, 'Main Text'), (10, 'Main Text + Comment'), (12, 'Main Text + Decoration')]
+    class_encodings = [(1, 'Background', (0, 0, 0)),
+                       (2, 'Comment', (255, 0, 0)),
+                       (4, 'Decoration', (255, 255, 0)),
+                       (6, 'Comment + Decoration', (255, 255, 255)),
+                       (8, 'Main Text', (255, 0, 255)),
+                       (10, 'Main Text + Comment', (0, 0, 255)),
+                       (12, 'Main Text + Decoration', (0, 255, 255))]
 
     dest_filename = os.path.join('images', os.path.basename(img)[:-4], 'viz_' + os.path.basename(img))
     if not os.path.exists(os.path.dirname(dest_filename)):
@@ -32,7 +39,8 @@ def main(img):
 
     # Colours are in RGB
     cmap = matplotlib.cm.get_cmap('Spectral')
-    colors = [cmap(i / len(class_encodings), bytes=True)[:3] for i in range(len(class_encodings))]
+    # colors = [cmap(i / len(class_encodings), bytes=True)[:3] for i in range(len(class_encodings))]
+    colors = [c[2] for c in class_encodings]
 
     # Get the mask for each colour
     masks = {color: (gt_blue == i[0]) > 0 for color, i in zip(colors, class_encodings)}
