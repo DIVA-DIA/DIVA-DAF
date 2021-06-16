@@ -35,6 +35,10 @@ def train(config: DictConfig) -> Optional[float]:
     log.info(f"Instantiating model <{config.model._target_}>")
     model: LightningModule = hydra.utils.instantiate(config.model)
 
+    # Init the task as lightning module
+    log.info(f"Instantiating model <{config.task._target_}>")
+    task: LightningModule = hydra.utils.instantiate(config.task, model=model)
+
     # Init Lightning callbacks
     callbacks: List[Callback] = []
     if "callbacks" in config:
@@ -62,25 +66,28 @@ def train(config: DictConfig) -> Optional[float]:
     template_utils.log_hyperparameters(
         config=config,
         model=model,
+        task=task,
         datamodule=datamodule,
         trainer=trainer,
         callbacks=callbacks,
         logger=logger,
     )
 
-    # Train the model
-    log.info("Starting training!")
-    trainer.fit(model=model, datamodule=datamodule)
+    if config.train:
+        # Train the model
+        log.info("Starting training!")
+        trainer.fit(model=task, datamodule=datamodule)
 
     # Evaluate model on test set after training
-    if not config.trainer.get("fast_dev_run"):
+    if config.test:
         log.info("Starting testing!")
-        trainer.test()
+        trainer.test(model=task, datamodule=datamodule)
 
     # Make sure everything closed properly
     log.info("Finalizing!")
     template_utils.finish(
         config=config,
+        task=task,
         model=model,
         datamodule=datamodule,
         trainer=trainer,

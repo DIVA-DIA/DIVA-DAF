@@ -1,0 +1,54 @@
+# @package _global_
+
+# to execute this experiment run:
+# python run.py +experiment=exp_example_full
+
+defaults:
+    - override /trainer: null  # override trainer to null so it's not loaded from main config defaults...
+    - override /task: null
+    - override /model: baby_unet_model.yaml
+    - override /datamodule: null
+    - override /callbacks: null
+
+# we override default configurations with nulls to prevent them from loading at all
+# instead we define all modules and their paths directly in this config,
+# so everything is stored in one place for more readibility
+
+seed: 42
+
+trainer:
+    _target_: pytorch_lightning.Trainer
+    gpus: -1
+    accelerator: 'ddp'
+    min_epochs: 1
+    max_epochs: 50
+    weights_summary: full
+
+task:
+   _target_: src.models.semantic_segmentation.semantic_segmentation.SemanticSegmentation
+   calc_his_miou_train_val: False
+   calc_his_miou_test: False
+
+datamodule:
+    _target_: src.datamodules.hisDBDataModule.DIVAHisDBDataModule.DIVAHisDBDataModuleCropped
+
+    data_dir: /data/usl_experiments/semantic_segmentation/datasets_cropped/CB55-10-segmentation
+    crop_size: 256
+    num_workers: 4
+    batch_size: 16
+
+callbacks:
+    model_checkpoint:
+        _target_: pytorch_lightning.callbacks.ModelCheckpoint
+        monitor: "val/loss"
+        save_top_k: 2
+        save_last: True
+        mode: "min"
+        dirpath: 'checkpoints/'
+        filename: 'dev-baby-unet-cb55-10-{epoch:02d}'
+
+logger:
+    wandb:
+        name: 'dev-baby-unet-cb55-10-${now:%Y-%m-%d}-${now:%H-%M-%S}'
+        tags: ["best_model", "USL"]
+        notes: "Testing"
