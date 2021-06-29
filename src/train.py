@@ -5,6 +5,8 @@ from pytorch_lightning.loggers import LightningLoggerBase
 from pytorch_lightning import seed_everything
 
 import hydra
+import random
+import numpy as np
 from omegaconf import DictConfig
 
 from src.utils import template_utils
@@ -26,6 +28,9 @@ def train(config: DictConfig) -> Optional[float]:
     # Set seed for random number generators in pytorch, numpy and python.random
     if "seed" in config:
         seed_everything(config.seed)
+    else:
+        seed = random.randint(np.iinfo(np.uint32).min, np.iinfo(np.uint32).max)
+        log.info(f"No seed specified! Seed set to {seed}")
 
     # Init Lightning datamodule
     log.info(f"Instantiating datamodule <{config.datamodule._target_}>")
