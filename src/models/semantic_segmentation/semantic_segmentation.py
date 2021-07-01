@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import pytorch_lightning as pl
 import seaborn as sn
+import torch.optim
 import wandb
 from PIL import Image
 from src.datamodules.hisDBDataModule.DIVAHisDBDataModule import DIVAHisDBDataModuleCropped
@@ -15,7 +16,6 @@ from matplotlib.patches import Rectangle
 from pl_bolts.models.vision import UNet
 from pytorch_lightning import seed_everything
 from torch.nn import Module, functional as F
-from torch.optim.adam import Adam
 
 from src.models.semantic_segmentation.utils.accuracy import accuracy_segmentation
 from src.models.semantic_segmentation.utils.output_tools import save_output_page_image, merge_patches, _get_argmax
@@ -25,7 +25,7 @@ class SemanticSegmentation(pl.LightningModule):
 
     def __init__(self,
                  # datamodule: pl.LightningDataModule,
-                 model: Module,
+                 model: Module, optimizer: torch.optim.Optimizer,
                  output_path: str = 'test_images', create_confusion_matrix=False,
                  calc_his_miou_train_val=False, calc_his_miou_test=False):
         """
@@ -250,7 +250,7 @@ class SemanticSegmentation(pl.LightningModule):
         #         print(f'WARNING: Test image {img_name} was not written! It still contains NaN values.')
 
     def configure_optimizers(self):
-        return Adam(self.model.parameters())
+        return self.hparams.optimizer
 
     def _create_and_save_conf_mat(self, cm, status: str = 'train'):
         conf_mat_name = f'{status}_CM_epoch_{self.current_epoch}'

@@ -5,6 +5,7 @@ from pytorch_lightning.loggers import LightningLoggerBase
 from pytorch_lightning import seed_everything
 
 import hydra
+import torch
 import random
 import numpy as np
 from omegaconf import DictConfig
@@ -40,9 +41,13 @@ def train(config: DictConfig) -> Optional[float]:
     log.info(f"Instantiating model <{config.model._target_}>")
     model: LightningModule = hydra.utils.instantiate(config.model)
 
+    # Init optimizer
+    log.info(f"Instantiating optimizer <{config.optimizer._target_}>")
+    optimizer: torch.optim.Optimizer = hydra.utils.instantiate(config.optimizer, params=model.parameters(recurse=True))
+
     # Init the task as lightning module
     log.info(f"Instantiating model <{config.task._target_}>")
-    task: LightningModule = hydra.utils.instantiate(config.task, model=model)
+    task: LightningModule = hydra.utils.instantiate(config.task, model=model, optimizer=optimizer)
 
     # Init Lightning callbacks
     callbacks: List[Callback] = []
