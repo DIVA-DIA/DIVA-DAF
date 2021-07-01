@@ -250,7 +250,7 @@ class SemanticSegmentation(pl.LightningModule):
         #         print(f'WARNING: Test image {img_name} was not written! It still contains NaN values.')
 
     def configure_optimizers(self):
-        if self.hparams.scheduler is None:
+        if self.hparams.scheduler is not None:
             return [self.hparams.optimizer], [self.hparams.scheduler]
         else:
             return [self.hparams.optimizer]
