@@ -58,7 +58,7 @@ def train(config: DictConfig) -> Optional[float]:
                 datamodule_name = config.datamodule._target_.split('.')[-1]
                 post_fix_path = os.getcwd().split('/')[-2:]
                 logger.append(hydra.utils.instantiate(lg_conf, name='_'.join(
-                    [task_name, model_name, datamodule_name, '_'.join(post_fix_path)])))
+                    [lg_conf.name, task_name, model_name, datamodule_name, '_'.join(post_fix_path)])))
 
     # Init Lightning trainer
     log.info(f"Instantiating trainer <{config.trainer._target_}>")
