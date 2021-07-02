@@ -12,3 +12,4 @@ max_epochs: 50
 # logging
 log_every_n_steps: 10
 weights_summary: top # information about the model
+resume_from_checkpoint: null # Path to checkpoint to continue training
