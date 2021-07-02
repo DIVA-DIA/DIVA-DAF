@@ -49,6 +49,6 @@ callbacks:
 
 logger:
     wandb:
-        name: 'dev-baby-unet-cb55-10-${now:%Y-%m-%d}-${now:%H-%M-%S}'
+        name: 'dev-baby-unet-cb55-10'
         tags: ["best_model", "USL"]
         notes: "Testing"
