@@ -1,5 +1,0 @@
-_target_: torch.optim.lr_scheduler.LambdaLR
-
-lr_lambda: 0.95 ** epoch
-last_epoch: -1
-verbose: False

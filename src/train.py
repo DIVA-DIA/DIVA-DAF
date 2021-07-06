@@ -47,17 +47,9 @@ def train(config: DictConfig) -> Optional[float]:
         config.optimizer.betas = tuple([float(i) for i in config.optimizer.betas.split(',')])
     optimizer: torch.optim.Optimizer = hydra.utils.instantiate(config.optimizer, params=model.parameters(recurse=True))
 
-    scheduler: torch.optim.lr_scheduler = None
-    if 'scheduler' in config:
-        # Init LR scheduler
-        log.info(f"Instantiating optimizer <{config.scheduler._target_}>")
-        if config.scheduler._target_ == 'torch.optim.lr_scheduler.LambdaLR':
-            config.scheduler.lr_lambda = lambda epoch: eval(config.scheduler.lr_lambda)
-        scheduler = hydra.utils.instantiate(config.scheduler, optimizer=optimizer)
-
     # Init the task as lightning module
     log.info(f"Instantiating model <{config.task._target_}>")
-    task: LightningModule = hydra.utils.instantiate(config.task, model=model, optimizer=optimizer, scheduler=scheduler)
+    task: LightningModule = hydra.utils.instantiate(config.task, model=model, optimizer=optimizer)
 
     # Init Lightning callbacks
     callbacks: List[Callback] = []

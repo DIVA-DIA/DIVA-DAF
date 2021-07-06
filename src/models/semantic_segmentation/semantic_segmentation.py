@@ -25,7 +25,7 @@ class SemanticSegmentation(pl.LightningModule):
 
     def __init__(self,
                  # datamodule: pl.LightningDataModule,
-                 model: Module, optimizer: torch.optim.Optimizer, scheduler: torch.optim.lr_scheduler,
+                 model: Module, optimizer: torch.optim.Optimizer,
                  output_path: str = 'test_images', create_confusion_matrix=False,
                  calc_his_miou_train_val=False, calc_his_miou_test=False):
         """
@@ -250,10 +250,7 @@ class SemanticSegmentation(pl.LightningModule):
         #         print(f'WARNING: Test image {img_name} was not written! It still contains NaN values.')
 
     def configure_optimizers(self):
-        if self.hparams.scheduler is not None:
-            return [self.hparams.optimizer], [self.hparams.scheduler]
-        else:
-            return [self.hparams.optimizer]
+        return self.hparams.optimizer
 
     def _create_and_save_conf_mat(self, cm, status: str = 'train'):
         conf_mat_name = f'{status}_CM_epoch_{self.current_epoch}'
