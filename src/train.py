@@ -1,11 +1,11 @@
 from typing import List, Optional
 
-from pytorch_lightning import LightningModule, LightningDataModule, Callback, Trainer
-from pytorch_lightning.loggers import LightningLoggerBase
-from pytorch_lightning import seed_everything
-
+import os
 import hydra
 from omegaconf import DictConfig
+from pytorch_lightning import LightningModule, LightningDataModule, Callback, Trainer
+from pytorch_lightning import seed_everything
+from pytorch_lightning.loggers import LightningLoggerBase
 
 from src.utils import template_utils
 
@@ -53,7 +53,12 @@ def train(config: DictConfig) -> Optional[float]:
         for _, lg_conf in config["logger"].items():
             if "_target_" in lg_conf:
                 log.info(f"Instantiating logger <{lg_conf._target_}>")
-                logger.append(hydra.utils.instantiate(lg_conf))
+                task_name = config.task._target_.split('.')[-1]
+                model_name = config.model._target_.split('.')[-1]
+                datamodule_name = config.datamodule._target_.split('.')[-1]
+                post_fix_path = os.getcwd().split('/')[-2:]
+                logger.append(hydra.utils.instantiate(lg_conf, name='_'.join(
+                    [str(lg_conf.name), task_name, model_name, datamodule_name, '_'.join(post_fix_path)])))
 
     # Init Lightning trainer
     log.info(f"Instantiating trainer <{config.trainer._target_}>")
