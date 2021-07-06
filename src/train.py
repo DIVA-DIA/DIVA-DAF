@@ -33,7 +33,15 @@ def train(config: DictConfig) -> Optional[float]:
 
     # Init Lightning model
     log.info(f"Instantiating model <{config.model._target_}>")
-    model: LightningModule = hydra.utils.instantiate(config.model)
+    # Check if we load weights from checkpoint
+    if 'load_from_checkpoint' in config.model and config.model.load_from_checkpoint is not None:
+        # ugly way to do it
+        checkpoint_path = config.model.load_from_checkpoint
+        del config.model.load_from_checkpoint
+        model: LightningModule = hydra.utils.instantiate(config.model)
+        model = model.load_from_checkpoint(checkpoint_path, strict=False)
+    else:
+        model: LightningModule = hydra.utils.instantiate(config.model)
 
     # Init the task as lightning module
     log.info(f"Instantiating model <{config.task._target_}>")

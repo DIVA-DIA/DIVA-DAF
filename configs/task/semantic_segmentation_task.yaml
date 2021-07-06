@@ -1,6 +1,5 @@
 _target_: src.models.semantic_segmentation.semantic_segmentation.SemanticSegmentation
 
-model: null
 output_path: 'test_images/'
 create_confusion_matrix: False
 calc_his_miou_train_val: False
