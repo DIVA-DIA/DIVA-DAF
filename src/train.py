@@ -7,6 +7,7 @@ from pytorch_lightning import seed_everything
 import hydra
 from omegaconf import DictConfig
 
+from models.encoder_header_model import EncoderHeaderModel
 from src.utils import template_utils
 
 log = template_utils.get_logger(__name__)
@@ -31,17 +32,18 @@ def train(config: DictConfig) -> Optional[float]:
     log.info(f"Instantiating datamodule <{config.datamodule._target_}>")
     datamodule: LightningDataModule = hydra.utils.instantiate(config.datamodule)
 
-    # Init Lightning model
-    log.info(f"Instantiating model <{config.model._target_}>")
+    # Init Lightning model backend
+    log.info(f"Instantiating backbone model <{config.model.backbone._target_}>")
     # Check if we load weights from checkpoint
-    if 'load_from_checkpoint' in config.model and config.model.load_from_checkpoint is not None:
-        # ugly way to do it
-        checkpoint_path = config.model.load_from_checkpoint
-        del config.model.load_from_checkpoint
-        model: LightningModule = hydra.utils.instantiate(config.model)
-        model = model.load_from_checkpoint(checkpoint_path, strict=False)
-    else:
-        model: LightningModule = hydra.utils.instantiate(config.model)
+    backbone: LightningModule = hydra.utils.instantiate(config.model.backbone)
+
+    # Init Lightning model header
+    log.info(f"Instantiating header model <{config.model.header._target_}>")
+    # Check if we load weights from checkpoint
+    header: LightningModule = hydra.utils.instantiate(config.model.header)
+
+    # container model
+    model: LightningModule = EncoderHeaderModel(backbone=backbone, header=header)
 
     # Init the task as lightning module
     log.info(f"Instantiating model <{config.task._target_}>")
