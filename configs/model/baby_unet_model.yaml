@@ -3,4 +3,4 @@ _target_: pl_bolts.models.vision.UNet
 num_classes: 8
 num_layers: 2
 features_start: 32
-load_from_checkpoint: 'path/to/checkpoint' # path to the checkpoint with surrounded with ''
+#load_from_checkpoint: 'path/to/checkpoint' # path to the checkpoint with surrounded with ''

@@ -25,7 +25,7 @@ trainer:
     weights_summary: full
 
 task:
-   _target_: src.models.semantic_segmentation.semantic_segmentation.SemanticSegmentation
+   _target_: src.tasks.semantic_segmentation.semantic_segmentation.SemanticSegmentation
    calc_his_miou_train_val: False
    calc_his_miou_test: False
 
