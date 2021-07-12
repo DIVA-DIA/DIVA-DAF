@@ -17,8 +17,8 @@ from pytorch_lightning import seed_everything
 from torch.nn import Module, functional as F
 from torch.optim.adam import Adam
 
-from src.models.semantic_segmentation.utils.accuracy import accuracy_segmentation
-from src.models.semantic_segmentation.utils.output_tools import save_output_page_image, merge_patches, _get_argmax
+from src.tasks.semantic_segmentation.utils.accuracy import accuracy_segmentation
+from src.tasks.semantic_segmentation.utils.output_tools import save_output_page_image, merge_patches, _get_argmax
 
 
 class SemanticSegmentation(pl.LightningModule):
