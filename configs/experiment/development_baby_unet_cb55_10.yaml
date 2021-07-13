@@ -9,7 +9,6 @@ defaults:
     - override /model/backbone: baby_unet_model.yaml
     - override /model/header: identity.yaml
     - override /datamodule: null
-    - override /callbacks: null
 
 # we override default configurations with nulls to prevent them from loading at all
 # instead we define all modules and their paths directly in this config,
@@ -40,12 +39,6 @@ datamodule:
 
 callbacks:
     model_checkpoint:
-        _target_: pytorch_lightning.callbacks.ModelCheckpoint
-        monitor: "val/loss"
-        save_top_k: 2
-        save_last: True
-        mode: "min"
-        dirpath: 'checkpoints/'
         filename: 'dev-baby-unet-cb55-10-{epoch:02d}'
 
 logger:
