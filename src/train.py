@@ -1,5 +1,6 @@
 from typing import List, Optional
 
+import torch
 from pytorch_lightning import LightningModule, LightningDataModule, Callback, Trainer
 from pytorch_lightning.loggers import LightningLoggerBase
 from pytorch_lightning import seed_everything
@@ -35,12 +36,28 @@ def train(config: DictConfig) -> Optional[float]:
     # Init Lightning model backend
     log.info(f"Instantiating backbone model <{config.model.backbone._target_}>")
     # Check if we load weights from checkpoint
-    backbone: LightningModule = hydra.utils.instantiate(config.model.backbone)
+    if "path_to_weights" in config.model.backbone:
+        log.info(f"Loading backbone weights from <{config.model.backbone.path_to_weights}>")
+        path_to_weights = config.model.backbone.path_to_weights
+        del config.model.backbone.path_to_weights
+        backbone: LightningModule = hydra.utils.instantiate(config.model.backbone)
+        backbone.load_state_dict(torch.load(path_to_weights))
+    else:
+        backbone: LightningModule = hydra.utils.instantiate(config.model.backbone)
 
     # Init Lightning model header
     log.info(f"Instantiating header model <{config.model.header._target_}>")
     # Check if we load weights from checkpoint
     header: LightningModule = hydra.utils.instantiate(config.model.header)
+    if "path_to_weights" in config.model.header:
+        log.info(f"Loading header weights from <{config.model.header.path_to_weights}>")
+        header.load_state_dict(torch.load(config.model.header.path_to_weights))
+        path_to_weights = config.model.header.path_to_weights
+        del config.model.header.path_to_weights
+        header: LightningModule = hydra.utils.instantiate(config.model.header)
+        header.load_state_dict(torch.load(path_to_weights))
+    else:
+        header: LightningModule = hydra.utils.instantiate(config.model.header)
 
     # container model
     model: LightningModule = EncoderHeaderModel(backbone=backbone, header=header)
