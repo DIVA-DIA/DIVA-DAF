@@ -8,7 +8,7 @@ from pytorch_lightning import seed_everything
 import hydra
 from omegaconf import DictConfig
 
-from models.encoder_header_model import EncoderHeaderModel
+from models.encoder_header_model import BackboneHeaderModel
 from src.utils import template_utils
 
 log = template_utils.get_logger(__name__)
@@ -60,7 +60,7 @@ def train(config: DictConfig) -> Optional[float]:
         header: LightningModule = hydra.utils.instantiate(config.model.header)
 
     # container model
-    model: LightningModule = EncoderHeaderModel(backbone=backbone, header=header)
+    model: LightningModule = BackboneHeaderModel(backbone=backbone, header=header)
 
     # Init the task as lightning module
     log.info(f"Instantiating model <{config.task._target_}>")

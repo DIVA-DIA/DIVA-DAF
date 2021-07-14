@@ -4,7 +4,7 @@ import pytorch_lightning as pl
 import torch.nn
 
 
-class EncoderHeaderModel(pl.LightningModule):
+class BackboneHeaderModel(pl.LightningModule):
     """A generic model class to provide the possibility to create different backbone/header combinations"""
 
     def __init__(self, backbone: Union[pl.LightningModule, torch.nn.Module],
