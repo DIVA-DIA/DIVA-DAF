@@ -1,10 +1,13 @@
+import logging
 import os
-from typing import Dict, Any, Optional
+from typing import Optional
 
 import pytorch_lightning as pl
 import torch
-from pytorch_lightning import LightningModule
 from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.utilities import rank_zero_only
+
+log = logging.getLogger(__name__)
 
 
 class SaveModelStateDictAndTaskCheckpoint(ModelCheckpoint):
@@ -18,14 +21,36 @@ class SaveModelStateDictAndTaskCheckpoint(ModelCheckpoint):
         super(SaveModelStateDictAndTaskCheckpoint, self).__init__(**kwargs)
         self.backbone_filename = backbone_filename
         self.header_filename = header_filename
+        self.CHECKPOINT_NAME_LAST = 'task_last'
 
-    def on_save_checkpoint(self, trainer, pl_module: LightningModule, checkpoint: Dict[str, Any]) -> dict:
-        # get the generic model from the pl_module
-        model: pl.LightningModule = pl_module.model
-        # replace the epoch variable in the file names
-        # save the encoder and the decoder with torch.save() in self.dirpath
-        torch.save(model.backbone.state_dict(), os.path.join(self.dirpath, self.backbone_filename + '.pth'))
-        torch.save(model.header.state_dict(), os.path.join(self.dirpath, self.header_filename + '.pth'))
-        return super().on_save_checkpoint(trainer=trainer, pl_module=pl_module, checkpoint=checkpoint)
+    @rank_zero_only
+    def _del_model(self, filepath: str) -> None:
+        if self._fs.exists(filepath):
+            parent_dir = self._fs._parent(filepath)
+            # delete all files in directory
+            for path in self._fs.ls(parent_dir):
+                if self._fs.exists(path):
+                    self._fs.rm(path)
+            # delete directory
+            self._fs.rmdir(parent_dir)
+            log.debug(f"Removed checkpoint: {filepath}")
 
+    def _save_model(self, trainer: pl.Trainer, filepath: str) -> None:
+        super()._save_model(trainer=trainer, filepath=filepath)
+        if not trainer.is_global_zero:
+            return
 
+        model = trainer.lightning_module.model
+        metric_candidates = self._monitor_candidates(trainer, epoch=trainer.current_epoch, step=trainer.global_step)
+        # check if it is a last save or not
+        if 'last' not in filepath:
+            # fixed pathing problem
+            format_backbone_filename = self._format_checkpoint_name(filename=self.backbone_filename,
+                                                                    metrics=metric_candidates)
+            format_header_filename = self._format_checkpoint_name(filename=self.header_filename, metrics=metric_candidates)
+        else:
+            format_backbone_filename = self.backbone_filename.split('/')[-1] + '_last'
+            format_header_filename = self.header_filename.split('/')[-1] + '_last'
+
+        torch.save(model.backbone.state_dict(), os.path.join(self.dirpath, format_backbone_filename + '.pth'))
+        torch.save(model.header.state_dict(), os.path.join(self.dirpath, format_header_filename + '.pth'))

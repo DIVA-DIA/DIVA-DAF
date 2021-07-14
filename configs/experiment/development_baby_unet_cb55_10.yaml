@@ -39,10 +39,11 @@ datamodule:
 
 callbacks:
     model_checkpoint:
-        filename: 'dev-baby-unet-cb55-10-{epoch:02d}'
+        filename: ${checkpoint_folder_name}dev-baby-unet-cb55-10
 
 logger:
     wandb:
         name: 'dev-baby-unet-cb55-10-${now:%Y-%m-%d}-${now:%H-%M-%S}'
         tags: ["best_model", "USL"]
+        group: 'dev-runs'
         notes: "Testing"

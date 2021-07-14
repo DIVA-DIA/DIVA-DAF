@@ -8,9 +8,10 @@ model_checkpoint:
     mode: "min"             # can be "max" or "min"
     verbose: False
     dirpath: 'checkpoints/'
-    filename: 'task-checkpoint-{epoch:02d}'
-    backbone_filename: 'backbone' # just epoch working as we can not access the metrics
-    header_filename: 'header' # just epoch working as we can not access the metrics
+    # !! CARE: epoch must be the base folder!! does not work in dir path as the epoch does not get resolved
+    filename: ${checkpoint_folder_name}task-checkpoint
+    backbone_filename: ${checkpoint_folder_name}backbone
+    header_filename: ${checkpoint_folder_name}header
 
 #model_checkpoint_iou:
 #    _target_: pytorch_lightning.callbacks.ModelCheckpoint

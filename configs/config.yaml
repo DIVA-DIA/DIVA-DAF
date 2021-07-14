@@ -23,6 +23,8 @@ defaults:
 train: True
 test: True
 
+checkpoint_folder_name: '{epoch}/'
+
 # seed for all the random generators (needs to be sett when training with ddp!)
 seed: 42
 
