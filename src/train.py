@@ -1,11 +1,15 @@
 from typing import List, Optional
 
+import os
 import torch
 from pytorch_lightning import LightningModule, LightningDataModule, Callback, Trainer
 from pytorch_lightning.loggers import LightningLoggerBase
 from pytorch_lightning import seed_everything
 
 import hydra
+import torch
+import random
+import numpy as np
 from omegaconf import DictConfig
 
 from models.encoder_header_model import BackboneHeaderModel
@@ -28,6 +32,9 @@ def train(config: DictConfig) -> Optional[float]:
     # Set seed for random number generators in pytorch, numpy and python.random
     if "seed" in config:
         seed_everything(config.seed)
+    else:
+        seed = random.randint(np.iinfo(np.uint32).min, np.iinfo(np.uint32).max)
+        log.info(f"No seed specified! Seed set to {seed}")
 
     # Init Lightning datamodule
     log.info(f"Instantiating datamodule <{config.datamodule._target_}>")
@@ -62,9 +69,15 @@ def train(config: DictConfig) -> Optional[float]:
     # container model
     model: LightningModule = BackboneHeaderModel(backbone=backbone, header=header)
 
+    # Init optimizer
+    log.info(f"Instantiating optimizer <{config.optimizer._target_}>")
+    if config.optimizer._target_ == 'torch.optim.Adam':
+        config.optimizer.betas = tuple([float(i) for i in config.optimizer.betas.split(',')])
+    optimizer: torch.optim.Optimizer = hydra.utils.instantiate(config.optimizer, params=model.parameters(recurse=True))
+
     # Init the task as lightning module
     log.info(f"Instantiating model <{config.task._target_}>")
-    task: LightningModule = hydra.utils.instantiate(config.task, model=model)
+    task: LightningModule = hydra.utils.instantiate(config.task, model=model, optimizer=optimizer)
 
     # Init Lightning callbacks
     callbacks: List[Callback] = []
@@ -80,7 +93,12 @@ def train(config: DictConfig) -> Optional[float]:
         for _, lg_conf in config["logger"].items():
             if "_target_" in lg_conf:
                 log.info(f"Instantiating logger <{lg_conf._target_}>")
-                logger.append(hydra.utils.instantiate(lg_conf))
+                task_name = config.task._target_.split('.')[-1]
+                model_name = config.model._target_.split('.')[-1]
+                datamodule_name = config.datamodule._target_.split('.')[-1]
+                post_fix_path = os.getcwd().split('/')[-2:]
+                logger.append(hydra.utils.instantiate(lg_conf, name='_'.join(
+                    [str(lg_conf.name), task_name, model_name, datamodule_name, '_'.join(post_fix_path)])))
 
     # Init Lightning trainer
     log.info(f"Instantiating trainer <{config.trainer._target_}>")

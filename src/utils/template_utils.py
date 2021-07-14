@@ -81,6 +81,7 @@ def print_config(
         "trainer",
         "task",
         "model",
+        "optimizer",
         "datamodule",
         "callbacks",
         "logger",
