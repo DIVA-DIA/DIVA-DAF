@@ -103,7 +103,7 @@ class SemanticSegmentation(pl.LightningModule):
             self.train_cm(y_hat_encoded, target)
 
         # Metric Logging
-        self.log('train/loss', loss, on_epoch=True)
+        self.log('train/loss', loss, on_epoch=True, sync_dist=True)
         if self.calc_his_miou_train_val:
             _, _, his_miou, _ = accuracy_segmentation(label_trues=target,
                                                       label_preds=y_hat_encoded,
@@ -140,7 +140,7 @@ class SemanticSegmentation(pl.LightningModule):
             self.val_cm(y_hat_encoded, target)
 
         # Metric Logging
-        self.log('val/loss', loss, on_epoch=True)
+        self.log('val/loss', loss, on_epoch=True, sync_dist=True)
         if self.calc_his_miou_train_val:
             _, _, his_miou, _ = accuracy_segmentation(label_trues=target,
                                                       label_preds=y_hat_encoded,
