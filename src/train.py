@@ -6,7 +6,7 @@ import torch
 import random
 import numpy as np
 from omegaconf import DictConfig
-from pytorch_lightning import LightningModule, LightningDataModule, Callback, Trainer
+from pytorch_lightning import LightningModule, LightningDataModule, Callback, Trainer, plugins
 from pytorch_lightning import seed_everything
 from pytorch_lightning.loggers import LightningLoggerBase
 
@@ -74,8 +74,12 @@ def train(config: DictConfig) -> Optional[float]:
 
     # Init Lightning trainer
     log.info(f"Instantiating trainer <{config.trainer._target_}>")
+    # could be made nice in the same style as callbacks but atm does not matter
+    plugin_list = []
+    if config.trainer.get("accelerator") in ["ddp", "ddp_spawn", "ddp2"]:
+        plugin_list.append(plugins.DDPPlugin(find_unused_parameters=False))
     trainer: Trainer = hydra.utils.instantiate(
-        config.trainer, callbacks=callbacks, logger=logger, _convert_="partial"
+        config.trainer, plugins=plugin_list, callbacks=callbacks, logger=logger, _convert_="partial"
     )
 
     # Send some parameters from config to all lightning loggers
