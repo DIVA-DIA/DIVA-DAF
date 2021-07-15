@@ -72,12 +72,16 @@ def train(config: DictConfig) -> Optional[float]:
                 logger.append(hydra.utils.instantiate(lg_conf, name='_'.join(
                     [str(lg_conf.name), task_name, model_name, datamodule_name, '_'.join(post_fix_path)])))
 
+    # Init Trainer Plugins
+    plugin_list: List[plugins.Plugin] = []
+    if "plugins" in config:
+        for _, pl_config in config.plugins.items():
+            if "_target_" in pl_config:
+                log.info(f"Instantiating plugin <{pl_config._target_}>")
+                plugin_list.append(hydra.utils.instantiate(pl_config))
+
     # Init Lightning trainer
     log.info(f"Instantiating trainer <{config.trainer._target_}>")
-    # could be made nice in the same style as callbacks but atm does not matter
-    plugin_list = []
-    if config.trainer.get("accelerator") in ["ddp", "ddp_spawn", "ddp2"]:
-        plugin_list.append(plugins.DDPPlugin(find_unused_parameters=False))
     trainer: Trainer = hydra.utils.instantiate(
         config.trainer, plugins=plugin_list, callbacks=callbacks, logger=logger, _convert_="partial"
     )
