@@ -1,16 +1,14 @@
+import os
+import random
 from typing import List, Optional
 
-import os
-import torch
-from pytorch_lightning import LightningModule, LightningDataModule, Callback, Trainer
-from pytorch_lightning.loggers import LightningLoggerBase
-from pytorch_lightning import seed_everything
-
 import hydra
-import torch
-import random
 import numpy as np
+import torch
 from omegaconf import DictConfig
+from pytorch_lightning import LightningModule, LightningDataModule, Callback, Trainer
+from pytorch_lightning import seed_everything
+from pytorch_lightning.loggers import LightningLoggerBase
 
 from models.encoder_header_model import BackboneHeaderModel
 from src.utils import template_utils
@@ -50,6 +48,9 @@ def train(config: DictConfig) -> Optional[float]:
         backbone: LightningModule = hydra.utils.instantiate(config.model.backbone)
         backbone.load_state_dict(torch.load(path_to_weights))
     else:
+        if config.test and not config.train:
+            log.warn("You are just testing without a trained backbone model! "
+                     "Use 'path_to_weights' in your model to load a trained model")
         backbone: LightningModule = hydra.utils.instantiate(config.model.backbone)
 
     # Init Lightning model header
@@ -64,6 +65,9 @@ def train(config: DictConfig) -> Optional[float]:
         header: LightningModule = hydra.utils.instantiate(config.model.header)
         header.load_state_dict(torch.load(path_to_weights))
     else:
+        if config.test and not config.train:
+            log.warn("You are just testing without a trained header model! "
+                     "Use 'path_to_weights' in your model to load a trained model")
         header: LightningModule = hydra.utils.instantiate(config.model.header)
 
     # container model
@@ -94,11 +98,12 @@ def train(config: DictConfig) -> Optional[float]:
             if "_target_" in lg_conf:
                 log.info(f"Instantiating logger <{lg_conf._target_}>")
                 task_name = config.task._target_.split('.')[-1]
-                model_name = config.model._target_.split('.')[-1]
+                backbone_name = config.model.backbone._target_.split('.')[-1]
+                header_name = config.model.header._target_.split('.')[-1]
                 datamodule_name = config.datamodule._target_.split('.')[-1]
                 post_fix_path = os.getcwd().split('/')[-2:]
                 logger.append(hydra.utils.instantiate(lg_conf, name='_'.join(
-                    [str(lg_conf.name), task_name, model_name, datamodule_name, '_'.join(post_fix_path)])))
+                    [str(lg_conf.name), task_name, backbone_name, header_name, datamodule_name, '_'.join(post_fix_path)])))
 
     # Init Lightning trainer
     log.info(f"Instantiating trainer <{config.trainer._target_}>")
