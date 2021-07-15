@@ -64,9 +64,6 @@ def extras(config: DictConfig) -> None:
     # force multi-gpu friendly configuration if <config.trainer.accelerator=ddp>
     if config.trainer.get("accelerator") in ["ddp", "ddp_spawn", "dp", "ddp2"]:
         log.info("Forcing ddp friendly configuration! <config.trainer.accelerator=ddp>")
-        # ddp doesn't like num_workers>0 or pin_memory=True
-        if config.datamodule.get("num_workers"):
-            config.datamodule.num_workers = 0
         if config.datamodule.get("pin_memory"):
             config.datamodule.pin_memory = False
 
