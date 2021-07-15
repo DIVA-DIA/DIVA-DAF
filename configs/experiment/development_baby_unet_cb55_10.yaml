@@ -23,6 +23,7 @@ trainer:
     min_epochs: 1
     max_epochs: 50
     weights_summary: full
+    precision: 16
 
 task:
    _target_: src.models.semantic_segmentation.semantic_segmentation.SemanticSegmentation
