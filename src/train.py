@@ -40,35 +40,11 @@ def train(config: DictConfig) -> Optional[float]:
 
     # Init Lightning model backend
     log.info(f"Instantiating backbone model <{config.model.backbone._target_}>")
-    # Check if we load weights from checkpoint
-    if "path_to_weights" in config.model.backbone:
-        log.info(f"Loading backbone weights from <{config.model.backbone.path_to_weights}>")
-        path_to_weights = config.model.backbone.path_to_weights
-        del config.model.backbone.path_to_weights
-        backbone: LightningModule = hydra.utils.instantiate(config.model.backbone)
-        backbone.load_state_dict(torch.load(path_to_weights))
-    else:
-        if config.test and not config.train:
-            log.warn("You are just testing without a trained backbone model! "
-                     "Use 'path_to_weights' in your model to load a trained model")
-        backbone: LightningModule = hydra.utils.instantiate(config.model.backbone)
+    backbone = _load_model_part(config=config, part_name='backbone')
 
     # Init Lightning model header
     log.info(f"Instantiating header model <{config.model.header._target_}>")
-    # Check if we load weights from checkpoint
-    header: LightningModule = hydra.utils.instantiate(config.model.header)
-    if "path_to_weights" in config.model.header:
-        log.info(f"Loading header weights from <{config.model.header.path_to_weights}>")
-        header.load_state_dict(torch.load(config.model.header.path_to_weights))
-        path_to_weights = config.model.header.path_to_weights
-        del config.model.header.path_to_weights
-        header: LightningModule = hydra.utils.instantiate(config.model.header)
-        header.load_state_dict(torch.load(path_to_weights))
-    else:
-        if config.test and not config.train:
-            log.warn("You are just testing without a trained header model! "
-                     "Use 'path_to_weights' in your model to load a trained model")
-        header: LightningModule = hydra.utils.instantiate(config.model.header)
+    header: LightningModule = _load_model_part(config=config, part_name='header')
 
     # container model
     model: LightningModule = BackboneHeaderModel(backbone=backbone, header=header)
@@ -152,3 +128,25 @@ def train(config: DictConfig) -> Optional[float]:
     optimized_metric = config.get("optimized_metric")
     if optimized_metric:
         return trainer.callback_metrics[optimized_metric]
+
+
+def _load_model_part(config: DictConfig, part_name: str):
+    """
+    Checks if a given model part (backbone or header) has a path to a pretrained model and loads this model.
+    If there is no pretrained model the model will be initialised randomly.
+
+    :return
+        LightningModule: The loaded network
+    """
+    if "path_to_weights" in config.model.get(part_name):
+        log.info(f"Loading {part_name} weights from <{config.model.get(part_name).path_to_weights}>")
+        path_to_weights = config.model.get(part_name).path_to_weights
+        del config.model.get(part_name).path_to_weights
+        part: LightningModule = hydra.utils.instantiate(config.model.get(part_name))
+        part.load_state_dict(torch.load(path_to_weights))
+    else:
+        if config.test and not config.train:
+            log.warn(f"You are just testing without a trained {part_name} model! "
+                     "Use 'path_to_weights' in your model to load a trained model")
+        part: LightningModule = hydra.utils.instantiate(config.model.get(part_name))
+    return part
