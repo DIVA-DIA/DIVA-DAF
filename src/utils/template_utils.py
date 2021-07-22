@@ -86,6 +86,8 @@ def print_config(
         "callbacks",
         "logger",
         "seed",
+        "train",
+        "test"
     ),
     resolve: bool = True,
 ) -> None:
