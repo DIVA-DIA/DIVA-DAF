@@ -10,7 +10,7 @@ from pytorch_lightning import LightningModule, LightningDataModule, Callback, Tr
 from pytorch_lightning import seed_everything
 from pytorch_lightning.loggers import LightningLoggerBase
 
-from models.encoder_header_model import BackboneHeaderModel
+from src.models.backbone_header_model import BackboneHeaderModel
 from src.utils import template_utils
 
 log = template_utils.get_logger(__name__)
