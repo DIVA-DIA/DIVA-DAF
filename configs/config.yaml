@@ -3,6 +3,7 @@
 # specify here default training configuration
 defaults:
     - trainer: default_trainer.yaml
+    - plugins: default.yaml
     - task: semantic_segmentation_task.yaml
     - model/backbone: unet_model.yaml
     - model/header: identity.yaml

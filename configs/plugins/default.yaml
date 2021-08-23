@@ -1,0 +1,4 @@
+# plugins for the trainer
+
+defaults:
+    - ddp_plugin.yaml
