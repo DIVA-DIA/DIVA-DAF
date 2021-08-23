@@ -1,2 +1,0 @@
-_target_: pl_bolts.models.vision.UNet
-num_classes: 8

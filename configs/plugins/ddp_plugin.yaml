@@ -1,0 +1,4 @@
+ddp_plugin:
+    _target_: pytorch_lightning.plugins.DDPPlugin
+
+    find_unused_parameters: False
