@@ -1,15 +1,16 @@
+import os
+import random
 from typing import List, Optional
 
-import os
 import hydra
-import torch
-import random
 import numpy as np
+import torch
 from omegaconf import DictConfig
 from pytorch_lightning import LightningModule, LightningDataModule, Callback, Trainer
 from pytorch_lightning import seed_everything
 from pytorch_lightning.loggers import LightningLoggerBase
 
+from src.models.backbone_header_model import BackboneHeaderModel
 from src.utils import template_utils
 
 log = template_utils.get_logger(__name__)
@@ -37,9 +38,16 @@ def train(config: DictConfig) -> Optional[float]:
     log.info(f"Instantiating datamodule <{config.datamodule._target_}>")
     datamodule: LightningDataModule = hydra.utils.instantiate(config.datamodule)
 
-    # Init Lightning model
-    log.info(f"Instantiating model <{config.model._target_}>")
-    model: LightningModule = hydra.utils.instantiate(config.model)
+    # Init Lightning model backend
+    log.info(f"Instantiating backbone model <{config.model.backbone._target_}>")
+    backbone = _load_model_part(config=config, part_name='backbone')
+
+    # Init Lightning model header
+    log.info(f"Instantiating header model <{config.model.header._target_}>")
+    header: LightningModule = _load_model_part(config=config, part_name='header')
+
+    # container model
+    model: LightningModule = BackboneHeaderModel(backbone=backbone, header=header)
 
     # Init optimizer
     log.info(f"Instantiating optimizer <{config.optimizer._target_}>")
@@ -66,11 +74,12 @@ def train(config: DictConfig) -> Optional[float]:
             if "_target_" in lg_conf:
                 log.info(f"Instantiating logger <{lg_conf._target_}>")
                 task_name = config.task._target_.split('.')[-1]
-                model_name = config.model._target_.split('.')[-1]
+                backbone_name = config.model.backbone._target_.split('.')[-1]
+                header_name = config.model.header._target_.split('.')[-1]
                 datamodule_name = config.datamodule._target_.split('.')[-1]
                 post_fix_path = os.getcwd().split('/')[-2:]
                 logger.append(hydra.utils.instantiate(lg_conf, name='_'.join(
-                    [str(lg_conf.name), task_name, model_name, datamodule_name, '_'.join(post_fix_path)])))
+                    [str(lg_conf.name), task_name, backbone_name, header_name, datamodule_name, '_'.join(post_fix_path)])))
 
     # Init Lightning trainer
     log.info(f"Instantiating trainer <{config.trainer._target_}>")
@@ -119,3 +128,25 @@ def train(config: DictConfig) -> Optional[float]:
     optimized_metric = config.get("optimized_metric")
     if optimized_metric:
         return trainer.callback_metrics[optimized_metric]
+
+
+def _load_model_part(config: DictConfig, part_name: str):
+    """
+    Checks if a given model part (backbone or header) has a path to a pretrained model and loads this model.
+    If there is no pretrained model the model will be initialised randomly.
+
+    :return
+        LightningModule: The loaded network
+    """
+    if "path_to_weights" in config.model.get(part_name):
+        log.info(f"Loading {part_name} weights from <{config.model.get(part_name).path_to_weights}>")
+        path_to_weights = config.model.get(part_name).path_to_weights
+        del config.model.get(part_name).path_to_weights
+        part: LightningModule = hydra.utils.instantiate(config.model.get(part_name))
+        part.load_state_dict(torch.load(path_to_weights))
+    else:
+        if config.test and not config.train:
+            log.warn(f"You are just testing without a trained {part_name} model! "
+                     "Use 'path_to_weights' in your model to load a trained model")
+        part: LightningModule = hydra.utils.instantiate(config.model.get(part_name))
+    return part
