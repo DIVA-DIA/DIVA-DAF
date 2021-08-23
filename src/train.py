@@ -6,11 +6,11 @@ import hydra
 import numpy as np
 import torch
 from omegaconf import DictConfig
-from pytorch_lightning import LightningModule, LightningDataModule, Callback, Trainer
+from pytorch_lightning import LightningModule, LightningDataModule, Callback, Trainer, plugins
 from pytorch_lightning import seed_everything
 from pytorch_lightning.loggers import LightningLoggerBase
 
-from models.encoder_header_model import BackboneHeaderModel
+from src.models.backbone_header_model import BackboneHeaderModel
 from src.utils import template_utils
 
 log = template_utils.get_logger(__name__)
@@ -81,10 +81,18 @@ def train(config: DictConfig) -> Optional[float]:
                 logger.append(hydra.utils.instantiate(lg_conf, name='_'.join(
                     [str(lg_conf.name), task_name, backbone_name, header_name, datamodule_name, '_'.join(post_fix_path)])))
 
+    # Init Trainer Plugins
+    plugin_list: List[plugins.Plugin] = []
+    if "plugins" in config:
+        for _, pl_config in config.plugins.items():
+            if "_target_" in pl_config:
+                log.info(f"Instantiating plugin <{pl_config._target_}>")
+                plugin_list.append(hydra.utils.instantiate(pl_config))
+
     # Init Lightning trainer
     log.info(f"Instantiating trainer <{config.trainer._target_}>")
     trainer: Trainer = hydra.utils.instantiate(
-        config.trainer, callbacks=callbacks, logger=logger, _convert_="partial"
+        config.trainer, plugins=plugin_list, callbacks=callbacks, logger=logger, _convert_="partial"
     )
 
     # Send some parameters from config to all lightning loggers
