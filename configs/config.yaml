@@ -5,8 +5,8 @@ defaults:
     - trainer: null
     - plugins: default.yaml
     - task: null
-    - model/backbone: unet_model.yaml
-    - model/header: identity.yaml
+    - model/backbone: null
+    - model/header: null
     - optimizer: adam.yaml
     - datamodule: cb55_cropped_datamodule.yaml
     - callbacks: default_callbacks.yaml  # set this to null if you don't want to use callbacks
