@@ -4,7 +4,8 @@
 defaults:
     - trainer: default_trainer.yaml
     - task: semantic_segmentation_task.yaml
-    - model: unet_model.yaml
+    - model/backbone: unet_model.yaml
+    - model/header: identity.yaml
     - optimizer: adam.yaml
     - datamodule: cb55_cropped_datamodule.yaml
     - callbacks: default_callbacks.yaml  # set this to null if you don't want to use callbacks
@@ -22,6 +23,12 @@ defaults:
 
 train: True
 test: True
+
+checkpoint_folder_name: '{epoch}/'
+
+# seed for all the random generators (needs to be sett when training with ddp!)
+seed: 42
+
 
 # path to original working directory
 # hydra hijacks working directory by changing it to the current log directory,
