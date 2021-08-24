@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import pytorch_lightning as pl
 import seaborn as sn
+import torch.optim
 import wandb
 from PIL import Image
 from src.datamodules.hisDBDataModule.DIVAHisDBDataModule import DIVAHisDBDataModuleCropped
@@ -15,18 +16,17 @@ from matplotlib.patches import Rectangle
 from pl_bolts.models.vision import UNet
 from pytorch_lightning import seed_everything
 from torch.nn import Module, functional as F
-from torch.optim.adam import Adam
 
-from src.models.semantic_segmentation.utils.accuracy import accuracy_segmentation
-from src.models.semantic_segmentation.utils.output_tools import save_output_page_image, merge_patches, _get_argmax
+from src.tasks.semantic_segmentation.utils.accuracy import accuracy_segmentation
+from src.tasks.semantic_segmentation.utils.output_tools import save_output_page_image, merge_patches, _get_argmax
 
 
 class SemanticSegmentation(pl.LightningModule):
 
     def __init__(self,
                  # datamodule: pl.LightningDataModule,
-                 model: Module,
-                 output_path: str = './output', create_confusion_matrix=False,
+                 model: Module, optimizer: torch.optim.Optimizer,
+                 output_path: str = 'test_images', create_confusion_matrix=False,
                  calc_his_miou_train_val=False, calc_his_miou_test=False):
         """
         pixelvise semantic segmentation. The output of the network during test is a DIVAHisDB encoded image
@@ -103,7 +103,7 @@ class SemanticSegmentation(pl.LightningModule):
             self.train_cm(y_hat_encoded, target)
 
         # Metric Logging
-        self.log('train-loss', loss, on_epoch=True)
+        self.log('train/loss', loss, on_epoch=True, sync_dist=True)
         if self.calc_his_miou_train_val:
             _, _, his_miou, _ = accuracy_segmentation(label_trues=target,
                                                       label_preds=y_hat_encoded,
@@ -111,7 +111,7 @@ class SemanticSegmentation(pl.LightningModule):
                                                       n_class=len(self.trainer.datamodule.class_encodings),
                                                       mask=mask,
                                                       calc_mean_iu=True)
-            self.log('train-hisdb-iou', his_miou, on_epoch=True)
+            self.log('train/iou', his_miou, on_epoch=True)
 
         return return_dict
 
@@ -128,17 +128,19 @@ class SemanticSegmentation(pl.LightningModule):
         return_dict = {}
         img, target, mask = batch
         y_hat = self.model(img)
+        return_dict['targets'] = target
         loss = F.cross_entropy(y_hat, target)
         return_dict['loss'] = loss
 
         # takes from the prediction array the highest value like in the gt
         y_hat_encoded = _get_argmax(y_hat)
+        return_dict['preds'] = y_hat_encoded
 
         if self.create_confusion_matrix:
             self.val_cm(y_hat_encoded, target)
 
         # Metric Logging
-        self.log('val-loss', loss, on_epoch=True)
+        self.log('val/loss', loss, on_epoch=True, sync_dist=True)
         if self.calc_his_miou_train_val:
             _, _, his_miou, _ = accuracy_segmentation(label_trues=target,
                                                       label_preds=y_hat_encoded,
@@ -146,7 +148,7 @@ class SemanticSegmentation(pl.LightningModule):
                                                       n_class=len(self.trainer.datamodule.class_encodings),
                                                       mask=mask,
                                                       calc_mean_iu=True)
-            self.log('val-hisdb-iou', his_miou, on_epoch=True)
+            self.log('val/iou', his_miou, on_epoch=True)
 
         return return_dict
 
@@ -175,14 +177,14 @@ class SemanticSegmentation(pl.LightningModule):
             self.test_cm(y_hat_encoded, target)
 
         # Metric Logging
-        self.log('test-loss', loss, on_epoch=True, on_step=True)
+        self.log('test/loss', loss, on_epoch=True, on_step=True)
         if self.calc_his_miou_test:
             _, _, his_miou, _ = accuracy_segmentation(label_trues=target,
                                                       label_preds=y_hat_encoded,
                                                       n_class=self.num_classes,
                                                       mask=mask,
                                                       calc_mean_iu=True)
-            self.log('test-hisdb-iou', his_miou, on_epoch=True, on_step=True)
+            self.log('test/iou', his_miou, on_epoch=True, on_step=True)
 
         if not hasattr(self.trainer.datamodule, 'get_img_name_coordinates'):
             raise NotImplementedError('Datamodule does not provide detailed information of the crop')
@@ -248,7 +250,7 @@ class SemanticSegmentation(pl.LightningModule):
         #         print(f'WARNING: Test image {img_name} was not written! It still contains NaN values.')
 
     def configure_optimizers(self):
-        return Adam(self.model.parameters())
+        return self.hparams.optimizer
 
     def _create_and_save_conf_mat(self, cm, status: str = 'train'):
         conf_mat_name = f'{status}_CM_epoch_{self.current_epoch}'
@@ -320,7 +322,7 @@ if __name__ == '__main__':
                                           )
 
     # checkpoint requirements
-    checkpoint_callback = pl.callbacks.ModelCheckpoint(monitor='val-loss', dirpath=segmentation.output_path)
+    checkpoint_callback = pl.callbacks.ModelCheckpoint(monitor='val/loss', dirpath=segmentation.output_path)
 
     trainer = pl.Trainer(gpus=-1,
                          accelerator='ddp',

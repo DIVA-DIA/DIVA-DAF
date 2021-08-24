@@ -1,0 +1,6 @@
+_target_: src.tasks.semantic_segmentation.semantic_segmentation.SemanticSegmentation
+
+output_path: 'test_images/'
+create_confusion_matrix: False
+calc_his_miou_train_val: False
+calc_his_miou_test: False

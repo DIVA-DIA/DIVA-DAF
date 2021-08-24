@@ -144,4 +144,3 @@ dmypy.json
 logs/
 wandb/
 .env
-.autoenv

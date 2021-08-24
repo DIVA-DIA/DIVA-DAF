@@ -9,7 +9,7 @@
 
 
 # activate conda environment
-conda activate myenv
+conda activate unsupervised_learning
 
 # initialize hydra tab completion for bash
-eval "$(python run.py -sc install=bash)"
+eval "$(python run.py -sc install=zsh)"

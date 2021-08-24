@@ -64,11 +64,14 @@ def extras(config: DictConfig) -> None:
     # force multi-gpu friendly configuration if <config.trainer.accelerator=ddp>
     if config.trainer.get("accelerator") in ["ddp", "ddp_spawn", "dp", "ddp2"]:
         log.info("Forcing ddp friendly configuration! <config.trainer.accelerator=ddp>")
-        # ddp doesn't like num_workers>0 or pin_memory=True
-        if config.datamodule.get("num_workers"):
-            config.datamodule.num_workers = 0
         if config.datamodule.get("pin_memory"):
             config.datamodule.pin_memory = False
+        if "plugins" not in config:
+            config['plugins'] = DictConfig(
+                {'ddp_plugin': {'_target_': 'pytorch_lightning.plugins.DDPPlugin', 'find_unused_parameters': False}})
+        if "ddp_plugin" not in config.plugins:
+            config["plugins"].append(
+                {'ddp_plugin': {'_target_': 'pytorch_lightning.plugins.DDPPlugin', 'find_unused_parameters': False}})
 
     # disable adding new keys to config
     OmegaConf.set_struct(config, True)
@@ -79,11 +82,15 @@ def print_config(
     config: DictConfig,
     fields: Sequence[str] = (
         "trainer",
+        "task",
         "model",
+        "optimizer",
         "datamodule",
         "callbacks",
         "logger",
         "seed",
+        "train",
+        "test"
     ),
     resolve: bool = True,
 ) -> None:
@@ -118,12 +125,13 @@ def empty(*args, **kwargs):
 
 @rank_zero_only
 def log_hyperparameters(
-    config: DictConfig,
-    model: pl.LightningModule,
-    datamodule: pl.LightningDataModule,
-    trainer: pl.Trainer,
-    callbacks: List[pl.Callback],
-    logger: List[pl.loggers.LightningLoggerBase],
+        config: DictConfig,
+        task: pl.LightningModule,
+        model: pl.LightningModule,
+        datamodule: pl.LightningDataModule,
+        trainer: pl.Trainer,
+        callbacks: List[pl.Callback],
+        logger: List[pl.loggers.LightningLoggerBase],
 ) -> None:
     """This method controls which parameters from Hydra config are saved by Lightning loggers.
 
@@ -136,6 +144,7 @@ def log_hyperparameters(
 
     # choose which parts of hydra config will be saved to loggers
     hparams["trainer"] = config["trainer"]
+    hparams["task"] = config["task"]
     hparams["model"] = config["model"]
     hparams["datamodule"] = config["datamodule"]
     if "optimizer" in config:
@@ -171,12 +180,13 @@ def log_hyperparameters(
 
 
 def finish(
-    config: DictConfig,
-    model: pl.LightningModule,
-    datamodule: pl.LightningDataModule,
-    trainer: pl.Trainer,
-    callbacks: List[pl.Callback],
-    logger: List[pl.loggers.LightningLoggerBase],
+        config: DictConfig,
+        task: pl.LightningModule,
+        model: pl.LightningModule,
+        datamodule: pl.LightningDataModule,
+        trainer: pl.Trainer,
+        callbacks: List[pl.Callback],
+        logger: List[pl.loggers.LightningLoggerBase],
 ) -> None:
     """Makes sure everything closed properly."""
 

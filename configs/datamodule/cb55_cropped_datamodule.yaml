@@ -1,0 +1,6 @@
+_target_: src.datamodules.hisDBDataModule.DIVAHisDBDataModule.DIVAHisDBDataModuleCropped
+
+data_dir: /data/usl_experiments/semantic_segmentation/datasets_cropped/CB55
+crop_size: 256
+num_workers: 4
+batch_size: 16
