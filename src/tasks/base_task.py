@@ -2,10 +2,11 @@ from abc import ABCMeta
 from pathlib import Path
 from typing import Optional, Union, Type, Mapping, Sequence, Callable, Dict, Any, Tuple, List
 
+import torch
 import torchmetrics
 from pytorch_lightning import LightningModule
+from pytorch_lightning.utilities.exceptions import MisconfigurationException
 from torch import nn
-import torch
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import _LRScheduler
 
@@ -26,16 +27,16 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
     required_extras: Optional[str] = None
 
     def __init__(
-        self,
-        model: Optional[nn.Module] = None,
-        loss_fn: Optional[Union[Callable, Mapping, Sequence]] = None,
-        optimizer: Union[Type[torch.optim.Optimizer], torch.optim.Optimizer] = torch.optim.Adam,
-        optimizer_kwargs: Optional[Dict[str, Any]] = None,
-        scheduler: Optional[Union[Type[_LRScheduler], str, _LRScheduler]] = None,
-        scheduler_kwargs: Optional[Dict[str, Any]] = None,
-        metrics: Union[torchmetrics.Metric, Mapping, Sequence, None] = None,
-        learning_rate: float = 1e-3,
-        test_output_path: Optional[str, Path] = 'output'
+            self,
+            model: Optional[nn.Module] = None,
+            loss_fn: Optional[Union[Callable, Mapping, Sequence]] = None,
+            optimizer: Union[Type[torch.optim.Optimizer], torch.optim.Optimizer] = torch.optim.Adam,
+            optimizer_kwargs: Optional[Dict[str, Any]] = None,
+            scheduler: Optional[Union[Type[_LRScheduler], str, _LRScheduler]] = None,
+            scheduler_kwargs: Optional[Dict[str, Any]] = None,
+            metrics: Union[torchmetrics.Metric, Mapping, Sequence, None] = None,
+            learning_rate: float = 1e-3,
+            test_output_path: Optional[str, Path] = 'output'
     ):
         super().__init__()
         if model is not None:
@@ -88,24 +89,19 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
 
     def training_step(self, batch: Any, batch_idx: int) -> Any:
         output = self.step(batch, batch_idx)
-        self.log_dict({f"train_{k}": v for k, v in output["logs"].items()}, on_step=True, on_epoch=True, prog_bar=True)
+        self.log_dict({f"train_{k}": v for k, v in output["logs"].items()}, on_step=True, on_epoch=True, prog_bar=True,
+                      sync_dist=True)
         return output["loss"]
 
     def validation_step(self, batch: Any, batch_idx: int) -> None:
         output = self.step(batch, batch_idx)
-        self.log_dict({f"val_{k}": v for k, v in output["logs"].items()}, on_step=False, on_epoch=True, prog_bar=True)
+        self.log_dict({f"val_{k}": v for k, v in output["logs"].items()}, on_step=False, on_epoch=True, prog_bar=True,
+                      sync_dist=True)
 
     def test_step(self, batch: Any, batch_idx: int) -> None:
         output = self.step(batch, batch_idx)
-        self.log_dict({f"test_{k}": v for k, v in output["logs"].items()}, on_step=False, on_epoch=True, prog_bar=True)
-
-    def predict_step(self, batch: Any, batch_idx: int, dataloader_idx: int = 0) -> Any:
-        if isinstance(batch, tuple):
-            batch = batch[0]
-        elif isinstance(batch, list):
-            # Todo: Understand why stack is needed
-            batch = torch.stack(batch)
-        return self(batch)
+        self.log_dict({f"test_{k}": v for k, v in output["logs"].items()}, on_step=False, on_epoch=True, prog_bar=True,
+                      sync_dist=True)
 
     def configure_optimizers(self) -> Union[Optimizer, Tuple[List[Optimizer], List[_LRScheduler]]]:
         optimizer = self.optimizer
@@ -115,3 +111,22 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         if self.scheduler:
             return [optimizer], [self._instantiate_scheduler(optimizer)]
         return optimizer
+
+    def _instantiate_scheduler(self, optimizer: Optimizer) -> _LRScheduler:
+        scheduler = self.scheduler
+        if isinstance(scheduler, _LRScheduler):
+            return scheduler
+        if isinstance(scheduler, str):
+            scheduler_fn = self.schedulers.get(self.scheduler)
+            num_training_steps: int = self.get_num_training_steps()
+            num_warmup_steps: int = self._compute_warmup(
+                num_training_steps=num_training_steps,
+                num_warmup_steps=self.scheduler_kwargs.get("num_warmup_steps"),
+            )
+            return scheduler_fn(optimizer, num_warmup_steps, num_training_steps)
+        elif issubclass(scheduler, _LRScheduler):
+            return scheduler(optimizer, **self.scheduler_kwargs)
+        raise MisconfigurationException(
+            "scheduler can be a scheduler, a scheduler type with `scheduler_kwargs` "
+            f"or a built-in scheduler in {self.available_schedulers()}"
+        )
