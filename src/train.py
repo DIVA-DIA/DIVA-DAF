@@ -51,8 +51,6 @@ def train(config: DictConfig) -> Optional[float]:
 
     # Init optimizer
     log.info(f"Instantiating optimizer <{config.optimizer._target_}>")
-    if config.optimizer._target_ == 'torch.optim.Adam':
-        config.optimizer.betas = tuple([float(i) for i in config.optimizer.betas.split(',')])
     optimizer: torch.optim.Optimizer = hydra.utils.instantiate(config.optimizer, params=model.parameters(recurse=True))
 
     # Init the task as lightning module
