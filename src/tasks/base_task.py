@@ -116,14 +116,6 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         scheduler = self.scheduler
         if isinstance(scheduler, _LRScheduler):
             return scheduler
-        if isinstance(scheduler, str):
-            scheduler_fn = self.schedulers.get(self.scheduler)
-            num_training_steps: int = self.get_num_training_steps()
-            num_warmup_steps: int = self._compute_warmup(
-                num_training_steps=num_training_steps,
-                num_warmup_steps=self.scheduler_kwargs.get("num_warmup_steps"),
-            )
-            return scheduler_fn(optimizer, num_warmup_steps, num_training_steps)
         elif issubclass(scheduler, _LRScheduler):
             return scheduler(optimizer, **self.scheduler_kwargs)
         raise MisconfigurationException(
