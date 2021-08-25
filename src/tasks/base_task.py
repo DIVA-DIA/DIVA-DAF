@@ -1,4 +1,5 @@
 from abc import ABCMeta
+from pathlib import Path
 from typing import Optional, Union, Type, Mapping, Sequence, Callable, Dict, Any, Tuple, List
 
 import torchmetrics
@@ -12,13 +13,14 @@ from tasks.utils.task_utils import get_callable_dict
 
 
 class AbstractTask(LightningModule, metaclass=ABCMeta):
-    """A general Task.
+    """A general abstract Task.
     Args:
         model: Composed model to use for the task.
         loss_fn: Loss function for training
         optimizer: Optimizer to use for training, defaults to :class:`torch.optim.Adam`.
         metrics: Metrics to compute for training and evaluation.
         learning_rate: Learning rate to use for training, defaults to ``5e-5``.
+        test_output_path: Path relative to the normal output folder where to save the test output
     """
 
     required_extras: Optional[str] = None
@@ -33,6 +35,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         scheduler_kwargs: Optional[Dict[str, Any]] = None,
         metrics: Union[torchmetrics.Metric, Mapping, Sequence, None] = None,
         learning_rate: float = 1e-3,
+        test_output_path: Optional[str, Path] = 'output'
     ):
         super().__init__()
         if model is not None:
@@ -45,6 +48,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
 
         self.metrics = nn.ModuleDict({} if metrics is None else get_callable_dict(metrics))
         self.learning_rate = learning_rate
+        self.test_output_path = test_output_path
         self.save_hyperparameters()
 
     def step(self, batch: Any, batch_idx: int) -> Any:
