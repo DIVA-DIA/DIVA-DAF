@@ -14,7 +14,12 @@ from tasks.utils.task_utils import get_callable_dict
 
 
 class AbstractTask(LightningModule, metaclass=ABCMeta):
-    """A general abstract Task.
+    """
+    Inspired by
+    https://github.com/PyTorchLightning/lightning-flash/blob/2ec52e633bb3679f50dd7e30526885a4547e1851/flash/core/model.py
+
+    A general abstract Task.
+
     Args:
         model: Composed model to use for the task.
         loss_fn: Loss function for training
