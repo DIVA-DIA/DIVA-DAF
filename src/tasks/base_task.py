@@ -25,7 +25,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         loss_fn: Loss function for training
         optimizer: Optimizer to use for training, defaults to :class:`torch.optim.Adam`.
         metrics: Metrics to compute for training and evaluation.
-        learning_rate: Learning rate to use for training, defaults to ``5e-5``.
+        lr: Learning rate to use for training, defaults to ``5e-5``.
         test_output_path: Path relative to the normal output folder where to save the test output
     """
 
@@ -40,7 +40,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             scheduler: Optional[Union[Type[_LRScheduler], str, _LRScheduler]] = None,
             scheduler_kwargs: Optional[Dict[str, Any]] = None,
             metrics: Union[torchmetrics.Metric, Mapping, Sequence, None] = None,
-            learning_rate: float = 1e-3,
+            lr: float = 1e-3,
             test_output_path: Optional[str, Path] = 'output'
     ):
         super().__init__()
@@ -53,7 +53,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         self.scheduler_kwargs = scheduler_kwargs or {}
 
         self.metrics = nn.ModuleDict({} if metrics is None else get_callable_dict(metrics))
-        self.learning_rate = learning_rate
+        self.lr = lr
         self.test_output_path = test_output_path
         self.save_hyperparameters()
 
@@ -97,7 +97,17 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         return x
 
     def forward(self, x: Any) -> Any:
-        return self.model(x)
+        # some frameworks like torchvision returns dict
+        x = self.model(x)
+
+        # this looks like a bug in pycharm
+        if torch.jit.isinstance(x, Dict[str, torch.Tensor]):
+            out = x['out']
+        elif torch.is_tensor(x):
+            out = x
+        else:
+            raise NotImplementedError(f"Unsupported network output type: {type(x)}")
+        return out
 
     def training_step(self, batch: Any, batch_idx: int, **kwargs) -> Any:
         output = self.step(batch, batch_idx)
@@ -118,7 +128,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
     def configure_optimizers(self) -> Union[Optimizer, Tuple[List[Optimizer], List[_LRScheduler]]]:
         optimizer = self.optimizer
         if not isinstance(self.optimizer, Optimizer):
-            self.optimizer_kwargs["lr"] = self.learning_rate
+            self.optimizer_kwargs["lr"] = self.lr
             optimizer = optimizer(filter(lambda p: p.requires_grad, self.parameters()), **self.optimizer_kwargs)
         if self.scheduler:
             return [optimizer], [self._instantiate_scheduler(optimizer)]
