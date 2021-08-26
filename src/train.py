@@ -5,7 +5,7 @@ from typing import List, Optional
 import hydra
 import numpy as np
 import torch
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import LightningModule, LightningDataModule, Callback, Trainer, plugins
 from pytorch_lightning import seed_everything
 from pytorch_lightning.loggers import LightningLoggerBase
@@ -51,8 +51,6 @@ def train(config: DictConfig) -> Optional[float]:
 
     # Init optimizer
     log.info(f"Instantiating optimizer <{config.optimizer._target_}>")
-    if config.optimizer._target_ == 'torch.optim.Adam':
-        config.optimizer.betas = tuple([float(i) for i in config.optimizer.betas.split(',')])
     optimizer: torch.optim.Optimizer = hydra.utils.instantiate(config.optimizer, params=model.parameters(recurse=True))
 
     # Init the task as lightning module
@@ -106,6 +104,12 @@ def train(config: DictConfig) -> Optional[float]:
         callbacks=callbacks,
         logger=logger,
     )
+
+    if config.save_config:
+        log.info("Saving the current config into the output directory!")
+        # cwd is already the output directory so we dont need a full path
+        with open('config.yaml', mode='w') as fp:
+            OmegaConf.save(config=config, f=fp)
 
     if config.train:
         # Train the model
