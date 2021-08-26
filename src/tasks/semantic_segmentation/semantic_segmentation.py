@@ -16,6 +16,7 @@ from matplotlib.patches import Rectangle
 from pl_bolts.models.vision import UNet
 from pytorch_lightning import seed_everything
 from torch.nn import Module, functional as F
+from torchmetrics import ConfusionMatrix
 
 from src.tasks.semantic_segmentation.utils.accuracy import accuracy_segmentation
 from src.tasks.semantic_segmentation.utils.output_tools import save_output_page_image, merge_patches, _get_argmax
@@ -75,9 +76,9 @@ class SemanticSegmentation(pl.LightningModule):
         # metrics
         if self.create_confusion_matrix:
             self.output_path_analysis.mkdir(parents=True, exist_ok=True)
-            self.train_cm = pl.metrics.ConfusionMatrix(num_classes=self.num_classes, normalize='true')
-            self.val_cm = pl.metrics.ConfusionMatrix(num_classes=self.num_classes, normalize='true')
-            self.test_cm = pl.metrics.ConfusionMatrix(num_classes=self.num_classes, normalize='true')
+            self.train_cm = ConfusionMatrix(num_classes=self.num_classes, normalize='true')
+            self.val_cm = ConfusionMatrix(num_classes=self.num_classes, normalize='true')
+            self.test_cm = ConfusionMatrix(num_classes=self.num_classes, normalize='true')
 
         print("Setup done!")
 
