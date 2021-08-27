@@ -57,7 +57,11 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         self.test_output_path = test_output_path
         self.save_hyperparameters()
 
-    def step(self, batch: Any, batch_idx: int, metric_kwargs: Optional[Dict[str, Dict[str, Any]]] = None) -> Any:
+    def step(self,
+             batch: Any,
+             batch_idx: int,
+             metric_kwargs: Optional[Dict[str, Dict[str, Any]]] = None,
+             current_phase: Optional[str] = 'train') -> Any:
         """
         The training/validation/test step. Override for custom behavior.
         Args:
@@ -66,21 +70,30 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             metric_kwargs: a dictionary with a entry with the additional arguments (pred and y always provided).
                 e.g. you have two metrics (A, B) and B takes an additional arguments x and y so the dictionary would
                 look like this: {'B': {'x': 'value', 'y': 'value'}}
+            current_phase: in which phase of the process are we (train, val, test)
 
         """
+        if metric_kwargs is None:
+            metric_kwargs = {}
         x, y = batch
         y_hat = self(x)
         output = {"y_hat": y_hat}
         y_hat = self.to_loss_format(output["y_hat"])
-        losses = {name: l_fn(y_hat, y) for name, l_fn in self.loss_fn.items()}
+        losses = {current_phase + '/' + name: l_fn(y_hat, y) for name, l_fn in self.loss_fn.items()}
         logs = {}
         y_hat = self.to_metrics_format(output["y_hat"])
         for name, metric in self.metrics.items():
             if isinstance(metric, torchmetrics.metric.Metric):
-                metric(y_hat, y, **metric_kwargs[name])
-                logs[name] = metric  # log the metric itself if it is of type Metric
+                if name in metric_kwargs:
+                    metric(y_hat, y, **metric_kwargs[name])
+                else:
+                    metric(y_hat, y)
+                logs[current_phase + '/' + name] = metric  # log the metric itself if it is of type Metric
             else:
-                logs[name] = metric(y_hat, y, **metric_kwargs[name])
+                if name in metric_kwargs:
+                    logs[current_phase + '/' + name] = metric(y_hat, y, **metric_kwargs[name])
+                else:
+                    logs[current_phase + '/' + name] = metric(y_hat, y)
         logs.update(losses)
         if len(losses.values()) > 1:
             logs["total_loss"] = sum(losses.values())
@@ -110,18 +123,18 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         return out
 
     def training_step(self, batch: Any, batch_idx: int, **kwargs) -> Any:
-        output = self.step(batch, batch_idx)
+        output = self.step(batch, batch_idx, None, 'training')
         self.log_dict({f"train_{k}": v for k, v in output["logs"].items()}, on_step=True, on_epoch=True, prog_bar=True,
                       sync_dist=True)
         return output["loss"]
 
     def validation_step(self, batch: Any, batch_idx: int, **kwargs) -> None:
-        output = self.step(batch, batch_idx)
+        output = self.step(batch, batch_idx, None, 'val')
         self.log_dict({f"val_{k}": v for k, v in output["logs"].items()}, on_step=False, on_epoch=True, prog_bar=True,
                       sync_dist=True)
 
     def test_step(self, batch: Any, batch_idx: int, **kwargs) -> None:
-        output = self.step(batch, batch_idx)
+        output = self.step(batch, batch_idx, None, 'test')
         self.log_dict({f"test_{k}": v for k, v in output["logs"].items()}, on_step=False, on_epoch=True, prog_bar=True,
                       sync_dist=True)
 
