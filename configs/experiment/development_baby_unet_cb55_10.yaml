@@ -5,7 +5,7 @@
 
 defaults:
     - override /trainer: null  # override trainer to null so it's not loaded from main config defaults...
-    - override /task: semantic_segmentation_task_abstract.yaml
+    - override /task: semantic_segmentation_task.yaml
     - override /model/backbone: baby_unet_model.yaml
     - override /model/header: identity.yaml
     - override /datamodule: null
