@@ -153,8 +153,6 @@ def _load_model_part(config: DictConfig, part_name: str):
     :return
         LightningModule: The loaded network
     """
-    missing_keys = []
-    unexpected_keys = []
 
     strict = True
     if 'strict' in config.model.get(part_name):
@@ -168,14 +166,14 @@ def _load_model_part(config: DictConfig, part_name: str):
         del config.model.get(part_name).path_to_weights
         part: LightningModule = hydra.utils.instantiate(config.model.get(part_name))
         missing_keys, unexpected_keys = part.load_state_dict(torch.load(path_to_weights), strict=strict)
+        if missing_keys:
+            log.warn(f"When loading the model part {part_name} these keys where missed: \n {missing_keys}")
+        if unexpected_keys:
+            log.warn(f"When loading the model part {part_name} these keys where to much: \n {unexpected_keys}")
     else:
         if config.test and not config.train:
             log.warn(f"You are just testing without a trained {part_name} model! "
                      "Use 'path_to_weights' in your model to load a trained model")
         part: LightningModule = hydra.utils.instantiate(config.model.get(part_name))
 
-    if missing_keys is not None:
-        log.warn(f"When loading the model part {part_name} these keys where missed: \n {missing_keys}")
-    if unexpected_keys is not None:
-        log.warn(f"When loading the model part {part_name} these keys where to much: \n {unexpected_keys}")
     return part
