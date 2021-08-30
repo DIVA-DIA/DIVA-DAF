@@ -24,8 +24,8 @@ class SaveModelStateDictAndTaskCheckpoint(ModelCheckpoint):
         self.CHECKPOINT_NAME_LAST = 'task_last'
 
     @rank_zero_only
-    def _del_model(self, filepath: str) -> None:
-        if self._fs.exists(filepath):
+    def _del_model(self, trainer: pl.Trainer, filepath: str) -> None:
+        if trainer.should_rank_save_checkpoint and self._fs.exists(filepath):
             parent_dir = self._fs._parent(filepath)
             # delete all files in directory
             for path in self._fs.ls(parent_dir):
