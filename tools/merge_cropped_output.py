@@ -21,7 +21,7 @@ def merge_cropped_output(data_dir: Path, prediction_path: Path, outdir: Path):
     for img_path, gt_path, img_name, patch_name, (x, y) in img_paths_per_page:
         if img_name not in dataset_img_name_list:
             dataset_img_name_list.append(img_name)
-        dataset_dict[img_name].append([img_path, gt_path, patch_name, x, y])
+        dataset_dict[img_name].append((img_path, gt_path, patch_name, x, y))
 
     dataset_img_name_list = sorted(dataset_img_name_list)
 
@@ -50,8 +50,23 @@ def merge_cropped_output(data_dir: Path, prediction_path: Path, outdir: Path):
             x = int(m.group(1))
             y = int(m.group(2))
             patch = np.load(str(patch_file))
-            patches_list.append((patch, x, y))
+            patches_list.append((patch, x, y, patch_file))
         patches_list = sorted(patches_list, key=lambda v: (v[2], v[1]))
+
+        img_gt_list = dataset_dict[img_name]
+
+        # The number of patches in the prediction should be equal to number of patches in dataset
+        assert len(patches_list) == len(img_gt_list)
+
+        # merge into one list
+        for (patch, x, y, patch_file), (img_path, gt_path, patch_name, x_data, y_data) in zip(patches_list, img_gt_list):
+            assert (x, y) == (x_data, y_data)
+            assert patch_file.name.startswith(patch_name)
+            assert img_path.name.startswith(patch_name)
+            assert gt_path.name.startswith(patch_name)
+
+
+
 
         # Create new canvas
         canvas_width = patches_list[-1][0].shape[1] + patches_list[-1][1]
