@@ -25,12 +25,12 @@ def test_semantic_segmentation(data_dir_cropped):
                                         calc_his_miou_test=True)
 
     # different paths needed later
-    analysis_path = segmentation.output_path / 'analysis'
-    patches_path = segmentation.output_path / 'patches'
+    analysis_path = segmentation.test_output_path / 'analysis'
+    patches_path = segmentation.test_output_path / 'patches'
     test_data_patch = data_dir_cropped / 'test' / 'data'
 
     trainer = pl.Trainer(max_epochs=2, log_every_n_steps=10,
-                         default_root_dir=segmentation.output_path, accelerator='ddp_cpu')
+                         default_root_dir=segmentation.test_output_path, accelerator='ddp_cpu')
 
     assert 1 == trainer.fit(segmentation, datamodule=data_module)
 
