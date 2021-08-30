@@ -10,7 +10,7 @@ from torch import nn
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import _LRScheduler
 
-from tasks.utils.task_utils import get_callable_dict
+from src.tasks.utils.task_utils import get_callable_dict
 
 
 class AbstractTask(LightningModule, metaclass=ABCMeta):

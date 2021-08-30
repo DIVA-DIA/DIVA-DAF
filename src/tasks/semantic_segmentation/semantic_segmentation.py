@@ -6,8 +6,8 @@ import torch.nn as nn
 import torch.optim
 
 from src.tasks.semantic_segmentation.utils.output_tools import _get_argmax
-from tasks.base_task import AbstractTask
-from utils import template_utils
+from src.tasks.base_task import AbstractTask
+from src.utils import template_utils
 
 log = template_utils.get_logger(__name__)
 
