@@ -5,7 +5,7 @@
 
 defaults:
     - override /trainer: null  # override trainer to null so it's not loaded from main config defaults...
-    - override /task: null
+    - override /task: semantic_segmentation_task.yaml
     - override /model/backbone: baby_unet_model.yaml
     - override /model/header: identity.yaml
     - override /datamodule: null
@@ -26,11 +26,6 @@ trainer:
     max_epochs: 3
     weights_summary: full
     precision: 16
-
-task:
-   _target_: src.tasks.semantic_segmentation.semantic_segmentation.SemanticSegmentation
-   calc_his_miou_train_val: False
-   calc_his_miou_test: False
 
 datamodule:
     _target_: src.datamodules.hisDBDataModule.DIVAHisDBDataModule.DIVAHisDBDataModuleCropped
