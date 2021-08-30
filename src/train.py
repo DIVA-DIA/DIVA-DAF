@@ -1,5 +1,6 @@
 import os
 import random
+from pathlib import Path
 from typing import List, Optional
 
 import hydra
@@ -77,7 +78,8 @@ def train(config: DictConfig) -> Optional[float]:
                 datamodule_name = config.datamodule._target_.split('.')[-1]
                 post_fix_path = os.getcwd().split('/')[-2:]
                 logger.append(hydra.utils.instantiate(lg_conf, name='_'.join(
-                    [str(lg_conf.name), task_name, backbone_name, header_name, datamodule_name, '_'.join(post_fix_path)])))
+                    [str(lg_conf.name), task_name, backbone_name, header_name, datamodule_name,
+                     '_'.join(post_fix_path)])))
 
     # Init Trainer Plugins
     plugin_list: List[plugins.Plugin] = []
@@ -133,8 +135,7 @@ def train(config: DictConfig) -> Optional[float]:
         logger=logger,
     )
 
-    # Print path to best checkpoint
-    log.info(f"Best checkpoint path:\n{trainer.checkpoint_callback.best_model_path}")
+    _print_best_paths(conf=config, trainer=trainer)
 
     # Return metric score for Optuna optimization
     optimized_metric = config.get("optimized_metric")
@@ -177,3 +178,30 @@ def _load_model_part(config: DictConfig, part_name: str):
         part: LightningModule = hydra.utils.instantiate(config.model.get(part_name))
 
     return part
+
+
+def _print_best_paths(conf: DictConfig, trainer: Trainer):
+    """
+    Print out the best checkpoint paths for the task, the backbone, and the header.
+
+    Args:
+        conf: the hydra config
+        trainer: the current pl trainer
+    """
+    if not conf.train or 'model_checkpoint' not in conf.callbacks:
+        return
+
+    def _create_print_path(folder_path: Path, config_file_name: str):
+        return folder_path / (Path(config_file_name).name + '.pth')
+
+    # Print path to best checkpoint
+    base_path = Path(trainer.checkpoint_callback.best_model_path).parent
+    log.info(
+        f"Best task checkpoint path:"
+        f"\n{_create_print_path(base_path, conf.callbacks.model_checkpoint.filename)}")
+    log.info(
+        f"Best backbone checkpoint path:"
+        f"\n{_create_print_path(base_path, conf.callbacks.model_checkpoint.backbone_filename)}")
+    log.info(
+        f"Best header checkpoint path:"
+        f"\n{_create_print_path(base_path, conf.callbacks.model_checkpoint.header_filename)}")
