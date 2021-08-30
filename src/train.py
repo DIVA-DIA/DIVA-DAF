@@ -198,7 +198,7 @@ def _print_best_paths(conf: DictConfig, trainer: Trainer):
     base_path = Path(trainer.checkpoint_callback.best_model_path).parent
     log.info(
         f"Best task checkpoint path:"
-        f"\n{_create_print_path(base_path, conf.callbacks.model_checkpoint.filename)}")
+        f"\n{trainer.checkpoint_callback.best_model_path}")
     log.info(
         f"Best backbone checkpoint path:"
         f"\n{_create_print_path(base_path, conf.callbacks.model_checkpoint.backbone_filename)}")
