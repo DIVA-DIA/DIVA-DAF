@@ -121,17 +121,20 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
 
     def training_step(self, batch: Any, batch_idx: int, **kwargs) -> Any:
         output = self.step(batch, batch_idx, **kwargs)
-        self.log_dict({f"train/{k}": v for k, v in output["logs"].items()}, on_epoch=True, sync_dist=True)
+        for key, value in output["logs"].items():
+            self.log(f"train/{key}", value, on_epoch=True, sync_dist=True, rank_zero_only=True)
         return output["loss"]
 
     def validation_step(self, batch: Any, batch_idx: int, **kwargs) -> None:
         output = self.step(batch, batch_idx, **kwargs)
-        self.log_dict({f"val/{k}": v for k, v in output["logs"].items()}, on_epoch=True, sync_dist=True)
+        for key, value in output["logs"].items():
+            self.log(f"val/{key}", value, on_epoch=True, sync_dist=True, rank_zero_only=True)
         return output['pred']
 
     def test_step(self, batch: Any, batch_idx: int, **kwargs) -> None:
         output = self.step(batch, batch_idx, **kwargs)
-        self.log_dict({f"test/{k}": v for k, v in output["logs"].items()}, on_epoch=True, sync_dist=True)
+        for key, value in output["logs"].items():
+            self.log(f"test/{key}", value, on_epoch=True, sync_dist=True, rank_zero_only=True)
         return output['pred']
 
     def configure_optimizers(self) -> Union[Optimizer, Tuple[List[Optimizer], List[_LRScheduler]]]:
