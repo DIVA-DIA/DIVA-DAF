@@ -54,9 +54,14 @@ def train(config: DictConfig) -> Optional[float]:
     log.info(f"Instantiating optimizer <{config.optimizer._target_}>")
     optimizer: torch.optim.Optimizer = hydra.utils.instantiate(config.optimizer, params=model.parameters(recurse=True))
 
+    loss = None
+    if 'loss' in config:
+        log.info(f"Instantiating loss<{config.loss._target_}>")
+        loss: torch.nn._Loss = hydra.utils.instantiate(config.loss)
+
     # Init the task as lightning module
     log.info(f"Instantiating model <{config.task._target_}>")
-    task: LightningModule = hydra.utils.instantiate(config.task, model=model, optimizer=optimizer)
+    task: LightningModule = hydra.utils.instantiate(config.task, model=model, optimizer=optimizer, loss_fn=loss)
 
     # Init Lightning callbacks
     callbacks: List[Callback] = []

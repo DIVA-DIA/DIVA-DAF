@@ -29,8 +29,6 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         test_output_path: Path relative to the normal output folder where to save the test output
     """
 
-    required_extras: Optional[str] = None
-
     def __init__(
             self,
             model: Optional[nn.Module] = None,
