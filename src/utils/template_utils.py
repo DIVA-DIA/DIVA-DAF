@@ -73,6 +73,9 @@ def extras(config: DictConfig) -> None:
             config["plugins"].append(
                 {'ddp_plugin': {'_target_': 'pytorch_lightning.plugins.DDPPlugin', 'find_unused_parameters': False}})
 
+    if config.trainer.get("accelerator") == 'ddp_cpu' and config.trainer.precision == 16:
+        log.warning(f'You are using ddp_cpu without precision=16. This can lead to a crash! Use 64 or 32!')
+
     # disable adding new keys to config
     OmegaConf.set_struct(config, True)
 
