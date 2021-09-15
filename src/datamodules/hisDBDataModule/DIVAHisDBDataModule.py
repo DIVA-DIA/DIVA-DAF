@@ -14,7 +14,8 @@ from src.datamodules.hisDBDataModule.util.transformations.transforms import Twin
 
 
 class DIVAHisDBDataModuleCropped(pl.LightningDataModule):
-    def __init__(self, data_dir: str = None, crop_size: int = 256, num_workers: int = 4, batch_size: int = 8):
+    def __init__(self, data_dir: str = None, crop_size: int = 256, num_workers: int = 4, batch_size: int = 8,
+                 shuffle: bool = True, drop_last_batch: bool = True):
         super().__init__()
 
         analytics = get_analytics(input_path=Path(data_dir),
@@ -38,6 +39,9 @@ class DIVAHisDBDataModuleCropped(pl.LightningDataModule):
         self.num_workers = num_workers
         self.batch_size = batch_size
 
+        self.shuffle = shuffle
+        self.drop_last_batch = drop_last_batch
+
         self.data_dir = validate_path(data_dir)
 
     def setup(self, stage: Optional[str] = None):
@@ -52,18 +56,24 @@ class DIVAHisDBDataModuleCropped(pl.LightningDataModule):
         return DataLoader(self.his_train,
                           batch_size=self.batch_size,
                           num_workers=self.num_workers,
+                          shuffle=self.shuffle,
+                          drop_last=self.drop_last_batch,
                           pin_memory=True)
 
     def val_dataloader(self, *args, **kwargs) -> Union[DataLoader, List[DataLoader]]:
         return DataLoader(self.his_val,
                           batch_size=self.batch_size,
                           num_workers=self.num_workers,
+                          shuffle=self.shuffle,
+                          drop_last=self.drop_last_batch,
                           pin_memory=True)
 
     def test_dataloader(self, *args, **kwargs) -> Union[DataLoader, List[DataLoader]]:
         return DataLoader(self.his_test,
                           batch_size=self.batch_size,
                           num_workers=self.num_workers,
+                          shuffle=False,
+                          drop_last=False,
                           pin_memory=True)
 
     def _create_dataset_parameters(self, dataset_type: str = 'train'):
