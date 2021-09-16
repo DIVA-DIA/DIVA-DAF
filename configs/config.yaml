@@ -5,6 +5,8 @@ defaults:
     - trainer: null
     - plugins: default.yaml
     - task: null
+    - loss: null
+    - metric: null
     - model/backbone: null
     - model/header: null
     - optimizer: adam.yaml
