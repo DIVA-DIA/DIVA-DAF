@@ -67,27 +67,27 @@ class SemanticSegmentation(AbstractTask):
     ########################################### TRAIN ###########################################
     #############################################################################################
     def training_step(self, batch, batch_idx, **kwargs):
-        imgs, targets, masks = batch
-        metric_kwargs = {'HisDBIoU': {'masks': masks}}
-        return super().training_step(batch=(imgs, targets), batch_idx=batch_idx, metric_kwargs=metric_kwargs)
+        input_batch, target_batch, mask_batch = batch
+        metric_kwargs = {'HisDBIoU': {'mask': mask_batch}}
+        return super().training_step(batch=(input_batch, target_batch), batch_idx=batch_idx, metric_kwargs=metric_kwargs)
 
     #############################################################################################
     ############################################ VAL ############################################
     #############################################################################################
 
     def validation_step(self, batch, batch_idx, **kwargs):
-        imgs, targets, masks = batch
-        metric_kwargs = {'HisDBIoU': {'masks': masks}}
-        super().validation_step(batch=(imgs, targets), batch_idx=batch_idx, metric_kwargs=metric_kwargs)
+        input_batch, target_batch, mask_batch = batch
+        metric_kwargs = {'HisDBIoU': {'mask': mask_batch}}
+        super().validation_step(batch=(input_batch, target_batch), batch_idx=batch_idx, metric_kwargs=metric_kwargs)
 
     #############################################################################################
     ########################################### TEST ############################################
     #############################################################################################
 
     def test_step(self, batch, batch_idx, **kwargs):
-        input_batch, targets, masks, input_idx = batch
-        metric_kwargs = {'HisDBIoU': {'masks': masks}}
-        preds = super().test_step(batch=(input_batch, targets), batch_idx=batch_idx, metric_kwargs=metric_kwargs)
+        input_batch, target_batch, mask_batch, input_idx = batch
+        metric_kwargs = {'HisDBIoU': {'mask': mask_batch}}
+        preds = super().test_step(batch=(input_batch, target_batch), batch_idx=batch_idx, metric_kwargs=metric_kwargs)
 
         if not hasattr(self.trainer.datamodule, 'get_img_name_coordinates'):
             raise NotImplementedError('Datamodule does not provide detailed information of the crop')
