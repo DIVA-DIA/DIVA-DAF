@@ -46,14 +46,14 @@ class DIVAHisDBDataModuleCropped(pl.LightningDataModule):
 
     def setup(self, stage: Optional[str] = None):
         if stage == 'fit' or stage is None:
-            self.his_train = CroppedHisDBDataset(**self._create_dataset_parameters('train'))
-            self.his_val = CroppedHisDBDataset(**self._create_dataset_parameters('val'))
+            self.train = CroppedHisDBDataset(**self._create_dataset_parameters('train'))
+            self.val = CroppedHisDBDataset(**self._create_dataset_parameters('val'))
 
         if stage == 'test' or stage is not None:
-            self.his_test = CroppedHisDBDataset(**self._create_dataset_parameters('test'))
+            self.test = CroppedHisDBDataset(**self._create_dataset_parameters('test'))
 
     def train_dataloader(self, *args, **kwargs) -> DataLoader:
-        return DataLoader(self.his_train,
+        return DataLoader(self.train,
                           batch_size=self.batch_size,
                           num_workers=self.num_workers,
                           shuffle=self.shuffle,
@@ -61,7 +61,7 @@ class DIVAHisDBDataModuleCropped(pl.LightningDataModule):
                           pin_memory=True)
 
     def val_dataloader(self, *args, **kwargs) -> Union[DataLoader, List[DataLoader]]:
-        return DataLoader(self.his_val,
+        return DataLoader(self.val,
                           batch_size=self.batch_size,
                           num_workers=self.num_workers,
                           shuffle=self.shuffle,
@@ -69,7 +69,7 @@ class DIVAHisDBDataModuleCropped(pl.LightningDataModule):
                           pin_memory=True)
 
     def test_dataloader(self, *args, **kwargs) -> Union[DataLoader, List[DataLoader]]:
-        return DataLoader(self.his_test,
+        return DataLoader(self.test,
                           batch_size=self.batch_size,
                           num_workers=self.num_workers,
                           shuffle=False,
@@ -92,10 +92,10 @@ class DIVAHisDBDataModuleCropped(pl.LightningDataModule):
         :param index:
         :return:
         """
-        if not hasattr(self, 'his_test'):
+        if not hasattr(self, 'test'):
             raise Exception('This method can just be called during testing')
 
-        return self.his_test.img_paths_per_page[index][2:]
+        return self.test.img_paths_per_page[index][2:]
 
 
 class DIVAHisDBDataModuleCB55(pl.LightningDataModule):

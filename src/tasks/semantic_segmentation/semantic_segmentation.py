@@ -52,25 +52,6 @@ class SemanticSegmentation(AbstractTask):
     def setup(self, stage: str) -> None:
         super().setup(stage)
 
-        if self.trainer.distributed_backend == 'ddp':
-            batch_size = self.trainer.datamodule.batch_size
-            if stage == 'fit':
-                num_samples = self.trainer.datamodule.his_train.num_samples
-                datasplit_name = 'train'
-            elif stage == 'test':
-                num_samples = self.trainer.datamodule.his_test.num_samples
-                datasplit_name = 'test'
-            else:
-                # unknown stage
-                log.warn(f'Unknown stage ({stage}) during setup!')
-                num_samples = -1
-                datasplit_name = None
-
-            if num_samples % self.trainer.datamodule.batch_size != 0:
-                log.warn(
-                    f'Number of sample ({num_samples}) in {datasplit_name} not dividable by batch size ({batch_size}).')
-                log.warn(f'Last batch will be incomplete. Behavior depends on datamodule.batch_drop_last setting.')
-
         if not hasattr(self.trainer.datamodule, 'get_img_name_coordinates'):
             raise NotImplementedError('DataModule needs to implement get_img_name_coordinates function')
 

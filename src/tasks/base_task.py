@@ -11,6 +11,9 @@ from torch.optim import Optimizer
 from torch.optim.lr_scheduler import _LRScheduler
 
 from src.tasks.utils.task_utils import get_callable_dict
+from src.utils import template_utils
+
+log = template_utils.get_logger(__name__)
 
 
 class AbstractTask(LightningModule, metaclass=ABCMeta):
@@ -54,6 +57,26 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         self.lr = lr
         self.test_output_path = test_output_path
         self.save_hyperparameters()
+
+    def setup(self, stage: str):
+        if self.trainer.distributed_backend == 'ddp':
+            batch_size = self.trainer.datamodule.batch_size
+            if stage == 'fit':
+                num_samples = len(self.trainer.datamodule.train)
+                datasplit_name = 'train'
+            elif stage == 'test':
+                num_samples = len(self.trainer.datamodule.test)
+                datasplit_name = 'test'
+            else:
+                # unknown stage
+                log.warn(f'Unknown stage ({stage}) during setup!')
+                num_samples = -1
+                datasplit_name = None
+
+            if num_samples % self.trainer.datamodule.batch_size != 0:
+                log.warn(
+                    f'Number of sample ({num_samples}) in {datasplit_name} not dividable by batch size ({batch_size}).')
+                log.warn(f'Last batch will be incomplete. Behavior depends on datamodule.batch_drop_last setting.')
 
     def step(self,
              batch: Any,
