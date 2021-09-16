@@ -104,7 +104,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         for name, metric in self.metrics.items():
             if isinstance(metric, torchmetrics.Metric):
                 if name in metric_kwargs:
-                    metric.update(y_hat, y, **metric_kwargs[name])
+                    metric(y_hat, y, **metric_kwargs[name])
                 else:
                     metric(y_hat, y)
                 logs[name] = metric  # log the metric itself if it is of type Metric
