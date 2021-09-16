@@ -40,7 +40,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             optimizer_kwargs: Optional[Dict[str, Any]] = None,
             scheduler: Optional[Union[Type[_LRScheduler], str, _LRScheduler]] = None,
             scheduler_kwargs: Optional[Dict[str, Any]] = None,
-            metrics: Union[torchmetrics.Metric, Mapping, Sequence, None] = None,
+            metrics: Optional[Union[torchmetrics.Metric, Callable, Mapping, Sequence, None]] = None,
             lr: float = 1e-3,
             test_output_path: Optional[Union[str, Path]] = 'output'
     ):
@@ -102,7 +102,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         logs = {}
         y_hat = self.to_metrics_format(output["pred"])
         for name, metric in self.metrics.items():
-            if isinstance(metric, torchmetrics.metric.Metric):
+            if isinstance(metric, torchmetrics.Metric):
                 if name in metric_kwargs:
                     metric(y_hat, y, **metric_kwargs[name])
                 else:

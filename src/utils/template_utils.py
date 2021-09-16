@@ -100,6 +100,7 @@ def print_config(
         "optimizer",
         "datamodule",
         "callbacks",
+        "metric",
         "logger",
         "seed",
         "train",

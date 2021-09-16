@@ -101,8 +101,8 @@ class LogConfusionMatrixToWandb(Callback):
     ):
         """Gather data from single batch."""
         if self.ready:
-            self.preds.append(outputs["preds"].detach().cpu().numpy())
-            self.targets.append(outputs["targets"].detach().cpu().numpy())
+            self.preds.append(outputs["pred"].detach().cpu().numpy())
+            self.targets.append(outputs["target"].detach().cpu().numpy())
 
     def on_validation_epoch_end(self, trainer, pl_module):
         """Generate confusion matrix."""
@@ -168,8 +168,8 @@ class LogF1PrecRecHeatmapToWandb(Callback):
     ):
         """Gather data from single batch."""
         if self.ready:
-            self.preds.append(outputs["preds"].detach().cpu().numpy())
-            self.targets.append(outputs["targets"].detach().cpu().numpy())
+            self.preds.append(outputs["pred"].detach().cpu().numpy())
+            self.targets.append(outputs["target"].detach().cpu().numpy())
 
     def on_validation_epoch_end(self, trainer, pl_module):
         """Generate f1, precision and recall heatmap."""

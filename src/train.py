@@ -4,6 +4,7 @@ from typing import List, Optional
 
 import hydra
 import torch
+import torchmetrics
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import LightningModule, LightningDataModule, Callback, Trainer, plugins
 from pytorch_lightning.loggers import LightningLoggerBase
@@ -49,9 +50,19 @@ def train(config: DictConfig) -> Optional[float]:
         log.info(f"Instantiating loss<{config.loss._target_}>")
         loss: torch.nn._Loss = hydra.utils.instantiate(config.loss)
 
+    metric = None
+    if 'metric' in config:
+        log.info(f"Instantiating metric<{config.metric._target_}>")
+        metric = hydra.utils.instantiate(config.metric)
+
     # Init the task as lightning module
     log.info(f"Instantiating model <{config.task._target_}>")
-    task: LightningModule = hydra.utils.instantiate(config.task, model=model, optimizer=optimizer, loss_fn=loss)
+    task: LightningModule = hydra.utils.instantiate(config.task,
+                                                    model=model,
+                                                    optimizer=optimizer,
+                                                    loss_fn=loss,
+                                                    metrics=metric
+                                                    )
 
     # Init Lightning callbacks
     callbacks: List[Callback] = []
