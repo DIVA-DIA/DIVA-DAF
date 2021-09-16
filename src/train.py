@@ -1,14 +1,11 @@
 import os
-import random
 from pathlib import Path
 from typing import List, Optional
 
 import hydra
-import numpy as np
 import torch
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import LightningModule, LightningDataModule, Callback, Trainer, plugins
-from pytorch_lightning import seed_everything
 from pytorch_lightning.loggers import LightningLoggerBase
 
 from src.models.backbone_header_model import BackboneHeaderModel
@@ -27,13 +24,6 @@ def train(config: DictConfig) -> Optional[float]:
     Returns:
         Optional[float]: Metric score for hyperparameter optimization.
     """
-
-    # Set seed for random number generators in pytorch, numpy and python.random
-    if "seed" in config:
-        seed_everything(config.seed)
-    else:
-        seed = random.randint(np.iinfo(np.uint32).min, np.iinfo(np.uint32).max)
-        log.info(f"No seed specified! Seed set to {seed}")
 
     # Init Lightning datamodule
     log.info(f"Instantiating datamodule <{config.datamodule._target_}>")
