@@ -5,3 +5,5 @@ data_dir: /data/usl_experiments/semantic_segmentation/datasets_cropped/CB55-10-s
 crop_size: 256
 num_workers: 4
 batch_size: 16
+shuffle: True
+drop_last_batch: True

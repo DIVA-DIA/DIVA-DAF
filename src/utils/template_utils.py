@@ -1,11 +1,14 @@
 import logging
+import random
 import warnings
 from typing import List, Sequence
 
 import pytorch_lightning as pl
 import rich
 import wandb
+import numpy as np
 from omegaconf import DictConfig, OmegaConf
+from pytorch_lightning import seed_everything
 from pytorch_lightning.loggers.wandb import WandbLogger
 from pytorch_lightning.utilities import rank_zero_only
 from rich.syntax import Syntax
@@ -76,6 +79,13 @@ def extras(config: DictConfig) -> None:
     if config.trainer.get("accelerator") == 'ddp_cpu' and config.trainer.precision == 16:
         log.warning(f'You are using ddp_cpu without precision=16. This can lead to a crash! Use 64 or 32!')
 
+    # Set seed for random number generators in pytorch, numpy and python.random
+    if "seed" in config:
+        seed_everything(config.seed)
+    else:
+        seed = random.randint(np.iinfo(np.uint32).min, np.iinfo(np.uint32).max)
+        config['seed'] = seed
+        log.info(f"No seed specified! Seed set to {seed}")
     # disable adding new keys to config
     OmegaConf.set_struct(config, True)
 

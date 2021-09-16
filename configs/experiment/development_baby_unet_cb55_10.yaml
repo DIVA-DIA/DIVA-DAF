@@ -34,6 +34,8 @@ datamodule:
     crop_size: 256
     num_workers: 4
     batch_size: 16
+    shuffle: True
+    drop_last_batch: True
 
 callbacks:
     model_checkpoint:
