@@ -28,10 +28,6 @@ save_config: True
 
 checkpoint_folder_name: '{epoch}/'
 
-# seed for all the random generators (needs to be sett when training with ddp!)
-seed: 42
-
-
 # path to original working directory
 # hydra hijacks working directory by changing it to the current log directory,
 # so it's useful to have this path as a special variable
