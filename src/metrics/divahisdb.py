@@ -1,14 +1,14 @@
 from typing import Any, Optional, Callable
 
-import torch
 import numpy as np
+import torch
 from torchmetrics import Metric
 
 
 class HisDBIoU(Metric):
 
-    def __init__(self, n_classes: int = None, mask_modifies_prediction: bool = True, compute_on_step: bool = True, dist_sync_on_step: bool = False,
-                 process_group: Optional[Any] = None, dist_sync_fn: Callable = None,
+    def __init__(self, n_classes: int = None, mask_modifies_prediction: bool = True, compute_on_step: bool = True,
+                 dist_sync_on_step: bool = False, process_group: Optional[Any] = None, dist_sync_fn: Callable = None,
                  ) -> None:
         super().__init__(compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)
         self.n_classes = n_classes
@@ -21,13 +21,16 @@ class HisDBIoU(Metric):
         # take into account the boundary pixels like done in the offical evaluator
         # https://github.com/DIVA-DIA/DIVA_Layout_Analysis_Evaluator/blob/87a11ede232f8fb490401a382b8764697b65ea8d/src/main/java/ch/unifr/LayoutAnalysisEvaluator.java#L225
         if mask is not None:
+            mask_and_bg_predicted = torch.logical_and(mask, torch.eq(pred, 0))
             if self.mask_modifies_prediction:
-                mask = torch.logical_and(mask, torch.eq(pred, 0))
-                new_label_trues = label_trues.clone()
-                new_label_trues[mask] = label_preds[mask]
+                pred = pred.clone()
+                pred[mask_and_bg_predicted] = target[mask_and_bg_predicted]
+            else:
+                target = target.clone()
+                target[mask_and_bg_predicted] = pred[mask_and_bg_predicted]
 
-        hist = torch.zeros((self.n_classes, self.n_classes)).type_as(new_label_trues)
-        for lt, lp in zip(new_label_trues, label_preds):
+        hist = torch.zeros((self.n_classes, self.n_classes)).type_as(target)
+        for lt, lp in zip(target, pred):
             try:
                 # the images all have the same size
                 hist = torch.sum(hist, self._fast_hist(lt.flatten(), lp.flatten(), self.n_classes))
