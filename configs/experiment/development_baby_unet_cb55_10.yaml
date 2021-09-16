@@ -9,6 +9,7 @@ defaults:
     - override /model/backbone: baby_unet_model.yaml
     - override /model/header: identity.yaml
     - override /datamodule: null
+    - override /metric: hisdbiou.yaml
 
 # we override default configurations with nulls to prevent them from loading at all
 # instead we define all modules and their paths directly in this config,

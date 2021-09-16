@@ -5,6 +5,7 @@ import numpy as np
 import torch.nn as nn
 import torch.optim
 
+from metrics.divahisdb import HisDBIoU
 from src.tasks.semantic_segmentation.utils.output_tools import _get_argmax
 from src.tasks.base_task import AbstractTask
 from src.utils import template_utils
@@ -52,6 +53,9 @@ class SemanticSegmentation(AbstractTask):
     def setup(self, stage: str) -> None:
         super().setup(stage)
 
+        if not self.metrics:
+            self.metrics.append(HisDBIoU())
+
         if not hasattr(self.trainer.datamodule, 'get_img_name_coordinates'):
             raise NotImplementedError('DataModule needs to implement get_img_name_coordinates function')
 
@@ -68,7 +72,7 @@ class SemanticSegmentation(AbstractTask):
     #############################################################################################
     def training_step(self, batch, batch_idx, **kwargs):
         input_batch, target_batch, mask_batch = batch
-        metric_kwargs = {'HisDBIoU': {'mask': mask_batch}}
+        metric_kwargs = {'hisdbiou': {'mask': mask_batch}}
         return super().training_step(batch=(input_batch, target_batch), batch_idx=batch_idx, metric_kwargs=metric_kwargs)
 
     #############################################################################################
@@ -77,8 +81,8 @@ class SemanticSegmentation(AbstractTask):
 
     def validation_step(self, batch, batch_idx, **kwargs):
         input_batch, target_batch, mask_batch = batch
-        metric_kwargs = {'HisDBIoU': {'mask': mask_batch}}
-        super().validation_step(batch=(input_batch, target_batch), batch_idx=batch_idx, metric_kwargs=metric_kwargs)
+        metric_kwargs = {'hisdbiou': {'mask': mask_batch}}
+        return super().validation_step(batch=(input_batch, target_batch), batch_idx=batch_idx, metric_kwargs=metric_kwargs)
 
     #############################################################################################
     ########################################### TEST ############################################
@@ -86,7 +90,7 @@ class SemanticSegmentation(AbstractTask):
 
     def test_step(self, batch, batch_idx, **kwargs):
         input_batch, target_batch, mask_batch, input_idx = batch
-        metric_kwargs = {'HisDBIoU': {'mask': mask_batch}}
+        metric_kwargs = {'hisdbiou': {'mask': mask_batch}}
         preds = super().test_step(batch=(input_batch, target_batch), batch_idx=batch_idx, metric_kwargs=metric_kwargs)
 
         if not hasattr(self.trainer.datamodule, 'get_img_name_coordinates'):
