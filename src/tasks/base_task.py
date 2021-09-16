@@ -144,19 +144,19 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
     def training_step(self, batch: Any, batch_idx: int, **kwargs) -> Any:
         output = self.step(batch, batch_idx, **kwargs)
         for key, value in output["logs"].items():
-            self.log(f"train/{key}", value, on_epoch=True, sync_dist=True, rank_zero_only=True)
+            self.log(f"train/{key}", value, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
         return output
 
     def validation_step(self, batch: Any, batch_idx: int, **kwargs) -> None:
         output = self.step(batch, batch_idx, **kwargs)
         for key, value in output["logs"].items():
-            self.log(f"val/{key}", value, on_epoch=True, sync_dist=True, rank_zero_only=True)
+            self.log(f"val/{key}", value, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
         return output
 
     def test_step(self, batch: Any, batch_idx: int, **kwargs) -> None:
         output = self.step(batch, batch_idx, **kwargs)
         for key, value in output["logs"].items():
-            self.log(f"test/{key}", value, on_epoch=True, sync_dist=True, rank_zero_only=True)
+            self.log(f"test/{key}", value, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
         return output
 
     def configure_optimizers(self) -> Union[Optimizer, Tuple[List[Optimizer], List[_LRScheduler]]]:
