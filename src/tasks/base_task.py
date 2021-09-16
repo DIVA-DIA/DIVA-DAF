@@ -119,7 +119,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             return logs["total_loss"], logs
         output["loss"] = list(losses.values())[0]
         output["logs"] = logs
-        output["y"] = y
+        output["target"] = y
         return output
 
     def to_loss_format(self, x: torch.Tensor) -> torch.Tensor:
@@ -145,19 +145,19 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         output = self.step(batch, batch_idx, **kwargs)
         for key, value in output["logs"].items():
             self.log(f"train/{key}", value, on_epoch=True, sync_dist=True, rank_zero_only=True)
-        return output["loss"]
+        return output
 
     def validation_step(self, batch: Any, batch_idx: int, **kwargs) -> None:
         output = self.step(batch, batch_idx, **kwargs)
         for key, value in output["logs"].items():
             self.log(f"val/{key}", value, on_epoch=True, sync_dist=True, rank_zero_only=True)
-        return output['pred']
+        return output
 
     def test_step(self, batch: Any, batch_idx: int, **kwargs) -> None:
         output = self.step(batch, batch_idx, **kwargs)
         for key, value in output["logs"].items():
             self.log(f"test/{key}", value, on_epoch=True, sync_dist=True, rank_zero_only=True)
-        return output['pred']
+        return output
 
     def configure_optimizers(self) -> Union[Optimizer, Tuple[List[Optimizer], List[_LRScheduler]]]:
         optimizer = self.optimizer
