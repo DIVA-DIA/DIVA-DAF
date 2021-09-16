@@ -91,12 +91,12 @@ class SemanticSegmentation(AbstractTask):
     def test_step(self, batch, batch_idx, **kwargs):
         input_batch, target_batch, mask_batch, input_idx = batch
         metric_kwargs = {'hisdbiou': {'mask': mask_batch}}
-        preds = super().test_step(batch=(input_batch, target_batch), batch_idx=batch_idx, metric_kwargs=metric_kwargs)
+        output = super().test_step(batch=(input_batch, target_batch), batch_idx=batch_idx, metric_kwargs=metric_kwargs)
 
         if not hasattr(self.trainer.datamodule, 'get_img_name_coordinates'):
             raise NotImplementedError('Datamodule does not provide detailed information of the crop')
 
-        for patch, idx in zip(preds.data.detach().cpu().numpy(),
+        for patch, idx in zip(output['pred'].data.detach().cpu().numpy(),
                               input_idx.detach().cpu().numpy()):
             patch_info = self.trainer.datamodule.get_img_name_coordinates(idx)
             img_name = patch_info[0]
