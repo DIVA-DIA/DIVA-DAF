@@ -68,7 +68,6 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
                 num_samples = len(self.trainer.datamodule.test)
                 datasplit_name = 'test'
             else:
-                # unknown stage
                 log.warn(f'Unknown stage ({stage}) during setup!')
                 num_samples = -1
                 datasplit_name = None
@@ -76,7 +75,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             if num_samples % self.trainer.datamodule.batch_size != 0:
                 log.warn(
                     f'Number of sample ({num_samples}) in {datasplit_name} not dividable by batch size ({batch_size}).')
-                log.warn(f'Last batch will be incomplete. Behavior depends on datamodule.batch_drop_last setting.')
+                log.warn(f'Last batch will be incomplete. Behavior depends on datamodule.drop_last_batch setting.')
 
     def step(self,
              batch: Any,
