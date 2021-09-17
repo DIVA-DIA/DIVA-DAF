@@ -6,7 +6,7 @@ Load a dataset of historic documents by specifying the folder where its located.
 import logging
 import re
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Tuple, Union, Optional
 
 import torch.utils.data as data
 from torch import is_tensor
@@ -29,7 +29,7 @@ class CroppedHisDBDataset(data.Dataset):
         root/data/xxz.png
     """
 
-    def __init__(self, path: Path,
+    def __init__(self, path: Path, selection: Optional[Union[int, List[str]]] = None,
                  is_test=False, image_transform=None, target_transform=None, twin_transform=None,
                  classes=None, **kwargs):
         """
@@ -50,6 +50,9 @@ class CroppedHisDBDataset(data.Dataset):
             A function to load an image given its path.
         """
 
+        self.path = path
+        self.selection = selection
+
         # Init list
         self.classes = classes
         # self.crops_per_image = crops_per_image
@@ -62,7 +65,7 @@ class CroppedHisDBDataset(data.Dataset):
         self.is_test = is_test
 
         # List of tuples that contain the path to the gt and image that belong together
-        self.img_paths_per_page = self.get_gt_data_paths(path)
+        self.img_paths_per_page = self.get_gt_data_paths(path, selection=self.selection)
 
         # TODO: make more fanzy stuff here
         # self.img_paths = [pair for page in self.img_paths_per_page for pair in page]
@@ -142,7 +145,8 @@ class CroppedHisDBDataset(data.Dataset):
         return img, gt, border_mask
 
     @staticmethod
-    def get_gt_data_paths(directory: Path) -> List[Tuple[Path, Path, str, str, Tuple[int, int]]]:
+    def get_gt_data_paths(directory: Path, selection: Optional[Union[int, List[str]]] = None) \
+                    -> List[Tuple[Path, Path, str, str, Tuple[int, int]]]:
         """
         Structure of the folder
 
@@ -151,6 +155,7 @@ class CroppedHisDBDataset(data.Dataset):
 
 
         :param directory:
+        :param selection:
         :return: tuple
             (path_data_file, path_gt_file, original_image_name, (x, y))
         """
@@ -163,10 +168,50 @@ class CroppedHisDBDataset(data.Dataset):
         if not (path_data_root.is_dir() or path_gt_root.is_dir()):
             logging.error("folder data or gt not found in " + str(directory))
 
-        for path_data_subdir in sorted(path_data_root.iterdir()):
-            if not path_data_subdir.is_dir() and has_extension(path_data_subdir.name, IMG_EXTENSIONS):
-                logging.warning("image file found in data root: " + str(path_data_subdir))
+        # get all subitems (and files) sorted
+        subitems = sorted(path_data_root.iterdir())
+
+        # check the selection parameter
+        if selection:
+            subdirectories = [x.name for x in subitems if x.is_dir()]
+
+            if isinstance(selection, int):
+                if selection < 0:
+                    raise ValueError(
+                        f'Parameter "selection" is a negative integer ({selection}). Negative values are not supported!')
+
+                elif selection == 0:
+                    selection = None
+
+                elif selection > len(subdirectories):
+                    raise ValueError(
+                        f'Parameter "selection" is larger ({selection}) than number of subdirectories ({len(subdirectories)}).')
+
+            elif isinstance(selection, list):
+                if not all(x in subdirectories for x in selection):
+                    raise ValueError(f'Parameter "selection" contains a non-existing subdirectory.)')
+
+            else:
+                raise TypeError(f'Parameter "selection" exists, but it is of unsupported type ({type(selection)})')
+
+        counter = 0  # Counter for subdirectories, needed for selection parameter
+
+        for path_data_subdir in subitems:
+            if not path_data_subdir.is_dir():
+                if has_extension(path_data_subdir.name, IMG_EXTENSIONS):
+                    logging.warning("image file found in data root: " + str(path_data_subdir))
                 continue
+
+            counter += 1
+
+            if selection:
+                if isinstance(selection, int):
+                    if counter > selection:
+                        break
+
+                elif isinstance(selection, list):
+                    if path_data_subdir.name not in selection:
+                        continue
 
             path_gt_subdir = path_gt_root / path_data_subdir.stem
             assert path_gt_subdir.is_dir()
