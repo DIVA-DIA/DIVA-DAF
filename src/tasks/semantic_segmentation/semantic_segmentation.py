@@ -5,7 +5,7 @@ import numpy as np
 import torch.nn as nn
 import torch.optim
 
-from metrics.divahisdb import HisDBIoU
+from src.metrics.divahisdb import HisDBIoU
 from src.tasks.semantic_segmentation.utils.output_tools import _get_argmax
 from src.tasks.base_task import AbstractTask
 from src.utils import template_utils
