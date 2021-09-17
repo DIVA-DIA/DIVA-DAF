@@ -13,9 +13,11 @@ from torch import is_tensor
 from torchvision.transforms import ToTensor
 
 from src.datamodules.hisDBDataModule.util.misc import has_extension, pil_loader
+from src.utils import template_utils
 
 IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm']
 
+log = template_utils.get_logger(__name__)
 
 class CroppedHisDBDataset(data.Dataset):
     """A generic data loader where the images are arranged in this way: ::
@@ -74,9 +76,6 @@ class CroppedHisDBDataset(data.Dataset):
         if self.num_samples == 0:
             raise RuntimeError("Found 0 images in subfolders of: {} \n Supported image extensions are: {}".format(
                 path, ",".join(IMG_EXTENSIONS)))
-
-        if self.is_test:
-            pass
 
     def __len__(self):
         """
@@ -166,7 +165,7 @@ class CroppedHisDBDataset(data.Dataset):
         path_gt_root = directory / 'gt'
 
         if not (path_data_root.is_dir() or path_gt_root.is_dir()):
-            logging.error("folder data or gt not found in " + str(directory))
+            log.error("folder data or gt not found in " + str(directory))
 
         # get all subitems (and files) sorted
         subitems = sorted(path_data_root.iterdir())
@@ -199,7 +198,7 @@ class CroppedHisDBDataset(data.Dataset):
         for path_data_subdir in subitems:
             if not path_data_subdir.is_dir():
                 if has_extension(path_data_subdir.name, IMG_EXTENSIONS):
-                    logging.warning("image file found in data root: " + str(path_data_subdir))
+                    log.warning("image file found in data root: " + str(path_data_subdir))
                 continue
 
             counter += 1

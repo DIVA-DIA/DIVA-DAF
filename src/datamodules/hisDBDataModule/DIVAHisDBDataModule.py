@@ -11,6 +11,9 @@ from src.datamodules.hisDBDataModule.util.analytics.image_analytics import get_a
 from src.datamodules.hisDBDataModule.util.misc import validate_path
 from src.datamodules.hisDBDataModule.util.transformations import transforms as custom_transforms
 from src.datamodules.hisDBDataModule.util.transformations.transforms import TwinRandomCrop, OnlyTarget, OnlyImage
+from src.utils import template_utils
+
+log = template_utils.get_logger(__name__)
 
 
 class DIVAHisDBDataModuleCropped(pl.LightningDataModule):
@@ -56,9 +59,27 @@ class DIVAHisDBDataModuleCropped(pl.LightningDataModule):
         if stage == 'fit' or stage is None:
             self.train = CroppedHisDBDataset(**self._create_dataset_parameters('train'), selection=self.selection_train)
             self.val = CroppedHisDBDataset(**self._create_dataset_parameters('val'), selection=self.selection_val)
-
+            self._check_min_num_samples(num_samples=len(self.train), data_split='train', drop_last_batch=self.drop_last_batch)
         if stage == 'test' or stage is not None:
             self.test = CroppedHisDBDataset(**self._create_dataset_parameters('test'), selection=self.selection_test)
+
+    def _check_min_num_samples(self, num_samples: int, data_split: str, drop_last_batch: bool):
+        num_processes = self.trainer.num_processes
+        batch_size = self.batch_size
+        if drop_last_batch:
+            if num_samples < (self.trainer.num_processes * self.batch_size):
+                log.error(
+                    f'#samples ({num_samples}) in {data_split} smaller than '
+                    f'#processes({num_processes}) times batch size ({batch_size}). '
+                    f'This only works if drop_last_batch is false!')
+                raise ValueError()
+        else:
+            if num_samples < (self.trainer.num_processes * self.batch_size):
+                log.warning(
+                    f'#samples ({num_samples}) in {data_split} smaller than '
+                    f'#processes ({num_processes}) times batch size ({batch_size}). '
+                    f'This works due to drop_last_batch=False, however samples will occur multiple times. '
+                    f'Check if this behavior is intended!')
 
     def train_dataloader(self, *args, **kwargs) -> DataLoader:
         return DataLoader(self.train,
