@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import List, Tuple, Union, Optional
 
 import torch.utils.data as data
+from omegaconf import ListConfig
 from torch import is_tensor
 from torchvision.transforms import ToTensor
 
@@ -176,22 +177,30 @@ class CroppedHisDBDataset(data.Dataset):
 
             if isinstance(selection, int):
                 if selection < 0:
-                    raise ValueError(
-                        f'Parameter "selection" is a negative integer ({selection}). Negative values are not supported!')
+                    msg = f'Parameter "selection" is a negative integer ({selection}). ' \
+                          f'Negative values are not supported!'
+                    log.error(msg)
+                    raise ValueError(msg)
 
                 elif selection == 0:
                     selection = None
 
                 elif selection > len(subdirectories):
-                    raise ValueError(
-                        f'Parameter "selection" is larger ({selection}) than number of subdirectories ({len(subdirectories)}).')
+                    msg = f'Parameter "selection" is larger ({selection}) than ' \
+                          f'number of subdirectories ({len(subdirectories)}).'
+                    log.error(msg)
+                    raise ValueError(msg)
 
-            elif isinstance(selection, list):
+            elif isinstance(selection, ListConfig) or isinstance(selection, list):
                 if not all(x in subdirectories for x in selection):
-                    raise ValueError(f'Parameter "selection" contains a non-existing subdirectory.)')
+                    msg = f'Parameter "selection" contains a non-existing subdirectory.)'
+                    log.error(msg)
+                    raise ValueError(msg)
 
             else:
-                raise TypeError(f'Parameter "selection" exists, but it is of unsupported type ({type(selection)})')
+                msg = f'Parameter "selection" exists, but it is of unsupported type ({type(selection)})'
+                log.error(msg)
+                raise TypeError(msg)
 
         counter = 0  # Counter for subdirectories, needed for selection parameter
 
@@ -208,7 +217,7 @@ class CroppedHisDBDataset(data.Dataset):
                     if counter > selection:
                         break
 
-                elif isinstance(selection, list):
+                elif isinstance(selection, ListConfig) or isinstance(selection, list):
                     if path_data_subdir.name not in selection:
                         continue
 

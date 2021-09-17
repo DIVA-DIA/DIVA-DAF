@@ -59,9 +59,16 @@ class DIVAHisDBDataModuleCropped(pl.LightningDataModule):
         if stage == 'fit' or stage is None:
             self.train = CroppedHisDBDataset(**self._create_dataset_parameters('train'), selection=self.selection_train)
             self.val = CroppedHisDBDataset(**self._create_dataset_parameters('val'), selection=self.selection_val)
-            self._check_min_num_samples(num_samples=len(self.train), data_split='train', drop_last_batch=self.drop_last_batch)
+
+            self._check_min_num_samples(num_samples=len(self.train), data_split='train',
+                                        drop_last_batch=self.drop_last_batch)
+            self._check_min_num_samples(num_samples=len(self.val), data_split='val',
+                                        drop_last_batch=self.drop_last_batch)
+
         if stage == 'test' or stage is not None:
             self.test = CroppedHisDBDataset(**self._create_dataset_parameters('test'), selection=self.selection_test)
+            # self._check_min_num_samples(num_samples=len(self.test), data_split='test',
+            #                             drop_last_batch=False)
 
     def _check_min_num_samples(self, num_samples: int, data_split: str, drop_last_batch: bool):
         num_processes = self.trainer.num_processes
@@ -69,14 +76,14 @@ class DIVAHisDBDataModuleCropped(pl.LightningDataModule):
         if drop_last_batch:
             if num_samples < (self.trainer.num_processes * self.batch_size):
                 log.error(
-                    f'#samples ({num_samples}) in {data_split} smaller than '
+                    f'#samples ({num_samples}) in "{data_split}" smaller than '
                     f'#processes({num_processes}) times batch size ({batch_size}). '
                     f'This only works if drop_last_batch is false!')
                 raise ValueError()
         else:
             if num_samples < (self.trainer.num_processes * self.batch_size):
                 log.warning(
-                    f'#samples ({num_samples}) in {data_split} smaller than '
+                    f'#samples ({num_samples}) in "{data_split}" smaller than '
                     f'#processes ({num_processes}) times batch size ({batch_size}). '
                     f'This works due to drop_last_batch=False, however samples will occur multiple times. '
                     f'Check if this behavior is intended!')
