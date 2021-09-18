@@ -19,7 +19,9 @@ class SemanticSegmentation(AbstractTask):
                  model: nn.Module,
                  optimizer: torch.optim.Optimizer,
                  loss_fn: Optional[Callable] = None,
-                 metrics: Optional[Union[Callable, Mapping, Sequence, None]] = None,
+                 metric_train: Optional[Union[Callable, Mapping, Sequence, None]] = None,
+                 metric_val: Optional[Union[Callable, Mapping, Sequence, None]] = None,
+                 metric_test: Optional[Union[Callable, Mapping, Sequence, None]] = None,
                  test_output_path: Optional[Union[str, Path]] = 'output',
                  lr: float = 1e-3
                  ) -> None:
@@ -28,8 +30,6 @@ class SemanticSegmentation(AbstractTask):
 
         :param model: torch.nn.Module
             The encoder for the segmentation e.g. unet
-        :param class_encodings: list(int)
-            A list of the class encodings so the classes as integers (e.g. [1, 2, 4, 8])
         :param test_output_path: str
             String with a path to the output folder of the testing
         """
@@ -40,7 +40,9 @@ class SemanticSegmentation(AbstractTask):
             model=model,
             optimizer=optimizer,
             loss_fn=loss_fn,
-            metrics=metrics,
+            metric_train=metric_train,
+            metric_val=metric_val,
+            metric_test=metric_test,
             test_output_path=test_output_path,
             lr=lr
         )
@@ -53,8 +55,12 @@ class SemanticSegmentation(AbstractTask):
     def setup(self, stage: str) -> None:
         super().setup(stage)
 
-        if not self.metrics:
-            self.metrics.append(HisDBIoU())
+        if not self.metric_train:
+            self.metric_train = HisDBIoU()
+        if not self.metric_val:
+            self.metric_val = HisDBIoU()
+        if not self.metric_test:
+            self.metric_test = HisDBIoU()
 
         if not hasattr(self.trainer.datamodule, 'get_img_name_coordinates'):
             raise NotImplementedError('DataModule needs to implement get_img_name_coordinates function')

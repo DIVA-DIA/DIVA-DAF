@@ -27,7 +27,9 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         model: Composed model to use for the task.
         loss_fn: Loss function for training
         optimizer: Optimizer to use for training, defaults to :class:`torch.optim.Adam`.
-        metrics: Metrics to compute for training and evaluation.
+        metric_train: Metrics to compute for training.
+        metric_val: Metrics to compute for evaluation.
+        metric_test: Metrics to compute for testing.
         lr: Learning rate to use for training, defaults to ``5e-5``.
         test_output_path: Path relative to the normal output folder where to save the test output
     """
@@ -40,7 +42,9 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             optimizer_kwargs: Optional[Dict[str, Any]] = None,
             scheduler: Optional[Union[Type[_LRScheduler], str, _LRScheduler]] = None,
             scheduler_kwargs: Optional[Dict[str, Any]] = None,
-            metrics: Optional[Union[torchmetrics.Metric, Callable, Mapping, Sequence, None]] = None,
+            metric_train: Optional[Union[torchmetrics.Metric, Callable, Mapping, Sequence, None]] = None,
+            metric_val: Optional[Union[torchmetrics.Metric, Callable, Mapping, Sequence, None]] = None,
+            metric_test: Optional[Union[torchmetrics.Metric, Callable, Mapping, Sequence, None]] = None,
             lr: float = 1e-3,
             test_output_path: Optional[Union[str, Path]] = 'output'
     ):
@@ -53,7 +57,9 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         self.optimizer_kwargs = optimizer_kwargs or {}
         self.scheduler_kwargs = scheduler_kwargs or {}
 
-        self.metrics = nn.ModuleDict({} if metrics is None else get_callable_dict(metrics))
+        self.metric_train = nn.ModuleDict({} if metric_train is None else get_callable_dict(metric_train))
+        self.metric_val = nn.ModuleDict({} if metric_val is None else get_callable_dict(metric_val))
+        self.metric_test = nn.ModuleDict({} if metric_test is None else get_callable_dict(metric_test))
         self.lr = lr
         self.test_output_path = test_output_path
         self.save_hyperparameters()
@@ -80,6 +86,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
     def step(self,
              batch: Any,
              batch_idx: int,
+             phase: str = 'train',
              metric_kwargs: Optional[Dict[str, Dict[str, Any]]] = None,
              **kwargs) -> Any:
         """
@@ -87,6 +94,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         Args:
             batch: the batch with the images (x) and the gt (y) in the order (x, y)
             batch_idx: the index of the given batch
+            phase: the current network phase (train, val, test)
             metric_kwargs: a dictionary with a entry with the additional arguments (pred and y always provided).
                 e.g. you have two metrics (A, B) and B takes an additional arguments x and y so the dictionary would
                 look like this: {'B': {'x': 'value', 'y': 'value'}}
@@ -101,7 +109,9 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         losses = {name: l_fn(y_hat, y) for name, l_fn in self.loss_fn.items()}
         logs = {}
         y_hat = self.to_metrics_format(output["pred"])
-        for name, metric in self.metrics.items():
+        current_metric = self._get_current_metric(phase=phase)
+
+        for name, metric in current_metric.items():
             if isinstance(metric, torchmetrics.Metric):
                 if name in metric_kwargs:
                     metric(y_hat, y, **metric_kwargs[name])
@@ -142,19 +152,19 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         return out
 
     def training_step(self, batch: Any, batch_idx: int, **kwargs) -> Any:
-        output = self.step(batch, batch_idx, **kwargs)
+        output = self.step(batch=batch, batch_idx=batch_idx, phase='train', **kwargs)
         for key, value in output["logs"].items():
             self.log(f"train/{key}", value, on_epoch=True, sync_dist=True, rank_zero_only=True)
         return output["loss"]
 
     def validation_step(self, batch: Any, batch_idx: int, **kwargs) -> None:
-        output = self.step(batch, batch_idx, **kwargs)
+        output = self.step(batch=batch, batch_idx=batch_idx, phase='val', **kwargs)
         for key, value in output["logs"].items():
             self.log(f"val/{key}", value, on_epoch=True, sync_dist=True, rank_zero_only=True)
         return output['pred']
 
     def test_step(self, batch: Any, batch_idx: int, **kwargs) -> None:
-        output = self.step(batch, batch_idx, **kwargs)
+        output = self.step(batch=batch, batch_idx=batch_idx, phase='test', **kwargs)
         for key, value in output["logs"].items():
             self.log(f"test/{key}", value, on_epoch=True, sync_dist=True, rank_zero_only=True)
         return output['pred']
@@ -178,3 +188,12 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             "scheduler can be a scheduler, a scheduler type with `scheduler_kwargs` "
             f"or a built-in scheduler in {self.available_schedulers()}"
         )
+
+    def _get_current_metric(self, phase):
+        if phase == 'train':
+            return self.metric_train
+        if phase == 'val':
+            return self.metric_val
+        if phase == 'test':
+            return self.metric_test
+
