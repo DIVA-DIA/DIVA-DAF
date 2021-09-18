@@ -13,6 +13,7 @@ from torch.optim.lr_scheduler import _LRScheduler
 
 from src.tasks.utils.task_utils import get_callable_dict
 from src.utils import template_utils
+from tasks.utils.outputs import OutputKeys
 
 log = template_utils.get_logger(__name__)
 
@@ -103,11 +104,11 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             metric_kwargs = {}
         x, y = batch
         y_hat = self(x)
-        output = {"pred": y_hat}
-        y_hat = self.to_loss_format(output["pred"])
+        output = {OutputKeys.PREDICTION: y_hat}
+        y_hat = self.to_loss_format(output[OutputKeys.PREDICTION])
         losses = {name: l_fn(y_hat, y) for name, l_fn in self.loss_fn.items()}
         logs = {}
-        y_hat = self.to_metrics_format(output["pred"])
+        y_hat = self.to_metrics_format(output[OutputKeys.PREDICTION])
         current_metric = self._get_current_metric()
 
         for name, metric in current_metric.items():
@@ -126,9 +127,9 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         if len(losses.values()) > 1:
             logs["total_loss"] = sum(losses.values())
             return logs["total_loss"], logs
-        output["loss"] = list(losses.values())[0]
-        output["logs"] = logs
-        output["target"] = y
+        output[OutputKeys.LOSS] = list(losses.values())[0]
+        output[OutputKeys.LOG] = logs
+        output[OutputKeys.TARGET] = y
         return output
 
     def to_loss_format(self, x: torch.Tensor) -> torch.Tensor:
@@ -152,19 +153,19 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
 
     def training_step(self, batch: Any, batch_idx: int, **kwargs) -> Any:
         output = self.step(batch=batch, batch_idx=batch_idx, **kwargs)
-        for key, value in output["logs"].items():
+        for key, value in output[OutputKeys.LOG].items():
             self.log(f"train/{key}", value, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
         return output
 
     def validation_step(self, batch: Any, batch_idx: int, **kwargs) -> None:
         output = self.step(batch=batch, batch_idx=batch_idx, **kwargs)
-        for key, value in output["logs"].items():
+        for key, value in output[OutputKeys.LOG].items():
             self.log(f"val/{key}", value, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
         return output
 
     def test_step(self, batch: Any, batch_idx: int, **kwargs) -> None:
         output = self.step(batch=batch, batch_idx=batch_idx, **kwargs)
-        for key, value in output["logs"].items():
+        for key, value in output[OutputKeys.LOG].items():
             self.log(f"test/{key}", value, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
         return output
 

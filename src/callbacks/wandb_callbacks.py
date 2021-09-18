@@ -13,6 +13,8 @@ from pytorch_lightning.loggers import LoggerCollection, WandbLogger
 from sklearn import metrics
 from sklearn.metrics import f1_score, precision_score, recall_score
 
+from tasks.utils.outputs import OutputKeys
+
 
 def get_wandb_logger(trainer: Trainer) -> WandbLogger:
     if isinstance(trainer.logger, WandbLogger):
@@ -101,8 +103,8 @@ class LogConfusionMatrixToWandb(Callback):
     ):
         """Gather data from single batch."""
         if self.ready:
-            self.preds.append(outputs["pred"].detach().cpu().numpy())
-            self.targets.append(outputs["target"].detach().cpu().numpy())
+            self.preds.append(outputs[OutputKeys.PREDICTION].detach().cpu().numpy())
+            self.targets.append(outputs[OutputKeys.TARGET].detach().cpu().numpy())
 
     def on_validation_epoch_end(self, trainer, pl_module):
         """Generate confusion matrix."""
@@ -168,8 +170,8 @@ class LogF1PrecRecHeatmapToWandb(Callback):
     ):
         """Gather data from single batch."""
         if self.ready:
-            self.preds.append(outputs["pred"].detach().cpu().numpy())
-            self.targets.append(outputs["target"].detach().cpu().numpy())
+            self.preds.append(outputs[OutputKeys.PREDICTION].detach().cpu().numpy())
+            self.targets.append(outputs[OutputKeys.TARGET].detach().cpu().numpy())
 
     def on_validation_epoch_end(self, trainer, pl_module):
         """Generate f1, precision and recall heatmap."""

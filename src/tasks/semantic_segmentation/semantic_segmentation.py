@@ -9,6 +9,7 @@ from src.metrics.divahisdb import HisDBIoU
 from src.tasks.semantic_segmentation.utils.output_tools import _get_argmax
 from src.tasks.base_task import AbstractTask
 from src.utils import template_utils
+from tasks.utils.outputs import OutputKeys
 
 log = template_utils.get_logger(__name__)
 
@@ -102,7 +103,7 @@ class SemanticSegmentation(AbstractTask):
         if not hasattr(self.trainer.datamodule, 'get_img_name_coordinates'):
             raise NotImplementedError('Datamodule does not provide detailed information of the crop')
 
-        for patch, idx in zip(output['pred'].data.detach().cpu().numpy(),
+        for patch, idx in zip(output[OutputKeys.PREDICTION].data.detach().cpu().numpy(),
                               input_idx.detach().cpu().numpy()):
             patch_info = self.trainer.datamodule.get_img_name_coordinates(idx)
             img_name = patch_info[0]
