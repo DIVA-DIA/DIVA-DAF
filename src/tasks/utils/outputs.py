@@ -7,3 +7,6 @@ class OutputKeys(LightningEnum):
     TARGET = 'target'
     LOG = 'logs'
     LOSS = 'loss'
+
+    def __hash__(self):
+        return hash(self.value)
