@@ -44,10 +44,8 @@ def train(config: DictConfig) -> Optional[float]:
     log.info(f"Instantiating optimizer <{config.optimizer._target_}>")
     optimizer: torch.optim.Optimizer = hydra.utils.instantiate(config.optimizer, params=model.parameters(recurse=True))
 
-    loss = None
-    if 'loss' in config:
-        log.info(f"Instantiating loss<{config.loss._target_}>")
-        loss: torch.nn.Module = hydra.utils.instantiate(config.loss)
+    log.info(f"Instantiating loss<{config.loss._target_}>")
+    loss: torch.nn.Module = hydra.utils.instantiate(config.loss)
 
     metric_train = None
     metric_val = None
