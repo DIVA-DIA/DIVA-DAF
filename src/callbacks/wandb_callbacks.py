@@ -116,9 +116,12 @@ class LogConfusionMatrixToWandb(Callback):
         logger = get_wandb_logger(trainer)
         experiment = logger.experiment
 
-        preds = trainer.model.module.module.to_metrics_format(self.preds)
+        preds = []
+        for step_pred, step_target in zip(self.preds, self.targets):
+            preds.append(trainer.model.module.module.to_metrics_format(np.array(step_pred)))
+
         preds = np.concatenate(preds).flatten()
-        targets = np.concatenate(self.targets).flatten()
+        targets = np.concatenate(np.array(self.targets)).flatten()
 
         confusion_matrix = metrics.confusion_matrix(y_true=targets, y_pred=preds, normalize='true')
 
