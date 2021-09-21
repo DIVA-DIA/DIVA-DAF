@@ -71,7 +71,8 @@ class SemanticSegmentation(AbstractTask):
     def forward(self, x):
         return self.model(x)
 
-    def to_metrics_format(self, x: torch.Tensor) -> torch.Tensor:
+    @staticmethod
+    def to_metrics_format(x: torch.Tensor) -> torch.Tensor:
         return _get_argmax(x)
 
     #############################################################################################

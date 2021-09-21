@@ -132,10 +132,12 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         output[OutputKeys.TARGET] = y
         return output
 
-    def to_loss_format(self, x: torch.Tensor) -> torch.Tensor:
+    @staticmethod
+    def to_loss_format(x: torch.Tensor) -> torch.Tensor:
         return x
 
-    def to_metrics_format(self, x: torch.Tensor) -> torch.Tensor:
+    @staticmethod
+    def to_metrics_format(x: torch.Tensor) -> torch.Tensor:
         return x
 
     def forward(self, x: Any) -> Any:

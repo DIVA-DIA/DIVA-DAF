@@ -10,6 +10,8 @@ defaults:
     - override /model/header: identity.yaml
     - override /datamodule: null
     - override /metric: hisdbiou.yaml
+    - override /callbacks:
+          - conf_mat_wandb.yaml
 
 # we override default configurations with nulls to prevent them from loading at all
 # instead we define all modules and their paths directly in this config,

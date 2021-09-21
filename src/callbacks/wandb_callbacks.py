@@ -107,15 +107,17 @@ class LogConfusionMatrixToWandb(Callback):
             self.targets.append(outputs[OutputKeys.TARGET].detach().cpu().numpy())
 
     def on_validation_epoch_end(self, trainer, pl_module):
-        """Generate confusion matrix."""
+        """Generate confusion matrix and upload it with the numbers or as image"""
         if not self.ready:
             return
 
+        # TODO get from task the preprocess function
         conf_mat_name = f'CM_epoch_{trainer.current_epoch}'
         logger = get_wandb_logger(trainer)
         experiment = logger.experiment
 
-        preds = np.concatenate(self.preds).flatten()
+        preds = trainer.model.module.module.to_metrics_format(self.preds)
+        preds = np.concatenate(preds).flatten()
         targets = np.concatenate(self.targets).flatten()
 
         confusion_matrix = metrics.confusion_matrix(y_true=targets, y_pred=preds, normalize='true')
