@@ -43,9 +43,9 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             optimizer_kwargs: Optional[Dict[str, Any]] = None,
             scheduler: Optional[Union[Type[_LRScheduler], str, _LRScheduler]] = None,
             scheduler_kwargs: Optional[Dict[str, Any]] = None,
-            metric_train: Optional[Union[torchmetrics.Metric, Callable, Mapping, Sequence, None]] = None,
-            metric_val: Optional[Union[torchmetrics.Metric, Callable, Mapping, Sequence, None]] = None,
-            metric_test: Optional[Union[torchmetrics.Metric, Callable, Mapping, Sequence, None]] = None,
+            metric_train: Optional[torchmetrics.Metric] = None,
+            metric_val: Optional[torchmetrics.Metric] = None,
+            metric_test: Optional[torchmetrics.Metric] = None,
             lr: float = 1e-3,
             test_output_path: Optional[Union[str, Path]] = 'output'
     ):
@@ -196,4 +196,3 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         if self.trainer.state.stage == RunningStage.TESTING:
             return self.metric_test
         return {}
-

@@ -1,13 +1,13 @@
 from pathlib import Path
-from typing import Optional, Callable, Union, Mapping, Sequence
+from typing import Optional, Callable, Union
 
 import numpy as np
 import torch.nn as nn
 import torch.optim
+import torchmetrics
 
-from src.metrics.divahisdb import HisDBIoU
-from src.tasks.semantic_segmentation.utils.output_tools import _get_argmax
 from src.tasks.base_task import AbstractTask
+from src.tasks.semantic_segmentation.utils.output_tools import _get_argmax
 from src.utils import utils
 
 log = utils.get_logger(__name__)
@@ -19,9 +19,9 @@ class SemanticSegmentation(AbstractTask):
                  model: nn.Module,
                  optimizer: torch.optim.Optimizer,
                  loss_fn: Optional[Callable] = None,
-                 metric_train: Optional[Union[Callable, Mapping, Sequence, None]] = None,
-                 metric_val: Optional[Union[Callable, Mapping, Sequence, None]] = None,
-                 metric_test: Optional[Union[Callable, Mapping, Sequence, None]] = None,
+                 metric_train: Optional[torchmetrics.Metric] = None,
+                 metric_val: Optional[torchmetrics.Metric] = None,
+                 metric_test: Optional[torchmetrics.Metric] = None,
                  test_output_path: Optional[Union[str, Path]] = 'output',
                  lr: float = 1e-3
                  ) -> None:
@@ -33,9 +33,6 @@ class SemanticSegmentation(AbstractTask):
         :param test_output_path: str
             String with a path to the output folder of the testing
         """
-        if loss_fn is None:
-            loss_fn = nn.CrossEntropyLoss()
-
         super().__init__(
             model=model,
             optimizer=optimizer,
@@ -55,13 +52,6 @@ class SemanticSegmentation(AbstractTask):
     def setup(self, stage: str) -> None:
         super().setup(stage)
 
-        if not self.metric_train:
-            self.metric_train = HisDBIoU()
-        if not self.metric_val:
-            self.metric_val = HisDBIoU()
-        if not self.metric_test:
-            self.metric_test = HisDBIoU()
-
         if not hasattr(self.trainer.datamodule, 'get_img_name_coordinates'):
             raise NotImplementedError('DataModule needs to implement get_img_name_coordinates function')
 
@@ -79,7 +69,8 @@ class SemanticSegmentation(AbstractTask):
     def training_step(self, batch, batch_idx, **kwargs):
         input_batch, target_batch, mask_batch = batch
         metric_kwargs = {'hisdbiou': {'mask': mask_batch}}
-        return super().training_step(batch=(input_batch, target_batch), batch_idx=batch_idx, metric_kwargs=metric_kwargs)
+        return super().training_step(batch=(input_batch, target_batch), batch_idx=batch_idx,
+                                     metric_kwargs=metric_kwargs)
 
     #############################################################################################
     ############################################ VAL ############################################
@@ -88,7 +79,8 @@ class SemanticSegmentation(AbstractTask):
     def validation_step(self, batch, batch_idx, **kwargs):
         input_batch, target_batch, mask_batch = batch
         metric_kwargs = {'hisdbiou': {'mask': mask_batch}}
-        return super().validation_step(batch=(input_batch, target_batch), batch_idx=batch_idx, metric_kwargs=metric_kwargs)
+        return super().validation_step(batch=(input_batch, target_batch), batch_idx=batch_idx,
+                                       metric_kwargs=metric_kwargs)
 
     #############################################################################################
     ########################################### TEST ############################################

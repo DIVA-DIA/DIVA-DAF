@@ -5,7 +5,7 @@ from typing import List, Optional
 import hydra
 import torch
 from omegaconf import DictConfig, OmegaConf
-from pytorch_lightning import LightningModule, LightningDataModule, Callback, Trainer
+from pytorch_lightning import LightningModule, LightningDataModule, Callback, Trainer, plugins
 from pytorch_lightning.loggers import LightningLoggerBase
 
 from src.models.backbone_header_model import BackboneHeaderModel
@@ -136,7 +136,7 @@ def train(config: DictConfig) -> Optional[float]:
 
     # Make sure everything closed properly
     log.info("Finalizing!")
-    template_utils.finish(
+    utils.finish(
         config=config,
         task=task,
         model=model,
