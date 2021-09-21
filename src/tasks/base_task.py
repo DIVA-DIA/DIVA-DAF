@@ -12,9 +12,9 @@ from torch.optim import Optimizer
 from torch.optim.lr_scheduler import _LRScheduler
 
 from src.tasks.utils.task_utils import get_callable_dict
-from src.utils import template_utils
+from src.utils import utils
 
-log = template_utils.get_logger(__name__)
+log = utils.get_logger(__name__)
 
 
 class AbstractTask(LightningModule, metaclass=ABCMeta):

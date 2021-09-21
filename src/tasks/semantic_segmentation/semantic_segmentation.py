@@ -8,9 +8,9 @@ import torch.optim
 from src.metrics.divahisdb import HisDBIoU
 from src.tasks.semantic_segmentation.utils.output_tools import _get_argmax
 from src.tasks.base_task import AbstractTask
-from src.utils import template_utils
+from src.utils import utils
 
-log = template_utils.get_logger(__name__)
+log = utils.get_logger(__name__)
 
 
 class SemanticSegmentation(AbstractTask):
