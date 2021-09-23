@@ -1,11 +1,12 @@
 import glob
 import os
+from pathlib import Path
 from typing import List
 
 import matplotlib.pyplot as plt
-import seaborn as sn
 import numpy as np
-import torch
+import pandas as pd
+import seaborn as sn
 import wandb
 from matplotlib.patches import Rectangle
 from pytorch_lightning import Callback, Trainer
@@ -99,7 +100,7 @@ class LogConfusionMatrixToWandb(Callback):
         self.ready = True
 
     def on_validation_batch_end(
-        self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx
+            self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx
     ):
         """Gather data from single batch."""
         if self.ready:
@@ -123,7 +124,7 @@ class LogConfusionMatrixToWandb(Callback):
         preds = np.concatenate(preds).flatten()
         targets = np.concatenate(np.array(self.targets)).flatten()
 
-        confusion_matrix = metrics.confusion_matrix(y_true=targets, y_pred=preds, normalize='true')
+        confusion_matrix = metrics.confusion_matrix(y_true=targets, y_pred=preds)
 
         # set figure size
         plt.figure(figsize=(14, 8))
@@ -140,8 +141,19 @@ class LogConfusionMatrixToWandb(Callback):
         plt.ylabel('Targets')
         plt.title(conf_mat_name)
 
+        conf_mat_path = Path(os.getcwd()) / 'conf_mats' / 'val'
+        conf_mat_path.mkdir(parents=True, exist_ok=True)
+        conf_mat_file_path = conf_mat_path / (conf_mat_name + '.tsv')
+        df = pd.DataFrame(confusion_matrix)
+        # save as csv or tsv to disc
+        df.to_csv(path_or_buf=conf_mat_file_path, sep='\t')
+
+        # save tsv to wandb
+        experiment.save(glob_str=str(conf_mat_file_path), base_path=os.getcwd())
+
         # names should be uniqe or else charts from different experiments in wandb will overlap
-        experiment.log({f"confusion_matrix/{experiment.name}_ep_{trainer.current_epoch}": wandb.Image(plt)}, commit=False)
+        experiment.log({f"confusion_matrix_val_img/ep_{trainer.current_epoch}": wandb.Image(plt)},
+                       commit=False)
 
         # according to wandb docs this should also work but it crashes
         # experiment.log(f{"confusion_matrix/{experiment.name}": plt})
@@ -171,7 +183,7 @@ class LogF1PrecRecHeatmapToWandb(Callback):
         self.ready = True
 
     def on_validation_batch_end(
-        self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx
+            self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx
     ):
         """Gather data from single batch."""
         if self.ready:
