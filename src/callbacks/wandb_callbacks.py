@@ -148,6 +148,14 @@ class LogConfusionMatrixToWandbTest(Callback):
 
 
 def _create_and_save_conf_mat(trainer, input_preds, input_targets, phase):
+    """
+    This function creates a confusion matrix and saves it as a tsv file as well as uploading it to wandb as tsv and
+    as an image.
+    :param trainer:
+    :param input_preds:
+    :param input_targets:
+    :param phase:
+    """
     # TODO get from task the preprocess function
     conf_mat_name = f'CM_epoch_{trainer.current_epoch}'
     logger = get_wandb_logger(trainer)
