@@ -13,7 +13,7 @@ from torch.optim.lr_scheduler import _LRScheduler
 
 from src.tasks.utils.task_utils import get_callable_dict
 from src.utils import template_utils
-from tasks.utils.outputs import OutputKeys
+from src.tasks.utils.outputs import OutputKeys
 
 log = template_utils.get_logger(__name__)
 
