@@ -114,3 +114,5 @@ class SemanticSegmentation(AbstractTask):
             dest_filename = dest_folder / f'{patch_name}.npy'
 
             np.save(file=str(dest_filename), arr=patch)
+
+        return output

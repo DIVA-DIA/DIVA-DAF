@@ -82,8 +82,8 @@ class UploadCheckpointsToWandbAsArtifact(Callback):
         experiment.use_artifact(ckpts)
 
 
-class LogConfusionMatrixToWandb(Callback):
-    """Generate confusion matrix every epoch and send it to wandb.
+class LogConfusionMatrixToWandbVal(Callback):
+    """Generate confusion matrix every epoch and send it to wandb during validation.
     Expects validation step to return predictions and targets.
     """
 
@@ -112,57 +112,85 @@ class LogConfusionMatrixToWandb(Callback):
         if not self.ready:
             return
 
-        # TODO get from task the preprocess function
-        conf_mat_name = f'CM_epoch_{trainer.current_epoch}'
-        logger = get_wandb_logger(trainer)
-        experiment = logger.experiment
-
-        preds = []
-        for step_pred, step_target in zip(self.preds, self.targets):
-            preds.append(trainer.model.module.module.to_metrics_format(np.array(step_pred)))
-
-        preds = np.concatenate(preds).flatten()
-        targets = np.concatenate(np.array(self.targets)).flatten()
-
-        confusion_matrix = metrics.confusion_matrix(y_true=targets, y_pred=preds)
-
-        # set figure size
-        plt.figure(figsize=(14, 8))
-
-        # set labels size
-        sn.set(font_scale=1.4)
-
-        # set font size
-        fig = sn.heatmap(confusion_matrix, annot=True, annot_kws={"size": 8}, fmt="g")
-
-        for i in range(confusion_matrix.shape[0]):
-            fig.add_patch(Rectangle((i, i), 1, 1, fill=False, edgecolor='yellow', lw=3))
-        plt.xlabel('Predictions')
-        plt.ylabel('Targets')
-        plt.title(conf_mat_name)
-
-        conf_mat_path = Path(os.getcwd()) / 'conf_mats' / 'val'
-        conf_mat_path.mkdir(parents=True, exist_ok=True)
-        conf_mat_file_path = conf_mat_path / (conf_mat_name + '.tsv')
-        df = pd.DataFrame(confusion_matrix)
-        # save as csv or tsv to disc
-        df.to_csv(path_or_buf=conf_mat_file_path, sep='\t')
-
-        # save tsv to wandb
-        experiment.save(glob_str=str(conf_mat_file_path), base_path=os.getcwd())
-
-        # names should be uniqe or else charts from different experiments in wandb will overlap
-        experiment.log({f"confusion_matrix_val_img/ep_{trainer.current_epoch}": wandb.Image(plt)},
-                       commit=False)
-
-        # according to wandb docs this should also work but it crashes
-        # experiment.log(f{"confusion_matrix/{experiment.name}": plt})
-
-        # reset plot
-        plt.clf()
+        _create_and_save_conf_mat(trainer=trainer, input_preds=self.preds, input_targets=self.targets, phase='val')
 
         self.preds.clear()
         self.targets.clear()
+
+
+class LogConfusionMatrixToWandbTest(Callback):
+    """Generate confusion matrix every epoch and send it to wandb during test.
+    Expects test step to return predictions and targets.
+    """
+
+    def __init__(self):
+        self.preds = []
+        self.targets = []
+        self.ready = True
+
+    def on_test_batch_end(
+            self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx
+    ):
+        """Gather data from single batch."""
+        if self.ready:
+            self.preds.append(outputs[OutputKeys.PREDICTION].detach().cpu().numpy())
+            self.targets.append(outputs[OutputKeys.TARGET].detach().cpu().numpy())
+
+    def on_test_epoch_end(self, trainer, pl_module):
+        """Generate confusion matrix and upload it with the numbers or as image"""
+        if not self.ready:
+            return
+
+        _create_and_save_conf_mat(trainer=trainer, input_preds=self.preds, input_targets=self.targets, phase='test')
+
+        self.preds.clear()
+        self.targets.clear()
+
+
+def _create_and_save_conf_mat(trainer, input_preds, input_targets, phase):
+    # TODO get from task the preprocess function
+    conf_mat_name = f'CM_epoch_{trainer.current_epoch}'
+    logger = get_wandb_logger(trainer)
+    experiment = logger.experiment
+
+    preds = []
+    for step_pred, step_target in zip(input_preds, input_targets):
+        preds.append(trainer.model.module.module.to_metrics_format(np.array(step_pred)))
+
+    preds = np.concatenate(preds).flatten()
+    targets = np.concatenate(np.array(input_targets)).flatten()
+
+    confusion_matrix = metrics.confusion_matrix(y_true=targets, y_pred=preds)
+
+    # set figure size
+    plt.figure(figsize=(14, 8))
+    # set labels size
+    sn.set(font_scale=1.4)
+    # set font size
+    fig = sn.heatmap(confusion_matrix, annot=True, annot_kws={"size": 8}, fmt="g")
+
+    for i in range(confusion_matrix.shape[0]):
+        fig.add_patch(Rectangle((i, i), 1, 1, fill=False, edgecolor='yellow', lw=3))
+    plt.xlabel('Predictions')
+    plt.ylabel('Targets')
+    plt.title(conf_mat_name)
+
+    conf_mat_path = Path(os.getcwd()) / 'conf_mats' / phase
+    conf_mat_path.mkdir(parents=True, exist_ok=True)
+    conf_mat_file_path = conf_mat_path / (conf_mat_name + '.tsv')
+    df = pd.DataFrame(confusion_matrix)
+
+    # save as csv or tsv to disc
+    df.to_csv(path_or_buf=conf_mat_file_path, sep='\t')
+    # save tsv to wandb
+    experiment.save(glob_str=str(conf_mat_file_path), base_path=os.getcwd())
+    # names should be uniqe or else charts from different experiments in wandb will overlap
+    experiment.log({f"confusion_matrix_{phase}_img/ep_{trainer.current_epoch}": wandb.Image(plt)},
+                   commit=False)
+    # according to wandb docs this should also work but it crashes
+    # experiment.log(f{"confusion_matrix/{experiment.name}": plt})
+    # reset plot
+    plt.clf()
 
 
 class LogF1PrecRecHeatmapToWandb(Callback):
