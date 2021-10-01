@@ -191,7 +191,7 @@ def _create_and_save_conf_mat(trainer, input_preds, input_targets, phase):
     conf_mat_path = Path(os.getcwd()) / 'conf_mats' / phase
     conf_mat_path.mkdir(parents=True, exist_ok=True)
     conf_mat_file_path = conf_mat_path / (conf_mat_name + '.txt')
-    df = pd.DataFrame(confusion_matrix)
+    df = pd.DataFrame(confusion_matrix.detach().cpu().numpy())
 
     # save as csv or tsv to disc
     df.to_csv(path_or_buf=conf_mat_file_path, sep='\t')
