@@ -3,16 +3,19 @@ import random
 import warnings
 from typing import List, Sequence
 
+import numpy as np
 import pytorch_lightning as pl
 import rich
+import torch
 import wandb
-import numpy as np
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import seed_everything
 from pytorch_lightning.loggers.wandb import WandbLogger
 from pytorch_lightning.utilities import rank_zero_only
 from rich.syntax import Syntax
 from rich.tree import Tree
+
+REQUIRED_CONFIGS = ['datamodule', 'task', 'model.backbone', 'model.header', 'loss', 'optimizer', 'trainer']
 
 
 def get_logger(name=__name__, level=logging.INFO):
@@ -32,8 +35,9 @@ def get_logger(name=__name__, level=logging.INFO):
 log = get_logger()
 
 
-def extras(config: DictConfig) -> None:
+def check_config(config: DictConfig) -> None:
     """A couple of optional utilities, controlled by main config file.
+        - check for required configs in the main config
         - disabling warnings
         - easier access to debug mode
         - forcing debug friendly configuration
@@ -41,6 +45,10 @@ def extras(config: DictConfig) -> None:
     Args:
         config (DictConfig): [description]
     """
+
+    # check if required configs are in the main config file
+    for cf in REQUIRED_CONFIGS:
+        _check_if_in_config(config=config, name=cf)
 
     # enable adding new keys to config
     OmegaConf.set_struct(config, False)
@@ -67,8 +75,6 @@ def extras(config: DictConfig) -> None:
     # force multi-gpu friendly configuration if <config.trainer.accelerator=ddp>
     if config.trainer.get("accelerator") in ["ddp", "ddp_spawn", "dp", "ddp2"]:
         log.info("Forcing ddp friendly configuration! <config.trainer.accelerator=ddp>")
-        if config.datamodule.get("pin_memory"):
-            config.datamodule.pin_memory = False
         if "plugins" not in config:
             config['plugins'] = DictConfig(
                 {'ddp_plugin': {'_target_': 'pytorch_lightning.plugins.DDPPlugin', 'find_unused_parameters': False}})
@@ -90,23 +96,32 @@ def extras(config: DictConfig) -> None:
     OmegaConf.set_struct(config, True)
 
 
+def _check_if_in_config(config: DictConfig, name: str):
+    name_parts = name.split('.')
+    for part in name_parts:
+        if part in config:
+            config = config.get(part)
+        else:
+            raise ValueError(f'You need to define a value for ({name}) else the system will not start!')
+
+
 @rank_zero_only
 def print_config(
-    config: DictConfig,
-    fields: Sequence[str] = (
-        "trainer",
-        "task",
-        "model",
-        "optimizer",
-        "datamodule",
-        "callbacks",
-        "metric",
-        "logger",
-        "seed",
-        "train",
-        "test"
-    ),
-    resolve: bool = True,
+        config: DictConfig,
+        fields: Sequence[str] = (
+                "trainer",
+                "task",
+                "model",
+                "optimizer",
+                "datamodule",
+                "callbacks",
+                "metric",
+                "logger",
+                "seed",
+                "train",
+                "test"
+        ),
+        resolve: bool = True,
 ) -> None:
     """Prints content of DictConfig using Rich library and its tree structure.
 
@@ -142,6 +157,8 @@ def log_hyperparameters(
         config: DictConfig,
         task: pl.LightningModule,
         model: pl.LightningModule,
+        loss: torch.nn.Module,
+        optimizer: torch.optim.Optimizer,
         datamodule: pl.LightningDataModule,
         trainer: pl.Trainer,
         callbacks: List[pl.Callback],
@@ -154,27 +171,14 @@ def log_hyperparameters(
         - number of trainable model parameters
     """
 
-    hparams = {}
+    hparams = {"trainer": config["trainer"], "task": config["task"], "model": config["model"],
+               "datamodule": config["datamodule"], 'loss': config['loss'], 'optimizer': config['optimizer']}
 
     # choose which parts of hydra config will be saved to loggers
-    hparams["trainer"] = config["trainer"]
-    hparams["task"] = config["task"]
-    hparams["model"] = config["model"]
-    hparams["datamodule"] = config["datamodule"]
     if "optimizer" in config:
         hparams["optimizer"] = config["optimizer"]
     if "callbacks" in config:
         hparams["callbacks"] = config["callbacks"]
-
-    # save sizes of each dataset
-    # (requires calling `datamodule.setup()` first to initialize datasets)
-    # datamodule.setup()
-    # if hasattr(datamodule, "data_train") and datamodule.data_train:
-    #     hparams["datamodule/train_size"] = len(datamodule.data_train)
-    # if hasattr(datamodule, "data_val") and datamodule.data_val:
-    #     hparams["datamodule/val_size"] = len(datamodule.data_val)
-    # if hasattr(datamodule, "data_test") and datamodule.data_test:
-    #     hparams["datamodule/test_size"] = len(datamodule.data_test)
 
     # save number of model parameters
     hparams["model/params_total"] = sum(p.numel() for p in model.parameters())

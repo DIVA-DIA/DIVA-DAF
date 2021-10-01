@@ -5,14 +5,13 @@ from typing import List, Optional
 import hydra
 import torch
 from omegaconf import DictConfig, OmegaConf
-from pytorch_lightning import LightningModule, LightningDataModule, Callback, Trainer
+from pytorch_lightning import LightningModule, LightningDataModule, Callback, Trainer, plugins
 from pytorch_lightning.loggers import LightningLoggerBase
-from torch.nn import ModuleDict
 
 from src.models.backbone_header_model import BackboneHeaderModel
-from src.utils import template_utils
+from src.utils import utils
 
-log = template_utils.get_logger(__name__)
+log = utils.get_logger(__name__)
 
 
 def train(config: DictConfig) -> Optional[float]:
@@ -45,10 +44,8 @@ def train(config: DictConfig) -> Optional[float]:
     log.info(f"Instantiating optimizer <{config.optimizer._target_}>")
     optimizer: torch.optim.Optimizer = hydra.utils.instantiate(config.optimizer, params=model.parameters(recurse=True))
 
-    loss = None
-    if 'loss' in config:
-        log.info(f"Instantiating loss<{config.loss._target_}>")
-        loss: torch.nn._Loss = hydra.utils.instantiate(config.loss)
+    log.info(f"Instantiating loss<{config.loss._target_}>")
+    loss: torch.nn.Module = hydra.utils.instantiate(config.loss)
 
     metric_train = None
     metric_val = None
@@ -109,9 +106,11 @@ def train(config: DictConfig) -> Optional[float]:
 
     # Send some parameters from config to all lightning loggers
     log.info("Logging hyperparameters!")
-    template_utils.log_hyperparameters(
+    utils.log_hyperparameters(
         config=config,
         model=model,
+        loss=loss,
+        optimizer=optimizer,
         task=task,
         datamodule=datamodule,
         trainer=trainer,
@@ -137,7 +136,7 @@ def train(config: DictConfig) -> Optional[float]:
 
     # Make sure everything closed properly
     log.info("Finalizing!")
-    template_utils.finish(
+    utils.finish(
         config=config,
         task=task,
         model=model,

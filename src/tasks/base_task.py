@@ -12,10 +12,10 @@ from torch.optim import Optimizer
 from torch.optim.lr_scheduler import _LRScheduler
 
 from src.tasks.utils.task_utils import get_callable_dict
-from src.utils import template_utils
+from src.utils import utils
 from src.tasks.utils.outputs import OutputKeys
 
-log = template_utils.get_logger(__name__)
+log = utils.get_logger(__name__)
 
 
 class AbstractTask(LightningModule, metaclass=ABCMeta):
@@ -44,9 +44,9 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             optimizer_kwargs: Optional[Dict[str, Any]] = None,
             scheduler: Optional[Union[Type[_LRScheduler], str, _LRScheduler]] = None,
             scheduler_kwargs: Optional[Dict[str, Any]] = None,
-            metric_train: Optional[Union[torchmetrics.Metric, Callable, Mapping, Sequence, None]] = None,
-            metric_val: Optional[Union[torchmetrics.Metric, Callable, Mapping, Sequence, None]] = None,
-            metric_test: Optional[Union[torchmetrics.Metric, Callable, Mapping, Sequence, None]] = None,
+            metric_train: Optional[torchmetrics.Metric] = None,
+            metric_val: Optional[torchmetrics.Metric] = None,
+            metric_test: Optional[torchmetrics.Metric] = None,
             lr: float = 1e-3,
             test_output_path: Optional[Union[str, Path]] = 'output'
     ):
