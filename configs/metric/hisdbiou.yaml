@@ -1,0 +1,3 @@
+_target_: src.metrics.divahisdb.HisDBIoU
+
+num_classes: 8
