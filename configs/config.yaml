@@ -5,12 +5,13 @@ defaults:
     - trainer: null
     - plugins: default.yaml
     - task: null
+    - loss: null
+    - metric: null
     - model/backbone: null
     - model/header: null
     - optimizer: adam.yaml
     - datamodule: cb55_cropped_datamodule.yaml
     - callbacks: default_callbacks.yaml  # set this to null if you don't want to use callbacks
-    - metric: null
     - logger: wandb.yaml # set logger here or use command line (e.g. `python run.py logger=wandb`)
 
     - experiment: development_baby_unet_cb55_10.yaml
@@ -28,10 +29,6 @@ test: True
 save_config: True
 
 checkpoint_folder_name: '{epoch}/'
-
-# seed for all the random generators (needs to be sett when training with ddp!)
-seed: 42
-
 
 # path to original working directory
 # hydra hijacks working directory by changing it to the current log directory,

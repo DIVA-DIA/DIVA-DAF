@@ -1,17 +1,21 @@
 import glob
 import os
+from pathlib import Path
 from typing import List
 
 import matplotlib.pyplot as plt
-import seaborn as sn
 import numpy as np
+import pandas as pd
+import seaborn as sn
 import torch
+import torchmetrics
 import wandb
 from matplotlib.patches import Rectangle
 from pytorch_lightning import Callback, Trainer
 from pytorch_lightning.loggers import LoggerCollection, WandbLogger
-from sklearn import metrics
 from sklearn.metrics import f1_score, precision_score, recall_score
+
+from src.tasks.utils.outputs import OutputKeys
 
 
 def get_wandb_logger(trainer: Trainer) -> WandbLogger:
@@ -79,8 +83,8 @@ class UploadCheckpointsToWandbAsArtifact(Callback):
         experiment.use_artifact(ckpts)
 
 
-class LogConfusionMatrixToWandb(Callback):
-    """Generate confusion matrix every epoch and send it to wandb.
+class LogConfusionMatrixToWandbVal(Callback):
+    """Generate confusion matrix every epoch and send it to wandb during validation.
     Expects validation step to return predictions and targets.
     """
 
@@ -97,53 +101,109 @@ class LogConfusionMatrixToWandb(Callback):
         self.ready = True
 
     def on_validation_batch_end(
-        self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx
+            self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx
     ):
         """Gather data from single batch."""
         if self.ready:
-            self.preds.append(outputs["pred"].detach().cpu().numpy())
-            self.targets.append(outputs["target"].detach().cpu().numpy())
+            self.preds.append(outputs[OutputKeys.PREDICTION].detach().cpu().numpy())
+            self.targets.append(outputs[OutputKeys.TARGET].detach().cpu().numpy())
 
     def on_validation_epoch_end(self, trainer, pl_module):
-        """Generate confusion matrix."""
+        """Generate confusion matrix and upload it with the numbers or as image"""
         if not self.ready:
             return
 
-        conf_mat_name = f'CM_epoch_{trainer.current_epoch}'
-        logger = get_wandb_logger(trainer)
-        experiment = logger.experiment
+        if trainer.is_global_zero:
+            _create_and_save_conf_mat(trainer=trainer, input_preds=self.preds, input_targets=self.targets, phase='val')
+            self.preds.clear()
+            self.targets.clear()
 
-        preds = np.concatenate(self.preds).flatten()
-        targets = np.concatenate(self.targets).flatten()
 
-        confusion_matrix = metrics.confusion_matrix(y_true=targets, y_pred=preds, normalize='true')
+class LogConfusionMatrixToWandbTest(Callback):
+    """Generate confusion matrix every epoch and send it to wandb during test.
+    Expects test step to return predictions and targets.
+    """
 
-        # set figure size
-        plt.figure(figsize=(14, 8))
+    def __init__(self):
+        self.preds = []
+        self.targets = []
+        self.ready = True
 
-        # set labels size
-        sn.set(font_scale=1.4)
+    def on_test_batch_end(
+            self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx
+    ):
+        """Gather data from single batch."""
+        if self.ready:
+            self.preds.append(outputs[OutputKeys.PREDICTION].detach().cpu().numpy())
+            self.targets.append(outputs[OutputKeys.TARGET].detach().cpu().numpy())
 
-        # set font size
-        fig = sn.heatmap(confusion_matrix, annot=True, annot_kws={"size": 8}, fmt="g")
+    def on_test_epoch_end(self, trainer, pl_module):
+        """Generate confusion matrix and upload it with the numbers or as image"""
+        if not self.ready:
+            return
 
-        for i in range(confusion_matrix.shape[0]):
-            fig.add_patch(Rectangle((i, i), 1, 1, fill=False, edgecolor='yellow', lw=3))
-        plt.xlabel('Predictions')
-        plt.ylabel('Targets')
-        plt.title(conf_mat_name)
-
-        # names should be uniqe or else charts from different experiments in wandb will overlap
-        experiment.log({f"confusion_matrix/{experiment.name}_ep_{trainer.current_epoch}": wandb.Image(plt)}, commit=False)
-
-        # according to wandb docs this should also work but it crashes
-        # experiment.log(f{"confusion_matrix/{experiment.name}": plt})
-
-        # reset plot
-        plt.clf()
+        _create_and_save_conf_mat(trainer=trainer, input_preds=self.preds, input_targets=self.targets, phase='test')
 
         self.preds.clear()
         self.targets.clear()
+
+
+def _create_and_save_conf_mat(trainer, input_preds, input_targets, phase):
+    """
+    This function creates a confusion matrix and saves it as a tsv file as well as uploading it to wandb as tsv and
+    as an image.
+    :param trainer:
+    :param input_preds:
+    :param input_targets:
+    :param phase:
+    """
+    # TODO get from task the preprocess function
+    conf_mat_name = f'CM_epoch_{trainer.current_epoch}'
+    logger = get_wandb_logger(trainer)
+    experiment = logger.experiment
+
+    preds = []
+    for step_pred, step_target in zip(input_preds, input_targets):
+        preds.append(trainer.model.module.module.to_metrics_format(np.array(step_pred)))
+
+    preds = np.concatenate(preds).flatten()
+    targets = np.concatenate(np.array(input_targets)).flatten()
+
+    # only works if preds and targets contains index of class (starting with 0)
+    num_classes = max(np.max(preds), np.max(targets)) + 1
+
+    confusion_matrix = torchmetrics.functional.confusion_matrix(target=torch.tensor(targets), preds=torch.tensor(preds),
+                                                                num_classes=num_classes)
+
+    # set figure size
+    plt.figure(figsize=(14, 8))
+    # set labels size
+    sn.set(font_scale=1.4)
+    # set font size
+    fig = sn.heatmap(confusion_matrix, annot=True, annot_kws={"size": 8}, fmt="g")
+
+    for i in range(confusion_matrix.shape[0]):
+        fig.add_patch(Rectangle((i, i), 1, 1, fill=False, edgecolor='yellow', lw=3))
+    plt.xlabel('Predictions')
+    plt.ylabel('Targets')
+    plt.title(conf_mat_name)
+
+    conf_mat_path = Path(os.getcwd()) / 'conf_mats' / phase
+    conf_mat_path.mkdir(parents=True, exist_ok=True)
+    conf_mat_file_path = conf_mat_path / (conf_mat_name + '.txt')
+    df = pd.DataFrame(confusion_matrix.detach().cpu().numpy())
+
+    # save as csv or tsv to disc
+    df.to_csv(path_or_buf=conf_mat_file_path, sep='\t')
+    # save tsv to wandb
+    experiment.save(glob_str=str(conf_mat_file_path), base_path=os.getcwd())
+    # names should be uniqe or else charts from different experiments in wandb will overlap
+    experiment.log({f"confusion_matrix_{phase}_img/ep_{trainer.current_epoch}": wandb.Image(plt)},
+                   commit=False)
+    # according to wandb docs this should also work but it crashes
+    # experiment.log(f{"confusion_matrix/{experiment.name}": plt})
+    # reset plot
+    plt.clf()
 
 
 class LogF1PrecRecHeatmapToWandb(Callback):
@@ -164,12 +224,12 @@ class LogF1PrecRecHeatmapToWandb(Callback):
         self.ready = True
 
     def on_validation_batch_end(
-        self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx
+            self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx
     ):
         """Gather data from single batch."""
         if self.ready:
-            self.preds.append(outputs["pred"].detach().cpu().numpy())
-            self.targets.append(outputs["target"].detach().cpu().numpy())
+            self.preds.append(outputs[OutputKeys.PREDICTION].detach().cpu().numpy())
+            self.targets.append(outputs[OutputKeys.TARGET].detach().cpu().numpy())
 
     def on_validation_epoch_end(self, trainer, pl_module):
         """Generate f1, precision and recall heatmap."""
