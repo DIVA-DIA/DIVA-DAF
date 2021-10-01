@@ -4,7 +4,7 @@
 # python run.py +experiment=exp_example_full
 
 defaults:
-    - /loss: crossentropyloss.yaml
+    - override /loss: crossentropyloss.yaml
     - override /trainer: null  # override trainer to null so it's not loaded from main config defaults...
     - override /task: semantic_segmentation_task.yaml
     - override /model/backbone: baby_unet_model.yaml
