@@ -7,11 +7,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sn
+import torch
+import torchmetrics
 import wandb
 from matplotlib.patches import Rectangle
 from pytorch_lightning import Callback, Trainer
 from pytorch_lightning.loggers import LoggerCollection, WandbLogger
-from sklearn import metrics
 from sklearn.metrics import f1_score, precision_score, recall_score
 
 from src.tasks.utils.outputs import OutputKeys
@@ -112,10 +113,10 @@ class LogConfusionMatrixToWandbVal(Callback):
         if not self.ready:
             return
 
-        _create_and_save_conf_mat(trainer=trainer, input_preds=self.preds, input_targets=self.targets, phase='val')
-
-        self.preds.clear()
-        self.targets.clear()
+        if trainer.is_global_zero:
+            _create_and_save_conf_mat(trainer=trainer, input_preds=self.preds, input_targets=self.targets, phase='val')
+            self.preds.clear()
+            self.targets.clear()
 
 
 class LogConfusionMatrixToWandbTest(Callback):
@@ -168,7 +169,11 @@ def _create_and_save_conf_mat(trainer, input_preds, input_targets, phase):
     preds = np.concatenate(preds).flatten()
     targets = np.concatenate(np.array(input_targets)).flatten()
 
-    confusion_matrix = metrics.confusion_matrix(y_true=targets, y_pred=preds)
+    # only works if preds and targets contains index of class (starting with 0)
+    num_classes = max(np.max(preds), np.max(targets)) + 1
+
+    confusion_matrix = torchmetrics.functional.confusion_matrix(target=torch.tensor(targets), preds=torch.tensor(preds),
+                                                                num_classes=num_classes)
 
     # set figure size
     plt.figure(figsize=(14, 8))
@@ -185,7 +190,7 @@ def _create_and_save_conf_mat(trainer, input_preds, input_targets, phase):
 
     conf_mat_path = Path(os.getcwd()) / 'conf_mats' / phase
     conf_mat_path.mkdir(parents=True, exist_ok=True)
-    conf_mat_file_path = conf_mat_path / (conf_mat_name + '.tsv')
+    conf_mat_file_path = conf_mat_path / (conf_mat_name + '.txt')
     df = pd.DataFrame(confusion_matrix)
 
     # save as csv or tsv to disc
