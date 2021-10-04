@@ -3,75 +3,84 @@ import torch
 
 from src.metrics.divahisdb import HisDBIoU
 
-def test_accuracy_segmentation_boundary_identical():
-    label_preds, label_trues, nb_classes, mask = _get_test_data(with_boundary=True, identical=True)
-    accuracy, mean_accuracy, miou, fwavacc = accuracy_segmentation(label_trues, label_preds, nb_classes, mask,
-                                                                   calc_acc=True, calc_acc_cls=True,
-                                                                   calc_mean_iu=True, calc_fwavacc=True)
-    assert accuracy == 100.
-    assert mean_accuracy == 100.0
-    assert miou == 100.
-    assert fwavacc == 100.
+
+def test_iou_boundary_mask_modifies_prediction_identical():
+    label_preds, label_trues, num_classes, mask = _get_test_data(with_boundary=True, identical=True)
+    metric = HisDBIoU(num_classes=num_classes)
+    metric.update(pred=label_preds, target=label_trues, mask=mask)
+    iou = metric.compute()
+
+    assert torch.tensor(1.) == iou
 
 
-def test_accuracy_segmentation_identical():
-    label_preds, label_trues, nb_classes, mask = _get_test_data(with_boundary=False, identical=True)
-    accuracy, mean_accuracy, miou, fwavacc = accuracy_segmentation(label_trues, label_preds, nb_classes, mask,
-                                                                   calc_acc=True, calc_acc_cls=True,
-                                                                   calc_mean_iu=True, calc_fwavacc=True)
-    assert accuracy == 100.
-    assert mean_accuracy == 100.0
-    assert miou == 100.
-    assert fwavacc == 100.
+def test_iou_mask_modifies_prediction_identical():
+    label_preds, label_trues, num_classes, mask = _get_test_data(with_boundary=False, identical=True)
+    metric = HisDBIoU(num_classes=num_classes)
+    metric.update(pred=label_preds, target=label_trues, mask=mask)
+    iou = metric.compute()
+
+    assert torch.tensor(1.) == iou
 
 
-def test_accuracy_segmentation_boundary():
-    label_preds, label_trues, nb_classes, mask = _get_test_data(with_boundary=True, identical=False)
-    accuracy, mean_accuracy, miou, fwavacc = accuracy_segmentation(label_trues, label_preds, nb_classes, mask,
-                                                                   calc_acc=True, calc_acc_cls=True,
-                                                                   calc_mean_iu=True, calc_fwavacc=True)
-    assert np.isclose(accuracy.numpy(), 100 * 17 / 18)
-    assert np.isclose(mean_accuracy, 100 * (13 / 13 + 4 / 5) / 2)
-    assert np.isclose(miou, 100 * (13 / 14 + 4 / 5) / 2)
-    assert np.isclose(fwavacc, 100 * (((13 / 18) * (13 / 14)) + ((5 / 18) * (4 / 5))))
+def test_iou_boundary_mask_modifies_prediction():
+    label_preds, label_trues, num_classes, mask = _get_test_data(with_boundary=True, identical=False)
+    metric = HisDBIoU(num_classes=num_classes)
+    metric.update(pred=label_preds, target=label_trues, mask=mask)
+    iou = metric.compute()
+
+    assert torch.isclose(iou, torch.tensor((12 / 13 + 5 / 6) / 2))
 
 
-def test_accuracy_segmentation():
-    label_preds, label_trues, nb_classes, mask = _get_test_data(with_boundary=False, identical=False)
-    accuracy, mean_accuracy, miou, fwavacc = accuracy_segmentation(label_trues, label_preds, nb_classes, mask,
-                                                                   calc_acc=True, calc_acc_cls=True,
-                                                                   calc_mean_iu=True, calc_fwavacc=True)
-    assert np.isclose(accuracy.numpy(), 100 * 16 / 18)
-    assert np.isclose(mean_accuracy, 100 * (12 / 12 + 4 / 6) / 2)
-    assert np.isclose(miou, 100 * (12 / 14 + 4 / 6) / 2)
-    assert np.isclose(fwavacc, 100 * (((12 / 18) * (12 / 14)) + ((6 / 18) * (4 / 6))))
+def test_iou_boundary_mask_modifies():
+    label_preds, label_trues, num_classes, mask = _get_test_data(with_boundary=False, identical=False)
+    metric = HisDBIoU(num_classes=num_classes)
+    metric.update(pred=label_preds, target=label_trues, mask=mask)
+    iou = metric.compute()
+
+    assert torch.isclose(iou, torch.tensor((12 / 14 + 4 / 6) / 2))
 
 
-def test_accuracy_segmentation_identical_mask_None():
-    label_preds, label_trues, nb_classes, _ = _get_test_data(identical=True)
-    accuracy, mean_accuracy, miou, fwavacc = accuracy_segmentation(label_trues, label_preds, nb_classes, None,
-                                                                   calc_acc=True, calc_acc_cls=True,
-                                                                   calc_mean_iu=True, calc_fwavacc=True)
-    assert accuracy == 100.
-    assert mean_accuracy == 100.0
-    assert miou == 100.
-    assert fwavacc == 100.
+# with mask modifies prediction false
+
+def test_iou_boundary_mask_modifies_prediction_false_identical():
+    label_preds, label_trues, num_classes, mask = _get_test_data(with_boundary=True, identical=True)
+    metric = HisDBIoU(num_classes=num_classes, mask_modifies_prediction=False)
+    metric.update(pred=label_preds, target=label_trues, mask=mask)
+    iou = metric.compute()
+
+    assert torch.tensor(1.) == iou
 
 
-def test_accuracy_segmentation():
-    label_preds, label_trues, nb_classes, _ = _get_test_data(with_boundary=False, identical=False)
-    accuracy, mean_accuracy, miou, fwavacc = accuracy_segmentation(label_trues, label_preds, nb_classes, None,
-                                                                   calc_acc=True, calc_acc_cls=True,
-                                                                   calc_mean_iu=True, calc_fwavacc=True)
-    assert np.isclose(accuracy.numpy(), 100 * 16 / 18)
-    assert np.isclose(mean_accuracy, 100 * (12 / 12 + 4 / 6) / 2)
-    assert np.isclose(miou, 100 * (12 / 14 + 4 / 6) / 2)
-    assert np.isclose(fwavacc, 100 * (((12 / 18) * (12 / 14)) + ((6 / 18) * (4 / 6))))
+def test_iou_mask_modifies_prediction_false_identical():
+    label_preds, label_trues, num_classes, mask = _get_test_data(with_boundary=False, identical=True)
+    metric = HisDBIoU(num_classes=num_classes, mask_modifies_prediction=False)
+    metric.update(pred=label_preds, target=label_trues, mask=mask)
+    iou = metric.compute()
+
+    assert torch.tensor(1.) == iou
+
+
+def test_iou_boundary_mask_modifies_false_prediction():
+    label_preds, label_trues, num_classes, mask = _get_test_data(with_boundary=True, identical=False)
+    metric = HisDBIoU(num_classes=num_classes, mask_modifies_prediction=False)
+    metric.update(pred=label_preds, target=label_trues, mask=mask)
+    iou = metric.compute()
+
+    assert torch.isclose(iou, torch.tensor((13 / 14 + 4 / 5) / 2))
+
+
+def test_iou_boundary_mask_modifies():
+    label_preds, label_trues, num_classes, mask = _get_test_data(with_boundary=False, identical=False)
+    metric = HisDBIoU(num_classes=num_classes, mask_modifies_prediction=False)
+    metric.update(pred=label_preds, target=label_trues, mask=mask)
+    iou = metric.compute()
+
+    assert torch.isclose(iou, torch.tensor((12 / 14 + 4 / 6) / 2))
 
 
 def test__fast_hist():
-    label_preds, label_trues, nb_classes, _ = _get_test_data()
-    output = _fast_hist(label_trues, label_preds, nb_classes)
+    label_preds, label_trues, num_classes, _ = _get_test_data()
+    output = HisDBIoU._fast_hist(label_trues, label_preds, num_classes)
     expected_result = torch.tensor([[12, 0], [0, 6]])
     assert torch.equal(expected_result, output)
 
@@ -105,10 +114,10 @@ def _get_test_data(with_boundary=True, identical=True):
     if not identical:
         label_preds[0, 1, 1] = 0
         label_preds[2, 1, 0] = 0
-    nb_classes = len(label_trues.unique())
+    num_classes = len(label_trues.unique())
     mask = torch.tensor([[[False, False], [False, True], [False, False]],
                          [[False, False], [False, False], [False, False]],
                          [[False, False], [False, False], [False, False]]], device=device)
     if not with_boundary:
         mask[:] = False
-    return label_preds, label_trues, nb_classes, mask
+    return label_preds, label_trues, num_classes, mask
