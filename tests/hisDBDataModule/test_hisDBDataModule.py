@@ -21,8 +21,8 @@ def data_module_cropped(data_dir_cropped):
 
 def test_setup(data_module):
     data_module.setup()
-    assert data_module.his_train is not None
-    assert data_module.his_val is not None
+    assert data_module.train is not None
+    assert data_module.val is not None
 
 
 def test_train_dataloader(data_module):
