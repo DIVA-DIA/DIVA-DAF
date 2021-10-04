@@ -6,7 +6,7 @@ import numpy as np
 
 from src.datamodules.hisDBDataModule.DIVAHisDBDataModule import DIVAHisDBDataModuleCropped
 from src.datamodules.hisDBDataModule.cropped_hisdb_dataset import CroppedHisDBDataset
-from src.models.semantic_segmentation.utils.output_tools import merge_patches, save_output_page_image
+from src.tasks.semantic_segmentation.utils.output_tools import merge_patches, save_output_page_image
 
 
 def merge_cropped_output(data_dir: Path, prediction_path: Path, outdir: Path):
