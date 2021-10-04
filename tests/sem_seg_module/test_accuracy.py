@@ -1,8 +1,7 @@
 import numpy as np
 import torch
 
-from src.models.semantic_segmentation.utils.accuracy import accuracy_segmentation, _fast_hist
-
+from src.metrics.divahisdb import HisDBIoU
 
 def test_accuracy_segmentation_boundary_identical():
     label_preds, label_trues, nb_classes, mask = _get_test_data(with_boundary=True, identical=True)
