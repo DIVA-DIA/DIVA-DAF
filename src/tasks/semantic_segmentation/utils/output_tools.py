@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import numpy
 import numpy as np
 import torch
 from PIL import Image
@@ -13,7 +14,11 @@ def _get_argmax(output):
     :return: (Batch_size x W x H)
         matrix with the hisdb class number for each pixel
     """
-    return torch.argmax(output, dim=1)
+    if isinstance(output, torch.Tensor):
+        return torch.argmax(output, dim=1)
+    if isinstance(output, np.ndarray):
+        return np.argmax(output, axis=1)
+    return output
 
 
 def merge_patches(patch, coordinates, full_output):

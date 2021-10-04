@@ -1,0 +1,2 @@
+check_backbone_header_compatibility:
+    _target_: src.callbacks.model_callbacks.CheckBackboneHeaderCompatibility

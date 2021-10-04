@@ -26,9 +26,9 @@ if __name__ == '__main__':
         model = SemanticSegmentation.load_from_checkpoint(
             '/data/usl_experiments/semantic_segmentation/supervised/unet_crops_1000_CB55/2021-01-05_19-01-24/epoch=39-step=102399.ckpt',
             class_encodings=data_module.class_encodings, model=UNet(num_classes=len(data_module.class_encodings)),
-            img_names_sizes_testset=data_module.his_test.img_names_sizes)
+            img_names_sizes_testset=data_module.test.img_names_sizes)
 
-        model.output_path = Path('/data/usl_experiments/tmp_testing_output/unet_crops_1000_CB55/')
+        model.test_output_path = Path('/data/usl_experiments/tmp_testing_output/unet_crops_1000_CB55/')
 
         trainer = pl.Trainer(gpus=-1, accelerator='ddp', max_epochs=50, log_every_n_steps=10)
         trainer.test(model=model, datamodule=data_module)
@@ -52,7 +52,7 @@ if __name__ == '__main__':
             class_encodings=data_module.class_encodings,
             model=baby_unet())
 
-        model.output_path = Path('/data/usl_experiments/tmp_testing_output/baby_unet_cropped_cb55_v2021_04_22a/')
+        model.test_output_path = Path('/data/usl_experiments/tmp_testing_output/baby_unet_cropped_cb55_v2021_04_22a/')
 
         trainer = pl.Trainer(gpus=-1, accelerator='ddp', max_epochs=50, log_every_n_steps=10)
         trainer.test(model=model, datamodule=data_module)

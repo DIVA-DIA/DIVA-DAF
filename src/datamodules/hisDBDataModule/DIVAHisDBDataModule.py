@@ -11,10 +11,18 @@ from src.datamodules.hisDBDataModule.util.analytics.image_analytics import get_a
 from src.datamodules.hisDBDataModule.util.misc import validate_path
 from src.datamodules.hisDBDataModule.util.transformations import transforms as custom_transforms
 from src.datamodules.hisDBDataModule.util.transformations.transforms import TwinRandomCrop, OnlyTarget, OnlyImage
+from src.utils import utils
+
+log = utils.get_logger(__name__)
 
 
 class DIVAHisDBDataModuleCropped(pl.LightningDataModule):
-    def __init__(self, data_dir: str = None, crop_size: int = 256, num_workers: int = 4, batch_size: int = 8):
+    def __init__(self, data_dir: str = None,
+                 selection_train: Optional[Union[int, List[str]]] = None,
+                 selection_val: Optional[Union[int, List[str]]] = None,
+                 selection_test: Optional[Union[int, List[str]]] = None,
+                 crop_size: int = 256, num_workers: int = 4, batch_size: int = 8,
+                 shuffle: bool = True, drop_last_batch: bool = True):
         super().__init__()
 
         analytics = get_analytics(input_path=Path(data_dir),
@@ -38,32 +46,72 @@ class DIVAHisDBDataModuleCropped(pl.LightningDataModule):
         self.num_workers = num_workers
         self.batch_size = batch_size
 
+        self.shuffle = shuffle
+        self.drop_last_batch = drop_last_batch
+
         self.data_dir = validate_path(data_dir)
+
+        self.selection_train = selection_train
+        self.selection_val = selection_val
+        self.selection_test = selection_test
+
+        self.dims = (3, crop_size, crop_size)
 
     def setup(self, stage: Optional[str] = None):
         if stage == 'fit' or stage is None:
-            self.his_train = CroppedHisDBDataset(**self._create_dataset_parameters('train'))
-            self.his_val = CroppedHisDBDataset(**self._create_dataset_parameters('val'))
+            self.train = CroppedHisDBDataset(**self._create_dataset_parameters('train'), selection=self.selection_train)
+            self.val = CroppedHisDBDataset(**self._create_dataset_parameters('val'), selection=self.selection_val)
+
+            self._check_min_num_samples(num_samples=len(self.train), data_split='train',
+                                        drop_last_batch=self.drop_last_batch)
+            self._check_min_num_samples(num_samples=len(self.val), data_split='val',
+                                        drop_last_batch=self.drop_last_batch)
 
         if stage == 'test' or stage is not None:
-            self.his_test = CroppedHisDBDataset(**self._create_dataset_parameters('test'))
+            self.test = CroppedHisDBDataset(**self._create_dataset_parameters('test'), selection=self.selection_test)
+            # self._check_min_num_samples(num_samples=len(self.test), data_split='test',
+            #                             drop_last_batch=False)
+
+    def _check_min_num_samples(self, num_samples: int, data_split: str, drop_last_batch: bool):
+        num_processes = self.trainer.num_processes
+        batch_size = self.batch_size
+        if drop_last_batch:
+            if num_samples < (self.trainer.num_processes * self.batch_size):
+                log.error(
+                    f'#samples ({num_samples}) in "{data_split}" smaller than '
+                    f'#processes({num_processes}) times batch size ({batch_size}). '
+                    f'This only works if drop_last_batch is false!')
+                raise ValueError()
+        else:
+            if num_samples < (self.trainer.num_processes * self.batch_size):
+                log.warning(
+                    f'#samples ({num_samples}) in "{data_split}" smaller than '
+                    f'#processes ({num_processes}) times batch size ({batch_size}). '
+                    f'This works due to drop_last_batch=False, however samples will occur multiple times. '
+                    f'Check if this behavior is intended!')
 
     def train_dataloader(self, *args, **kwargs) -> DataLoader:
-        return DataLoader(self.his_train,
+        return DataLoader(self.train,
                           batch_size=self.batch_size,
                           num_workers=self.num_workers,
+                          shuffle=self.shuffle,
+                          drop_last=self.drop_last_batch,
                           pin_memory=True)
 
     def val_dataloader(self, *args, **kwargs) -> Union[DataLoader, List[DataLoader]]:
-        return DataLoader(self.his_val,
+        return DataLoader(self.val,
                           batch_size=self.batch_size,
                           num_workers=self.num_workers,
+                          shuffle=self.shuffle,
+                          drop_last=self.drop_last_batch,
                           pin_memory=True)
 
     def test_dataloader(self, *args, **kwargs) -> Union[DataLoader, List[DataLoader]]:
-        return DataLoader(self.his_test,
+        return DataLoader(self.test,
                           batch_size=self.batch_size,
                           num_workers=self.num_workers,
+                          shuffle=False,
+                          drop_last=False,
                           pin_memory=True)
 
     def _create_dataset_parameters(self, dataset_type: str = 'train'):
@@ -82,10 +130,10 @@ class DIVAHisDBDataModuleCropped(pl.LightningDataModule):
         :param index:
         :return:
         """
-        if not hasattr(self, 'his_test'):
+        if not hasattr(self, 'test'):
             raise Exception('This method can just be called during testing')
 
-        return self.his_test.img_paths_per_page[index][2:]
+        return self.test.img_paths_per_page[index][2:]
 
 
 class DIVAHisDBDataModuleCB55(pl.LightningDataModule):
@@ -134,26 +182,26 @@ class DIVAHisDBDataModuleCB55(pl.LightningDataModule):
 
     def setup(self, stage: Optional[str] = None):
         if stage == 'fit' or stage is None:
-            self.his_train = ImageFolderSegmentationDataset(**self._create_dataset_parameters('train'))
-            self.his_val = ImageFolderSegmentationDataset(**self._create_dataset_parameters('val'))
+            self.train = ImageFolderSegmentationDataset(**self._create_dataset_parameters('train'))
+            self.val = ImageFolderSegmentationDataset(**self._create_dataset_parameters('val'))
 
         if stage == 'test' or stage is not None:
-            self.his_test = ImageFolderSegmentationDataset(**self._create_dataset_parameters('test'))
+            self.test = ImageFolderSegmentationDataset(**self._create_dataset_parameters('test'))
 
     def train_dataloader(self, *args, **kwargs) -> DataLoader:
-        return DataLoader(self.his_train,
+        return DataLoader(self.train,
                           batch_size=self.batch_size,
                           num_workers=self.num_workers,
                           pin_memory=True)
 
     def val_dataloader(self, *args, **kwargs) -> Union[DataLoader, List[DataLoader]]:
-        return DataLoader(self.his_val,
+        return DataLoader(self.val,
                           batch_size=self.batch_size,
                           num_workers=self.num_workers,
                           pin_memory=True)
 
     def test_dataloader(self, *args, **kwargs) -> Union[DataLoader, List[DataLoader]]:
-        return DataLoader(self.his_test,
+        return DataLoader(self.test,
                           batch_size=self.batch_size,
                           num_workers=self.num_workers,
                           pin_memory=True)
