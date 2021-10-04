@@ -14,11 +14,11 @@ from torch import is_tensor
 from torchvision.transforms import ToTensor
 
 from src.datamodules.hisDBDataModule.util.misc import has_extension, pil_loader
-from src.utils import template_utils
+from src.utils import utils
 
 IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm']
 
-log = template_utils.get_logger(__name__)
+log = utils.get_logger(__name__)
 
 class CroppedHisDBDataset(data.Dataset):
     """A generic data loader where the images are arranged in this way: ::
