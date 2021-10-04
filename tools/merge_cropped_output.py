@@ -14,7 +14,7 @@ def merge_cropped_output(data_dir: Path, prediction_path: Path, outdir: Path):
     num_classes = data_module.num_classes
     class_encodings = data_module.class_encodings
 
-    img_paths_per_page = CroppedHisDBDataset.get_gt_data_paths_cropped(directory=data_dir / 'test')
+    img_paths_per_page = CroppedHisDBDataset.get_gt_data_paths(directory=data_dir / 'test')
 
     dataset_img_name_list = []
     dataset_dict = defaultdict(list)
