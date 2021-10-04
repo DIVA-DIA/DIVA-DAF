@@ -4,7 +4,6 @@ from pl_bolts.models.vision import UNet
 from pytorch_lightning import seed_everything
 
 from src.models.semantic_segmentation.semantic_segmentation import SemanticSegmentation
-from tests.hisDBDataModule.dummy_data.dummy_data import data_dir_cropped
 
 
 def test_semantic_segmentation(data_dir_cropped):

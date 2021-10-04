@@ -1,13 +1,9 @@
-import os
-from distutils import dir_util
-
 import numpy as np
 from numpy import uint8
 from pytest import fixture
 
 from src.datamodules.hisDBDataModule.DIVAHisDBDataModule import DIVAHisDBDataModuleCB55, DIVAHisDBDataModuleCropped
-from tests.hisDBDataModule.dummy_data.dummy_data import data_dir, data_dir_cropped
-
+from tests.datamodules.hisDBDataModule.dummy_data.dummy_data import data_dir_cropped, data_dir
 
 @fixture
 def data_module(data_dir):
