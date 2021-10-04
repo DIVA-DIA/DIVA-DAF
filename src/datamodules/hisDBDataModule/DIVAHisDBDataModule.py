@@ -55,6 +55,8 @@ class DIVAHisDBDataModuleCropped(pl.LightningDataModule):
         self.selection_val = selection_val
         self.selection_test = selection_test
 
+        self.dims = (3, crop_size, crop_size)
+
     def setup(self, stage: Optional[str] = None):
         if stage == 'fit' or stage is None:
             self.train = CroppedHisDBDataset(**self._create_dataset_parameters('train'), selection=self.selection_train)
