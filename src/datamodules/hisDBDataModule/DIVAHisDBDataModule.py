@@ -11,9 +11,9 @@ from src.datamodules.hisDBDataModule.util.analytics.image_analytics import get_a
 from src.datamodules.hisDBDataModule.util.misc import validate_path
 from src.datamodules.hisDBDataModule.util.transformations import transforms as custom_transforms
 from src.datamodules.hisDBDataModule.util.transformations.transforms import TwinRandomCrop, OnlyTarget, OnlyImage
-from src.utils import template_utils
+from src.utils import utils
 
-log = template_utils.get_logger(__name__)
+log = utils.get_logger(__name__)
 
 
 class DIVAHisDBDataModuleCropped(pl.LightningDataModule):
@@ -180,26 +180,26 @@ class DIVAHisDBDataModuleCB55(pl.LightningDataModule):
 
     def setup(self, stage: Optional[str] = None):
         if stage == 'fit' or stage is None:
-            self.his_train = ImageFolderSegmentationDataset(**self._create_dataset_parameters('train'))
-            self.his_val = ImageFolderSegmentationDataset(**self._create_dataset_parameters('val'))
+            self.train = ImageFolderSegmentationDataset(**self._create_dataset_parameters('train'))
+            self.val = ImageFolderSegmentationDataset(**self._create_dataset_parameters('val'))
 
         if stage == 'test' or stage is not None:
-            self.his_test = ImageFolderSegmentationDataset(**self._create_dataset_parameters('test'))
+            self.test = ImageFolderSegmentationDataset(**self._create_dataset_parameters('test'))
 
     def train_dataloader(self, *args, **kwargs) -> DataLoader:
-        return DataLoader(self.his_train,
+        return DataLoader(self.train,
                           batch_size=self.batch_size,
                           num_workers=self.num_workers,
                           pin_memory=True)
 
     def val_dataloader(self, *args, **kwargs) -> Union[DataLoader, List[DataLoader]]:
-        return DataLoader(self.his_val,
+        return DataLoader(self.val,
                           batch_size=self.batch_size,
                           num_workers=self.num_workers,
                           pin_memory=True)
 
     def test_dataloader(self, *args, **kwargs) -> Union[DataLoader, List[DataLoader]]:
-        return DataLoader(self.his_test,
+        return DataLoader(self.test,
                           batch_size=self.batch_size,
                           num_workers=self.num_workers,
                           pin_memory=True)
