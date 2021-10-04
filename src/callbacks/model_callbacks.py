@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+import traceback
 from typing import Optional
 
 import pytorch_lightning as pl
@@ -75,6 +76,7 @@ class CheckBackboneHeaderCompatibility(Callback):
         except RuntimeError as e:
             log.error(f"Problem in the backbone! Your image dimension is {trainer.datamodule.dims}")
             log.error(e)
+            log.error(traceback.format_exc())
             sys.exit(1)
         # test if backbone matches header
         try:
@@ -83,6 +85,7 @@ class CheckBackboneHeaderCompatibility(Callback):
             log.error(f'Backbone and Header are not fitting together! Backbone output dimensions {b_output.shape}.'
                       f'Perhaps flatten header input first.')
             log.error(e)
+            log.error(traceback.format_exc())
             sys.exit(1)
 
         self.checked = True
