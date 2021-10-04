@@ -9,9 +9,9 @@ from pytorch_lightning import LightningModule, LightningDataModule, Callback, Tr
 from pytorch_lightning.loggers import LightningLoggerBase
 
 from src.models.backbone_header_model import BackboneHeaderModel
-from src.utils import template_utils
+from src.utils import utils
 
-log = template_utils.get_logger(__name__)
+log = utils.get_logger(__name__)
 
 
 def train(config: DictConfig) -> Optional[float]:
@@ -44,14 +44,28 @@ def train(config: DictConfig) -> Optional[float]:
     log.info(f"Instantiating optimizer <{config.optimizer._target_}>")
     optimizer: torch.optim.Optimizer = hydra.utils.instantiate(config.optimizer, params=model.parameters(recurse=True))
 
-    loss = None
-    if 'loss' in config:
-        log.info(f"Instantiating loss<{config.loss._target_}>")
-        loss: torch.nn._Loss = hydra.utils.instantiate(config.loss)
+    log.info(f"Instantiating loss<{config.loss._target_}>")
+    loss: torch.nn.Module = hydra.utils.instantiate(config.loss)
+
+    metric_train = None
+    metric_val = None
+    metric_test = None
+    if 'metric' in config:
+        log.info(f"Instantiating metric<{config.metric._target_}>")
+        metric_train = hydra.utils.instantiate(config.metric)
+        metric_val = hydra.utils.instantiate(config.metric)
+        metric_test = hydra.utils.instantiate(config.metric)
 
     # Init the task as lightning module
     log.info(f"Instantiating model <{config.task._target_}>")
-    task: LightningModule = hydra.utils.instantiate(config.task, model=model, optimizer=optimizer, loss_fn=loss)
+    task: LightningModule = hydra.utils.instantiate(config.task,
+                                                    model=model,
+                                                    optimizer=optimizer,
+                                                    loss_fn=loss,
+                                                    metric_train=metric_train,
+                                                    metric_val=metric_val,
+                                                    metric_test=metric_test,
+                                                    )
 
     # Init Lightning callbacks
     callbacks: List[Callback] = []
@@ -92,9 +106,11 @@ def train(config: DictConfig) -> Optional[float]:
 
     # Send some parameters from config to all lightning loggers
     log.info("Logging hyperparameters!")
-    template_utils.log_hyperparameters(
+    utils.log_hyperparameters(
         config=config,
         model=model,
+        loss=loss,
+        optimizer=optimizer,
         task=task,
         datamodule=datamodule,
         trainer=trainer,
@@ -120,7 +136,7 @@ def train(config: DictConfig) -> Optional[float]:
 
     # Make sure everything closed properly
     log.info("Finalizing!")
-    template_utils.finish(
+    utils.finish(
         config=config,
         task=task,
         model=model,
@@ -194,9 +210,10 @@ def _print_best_paths(conf: DictConfig, trainer: Trainer):
     log.info(
         f"Best task checkpoint path:"
         f"\n{trainer.checkpoint_callback.best_model_path}")
-    log.info(
-        f"Best backbone checkpoint path:"
-        f"\n{_create_print_path(base_path, conf.callbacks.model_checkpoint.backbone_filename)}")
-    log.info(
-        f"Best header checkpoint path:"
-        f"\n{_create_print_path(base_path, conf.callbacks.model_checkpoint.header_filename)}")
+    if '_target_' in conf.callbacks.get('model_checkpoint'):
+        log.info(
+            f"Best backbone checkpoint path:"
+            f"\n{_create_print_path(base_path, conf.callbacks.model_checkpoint.backbone_filename)}")
+        log.info(
+            f"Best header checkpoint path:"
+            f"\n{_create_print_path(base_path, conf.callbacks.model_checkpoint.header_filename)}")
