@@ -1,9 +1,12 @@
 import logging
 import os
+import sys
+import traceback
 from typing import Optional
 
 import pytorch_lightning as pl
 import torch
+from pytorch_lightning import Callback
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.utilities import rank_zero_only
 
@@ -47,10 +50,42 @@ class SaveModelStateDictAndTaskCheckpoint(ModelCheckpoint):
             # fixed pathing problem
             format_backbone_filename = self._format_checkpoint_name(filename=self.backbone_filename,
                                                                     metrics=metric_candidates)
-            format_header_filename = self._format_checkpoint_name(filename=self.header_filename, metrics=metric_candidates)
+            format_header_filename = self._format_checkpoint_name(filename=self.header_filename,
+                                                                  metrics=metric_candidates)
         else:
             format_backbone_filename = self.backbone_filename.split('/')[-1] + '_last'
             format_header_filename = self.header_filename.split('/')[-1] + '_last'
 
         torch.save(model.backbone.state_dict(), os.path.join(self.dirpath, format_backbone_filename + '.pth'))
         torch.save(model.header.state_dict(), os.path.join(self.dirpath, format_header_filename + '.pth'))
+
+
+class CheckBackboneHeaderCompatibility(Callback):
+
+    def __init__(self):
+        self.checked = False
+
+    def setup(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule", stage: Optional[str] = None) -> None:
+        if self.checked:
+            return
+        # get the datamodule and the dim of the input
+        dim = (trainer.datamodule.batch_size, *trainer.datamodule.dims)
+        # test if backbone works
+        try:
+            b_output = pl_module.model.backbone(torch.rand(*dim, device=pl_module.device))
+        except RuntimeError as e:
+            log.error(f"Problem in the backbone! Your image dimension is {trainer.datamodule.dims}")
+            log.error(e)
+            log.error(traceback.format_exc())
+            sys.exit(1)
+        # test if backbone matches header
+        try:
+            pl_module(torch.rand(*dim, device=pl_module.device))
+        except RuntimeError as e:
+            log.error(f'Backbone and Header are not fitting together! Backbone output dimensions {b_output.shape}.'
+                      f'Perhaps flatten header input first.')
+            log.error(e)
+            log.error(traceback.format_exc())
+            sys.exit(1)
+
+        self.checked = True

@@ -241,9 +241,9 @@ class LogF1PrecRecHeatmapToWandb(Callback):
 
         preds = np.concatenate(self.preds).flatten()
         targets = np.concatenate(self.targets).flatten()
-        f1 = f1_score(preds, targets, average=None)
-        r = recall_score(preds, targets, average=None)
-        p = precision_score(preds, targets, average=None)
+        f1 = f1_score(y_true=targets, y_pred=preds, average=None)
+        r = recall_score(y_true=targets, y_pred=preds, average=None)
+        p = precision_score(y_true=targets, y_pred=preds, average=None)
         data = [f1, p, r]
 
         # set figure size
