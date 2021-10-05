@@ -1,10 +1,13 @@
 import re
 from collections import defaultdict
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 
+import argparse
 import numpy as np
 from PIL import Image
+from tqdm import tqdm
 
 from src.datamodules.hisDBDataModule.DIVAHisDBDataModule import DIVAHisDBDataModuleCropped
 from src.datamodules.hisDBDataModule.cropped_hisdb_dataset import CroppedHisDBDataset
@@ -26,6 +29,21 @@ class CropData:
 
 
 def merge_cropped_output(data_dir, prediction_path: Path, outdir: Path):
+    info_list = ['Running merge_cropped_output.py:',
+                 f'- start_time:        \t{datetime.now():%Y-%m-%d_%H-%M-%S}',
+                 f'- data_dir:          \t{data_dir}',
+                 f'- prediction_path:   \t{prediction_path}',
+                 f'- outdir:            \t{outdir}',
+                 '']  # empty string to get linebreak at the end when using join
+    info_str = '\n'.join(info_list)
+    print(info_str)
+
+    # Write info_cropped_dataset.txt
+    outdir.mkdir(parents=True, exist_ok=True)
+    info_file = outdir / 'info_merge_cropped_output.txt'
+    with info_file.open('a') as f:
+        f.write(info_str)
+
     data_module = DIVAHisDBDataModuleCropped(data_dir=data_dir)
     num_classes = data_module.num_classes
     class_encodings = data_module.class_encodings
@@ -51,7 +69,10 @@ def merge_cropped_output(data_dir, prediction_path: Path, outdir: Path):
     # check if all images from the dataset are found in the prediction output
     assert sorted(dataset_img_name_list) == sorted(img_name_list)
 
-    for img_name in img_name_list:
+    pbar = tqdm(img_name_list)
+    for img_name in pbar:
+        pbar.set_description(f'Processing {img_name}')
+
         preds_folder = prediction_path / img_name
         coordinates = re.compile(r'.+_x(\d+)_y(\d+)\.npy$')
 
@@ -97,7 +118,7 @@ def merge_cropped_output(data_dir, prediction_path: Path, outdir: Path):
         img_canvas = Image.new(mode='RGB', size=(canvas_width, canvas_height))
         gt_canvas = Image.new(mode='RGB', size=(canvas_width, canvas_height))
 
-        for crop_data in crop_data_list:
+        for crop_data in tqdm(crop_data_list, desc='Merging crops', leave=False):
             # Add the pred to the pred_canvas
             pred = np.load(str(crop_data.pred_path))
             pred_canvas = merge_patches(pred, (crop_data.offset_x, crop_data.offset_y), pred_canvas)
@@ -135,11 +156,29 @@ def merge_cropped_output(data_dir, prediction_path: Path, outdir: Path):
         else:
             print(f'WARNING: Test image {img_name} was not written! It still contains NaN values.')
 
+    # Write final info
+    info_str = f'- end_time:         \t{datetime.now():%Y-%m-%d_%H-%M-%S}'
+    print('')
+    print(info_str)
+    print('')
+    with info_file.open('a') as f:
+        f.write(info_str)
+        f.write('\n\n')
+
 
 if __name__ == '__main__':
-    merge_cropped_output(
-        data_dir=Path('/data/usl_experiments/semantic_segmentation/datasets_cropped/CB55-10-segmentation-fixed'),
-        prediction_path=Path('/home/paul/unsupervised_learning/outputs/2021-10-05/18-33-01/output/patches'),
-        outdir=Path('/home/paul/unsupervised_learning/outputs/2021-10-05/18-33-01/output/result'),
-
-    )
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d', '--data_dir',
+                        help='Path to the root folder of the dataset (contains train/val/test)',
+                        type=Path,
+                        required=True)
+    parser.add_argument('-p', '--prediction_path',
+                        help='Path to the prediction patches folder',
+                        type=Path,
+                        required=True)
+    parser.add_argument('-o', '--outdir',
+                        help='Path to the output folder',
+                        type=Path,
+                        required=True)
+    args = parser.parse_args()
+    merge_cropped_output(**args.__dict__)
