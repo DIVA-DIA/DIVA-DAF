@@ -23,7 +23,7 @@ class SemanticSegmentation(AbstractTask):
                  metric_train: Optional[torchmetrics.Metric] = None,
                  metric_val: Optional[torchmetrics.Metric] = None,
                  metric_test: Optional[torchmetrics.Metric] = None,
-                 test_output_path: Optional[Union[str, Path]] = '',
+                 test_output_path: Optional[Union[str, Path]] = 'predictions',
                  lr: float = 1e-3
                  ) -> None:
         """
