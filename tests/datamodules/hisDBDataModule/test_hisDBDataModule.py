@@ -5,42 +5,10 @@ from pytest import fixture
 from src.datamodules.hisDBDataModule.DIVAHisDBDataModule import DIVAHisDBDataModuleCropped
 from tests.datamodules.hisDBDataModule.dummy_data.dummy_data import data_dir_cropped, data_dir
 
+
 @fixture
 def data_module_cropped(data_dir_cropped):
     return DIVAHisDBDataModuleCropped(data_dir_cropped, num_workers=5)
-
-
-def test_setup(data_module_cropped):
-    data_module_cropped.setup()
-    assert data_module_cropped.train is not None
-    assert data_module_cropped.val is not None
-
-
-def test_train_dataloader(data_module_cropped):
-    data_module_cropped.setup()
-    loader = data_module_cropped.train_dataloader()
-    assert loader is not None
-    assert loader.num_workers == 5
-    assert loader.batch_size == 8
-    assert loader.dataset is not None
-
-
-def test_val_dataloader(data_module_cropped):
-    data_module_cropped.setup()
-    loader = data_module_cropped.val_dataloader()
-    assert loader is not None
-    assert loader.num_workers == 5
-    assert loader.batch_size == 8
-    assert loader.dataset is not None
-
-
-def test_test_dataloader(data_module_cropped):
-    data_module_cropped.setup(stage='test')
-    loader = data_module_cropped.test_dataloader()
-    assert loader is not None
-    assert loader.num_workers == 5
-    assert loader.batch_size == 8
-    assert loader.dataset is not None
 
 
 def test__create_dataset_parameters_cropped(data_module_cropped):
