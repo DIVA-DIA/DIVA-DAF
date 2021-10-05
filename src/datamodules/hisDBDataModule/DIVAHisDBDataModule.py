@@ -5,6 +5,7 @@ import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
+from datamodules.base_datamodule import AbstractDatamodule
 from src.datamodules.hisDBDataModule.cropped_hisdb_dataset import CroppedHisDBDataset
 from src.datamodules.hisDBDataModule.image_folder_segmentation import ImageFolderSegmentationDataset
 from src.datamodules.hisDBDataModule.util.analytics.image_analytics import get_analytics
@@ -16,7 +17,7 @@ from src.utils import utils
 log = utils.get_logger(__name__)
 
 
-class DIVAHisDBDataModuleCropped(pl.LightningDataModule):
+class DIVAHisDBDataModuleCropped(AbstractDatamodule):
     def __init__(self, data_dir: str = None,
                  selection_train: Optional[Union[int, List[str]]] = None,
                  selection_val: Optional[Union[int, List[str]]] = None,
@@ -58,6 +59,7 @@ class DIVAHisDBDataModuleCropped(pl.LightningDataModule):
         self.dims = (3, crop_size, crop_size)
 
     def setup(self, stage: Optional[str] = None):
+        super().setup()
         if stage == 'fit' or stage is None:
             self.train = CroppedHisDBDataset(**self._create_dataset_parameters('train'), selection=self.selection_train)
             self.val = CroppedHisDBDataset(**self._create_dataset_parameters('val'), selection=self.selection_val)
