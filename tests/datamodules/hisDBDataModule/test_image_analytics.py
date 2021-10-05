@@ -2,7 +2,7 @@ import json
 
 import numpy as np
 
-from src.datamodules.hisDBDataModule.cropped_hisdb_dataset import CroppedHisDBDataset
+from datamodules.datasets.cropped_hisdb_dataset import CroppedHisDBDataset
 from datamodules.util.analytics.image_analytics import get_analytics
 
 TEST_JSON = {'mean': [0.7050454974582426, 0.6503181590413943, 0.5567698583877997],
