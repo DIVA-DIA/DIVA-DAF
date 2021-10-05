@@ -4,6 +4,7 @@ from typing import Optional, Union, Type, Mapping, Sequence, Callable, Dict, Any
 
 import torch
 import torchmetrics
+from omegaconf import OmegaConf
 from pytorch_lightning import LightningModule
 from pytorch_lightning.trainer.states import RunningStage
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
@@ -51,6 +52,14 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             test_output_path: Optional[Union[str, Path]] = 'output'
     ):
         super().__init__()
+
+        resolver_name = 'task'
+        OmegaConf.register_new_resolver(
+            resolver_name,
+            lambda name: getattr(self, name),
+            use_cache=False
+        )
+
         if model is not None:
             self.model = model
         self.loss_fn = {} if loss_fn is None else get_callable_dict(loss_fn)

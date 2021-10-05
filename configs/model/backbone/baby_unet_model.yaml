@@ -1,6 +1,6 @@
 _target_: pl_bolts.models.vision.UNet
 
-num_classes: 8
+num_classes: ${datamodule:num_classes}
 num_layers: 2
 features_start: 32
 
