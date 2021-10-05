@@ -49,7 +49,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             metric_val: Optional[torchmetrics.Metric] = None,
             metric_test: Optional[torchmetrics.Metric] = None,
             lr: float = 1e-3,
-            test_output_path: Optional[Union[str, Path]] = 'output'
+            test_output_path: Optional[Union[str, Path]] = 'predictions'
     ):
         super().__init__()
 
