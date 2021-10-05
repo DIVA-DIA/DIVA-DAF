@@ -44,23 +44,6 @@ class WatchModelWithWandb(Callback):
         logger.watch(model=trainer.model, log=self.log, log_freq=self.log_freq)
 
 
-class UploadCodeToWandbAsArtifact(Callback):
-    """Upload all *.py files to wandb as an artifact, at the beginning of the run."""
-
-    def __init__(self, code_dir: str):
-        self.code_dir = code_dir
-
-    def on_train_start(self, trainer, pl_module):
-        logger = get_wandb_logger(trainer=trainer)
-        experiment = logger.experiment
-
-        code = wandb.Artifact("project-source", type="code")
-        for path in glob.glob(os.path.join(self.code_dir, "**/*.py"), recursive=True):
-            code.add_file(path)
-
-        experiment.use_artifact(code)
-
-
 class UploadCheckpointsToWandbAsArtifact(Callback):
     """Upload checkpoints to wandb as an artifact, at the end of run."""
 

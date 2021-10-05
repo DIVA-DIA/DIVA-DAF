@@ -11,7 +11,7 @@ class HisDBIoU(Metric):
                  dist_sync_on_step: bool = False, process_group: Optional[Any] = None, dist_sync_fn: Callable = None,
                  ) -> None:
         super().__init__(compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)
-        self.n_classes = num_classes
+        self.num_classes = num_classes
         self.mask_modifies_prediction = mask_modifies_prediction
         # use state save
         self.add_state("tps", default=torch.tensor(0), dist_reduce_fx="sum")
@@ -29,15 +29,15 @@ class HisDBIoU(Metric):
                 target = target.clone()
                 target[mask_and_bg_predicted] = pred[mask_and_bg_predicted]
 
-        hist = torch.zeros((self.n_classes, self.n_classes)).type_as(target)
+        hist = torch.zeros((self.num_classes, self.num_classes)).type_as(target)
         for lt, lp in zip(target, pred):
             try:
                 # the images all have the same size
-                hist = torch.add(hist, self._fast_hist(lt.flatten(), lp.flatten(), self.n_classes))
+                hist = torch.add(hist, self._fast_hist(lt.flatten(), lp.flatten(), self.num_classes))
             except ValueError:
                 # the images have different sizes
                 hist = torch.add(hist, self._fast_hist([l.flatten() for l in lt].flatten(),
-                                                       [l.flatten() for l in lp].flatten(), self.n_classes))
+                                                       [l.flatten() for l in lp].flatten(), self.num_classes))
 
         with np.errstate(divide='ignore', invalid='ignore'):
             self.tps = torch.add(self.tps, torch.diag(hist))

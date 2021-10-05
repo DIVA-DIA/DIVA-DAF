@@ -1,31 +1,3 @@
-# other parameters on https://pytorch-lightning.readthedocs.io/en/stable/api/pytorch_lightning.callbacks.model_checkpoint.html
-model_checkpoint:
-    _target_: src.callbacks.model_callbacks.SaveModelStateDictAndTaskCheckpoint
-
-    monitor: "val/crossentropyloss"      # name of the logged metric which determines when model is improving
-    save_top_k: 1           # save k best models (determined by above metric)
-    save_last: True         # additionaly always save model from last epoch
-    mode: "min"             # can be "max" or "min"
-    verbose: False
-    dirpath: 'checkpoints/'
-    # !! CARE: epoch must be the base folder!! does not work in dir path as the epoch does not get resolved
-    filename: ${checkpoint_folder_name}task-checkpoint
-    backbone_filename: ${checkpoint_folder_name}backbone
-    header_filename: ${checkpoint_folder_name}header
-
-#model_checkpoint_iou:
-#    _target_: pytorch_lightning.callbacks.ModelCheckpoint
-#    monitor: "val/iou"      # name of the logged metric which determines when model is improving
-#    save_top_k: 1           # save k best models (determined by above metric)
-#    save_last: True         # additionaly always save model from last epoch
-#    mode: "max"             # can be "max" or "min"
-#    verbose: False
-#    dirpath: 'checkpoints/'
-#    filename: '{epoch:02d}'
-
-#early_stopping:
-#    _target_: pytorch_lightning.callbacks.EarlyStopping
-#    monitor: "val/loss"      # name of the logged metric which determines when model is improving
-#    patience: 100           # how many epochs of not improving until training stops
-#    mode: "max"             # can be "max" or "min"
-#    min_delta: 0            # minimum change in the monitored metric needed to qualify as an improvement
+defaults:
+    - check_compatibility.yaml
+    - model_checkpoint.yaml

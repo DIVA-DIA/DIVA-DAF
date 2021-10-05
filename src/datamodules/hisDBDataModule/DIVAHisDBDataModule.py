@@ -1,16 +1,15 @@
 from pathlib import Path
 from typing import Union, List, Optional
 
-import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
 from src.datamodules.base_datamodule import AbstractDatamodule
-from src.datamodules.hisDBDataModule.cropped_hisdb_dataset import CroppedHisDBDataset
-from src.datamodules.hisDBDataModule.util.analytics.image_analytics import get_analytics
-from src.datamodules.hisDBDataModule.util.misc import validate_path
-from src.datamodules.hisDBDataModule.util.transformations import transforms as custom_transforms
-from src.datamodules.hisDBDataModule.util.transformations.transforms import TwinRandomCrop, OnlyTarget, OnlyImage
+from src.datamodules.datasets.cropped_hisdb_dataset import CroppedHisDBDataset
+from src.datamodules.util.analytics.image_analytics import get_analytics
+from src.datamodules.util.misc import validate_path_for_segmentation
+from src.datamodules.util.transformations.twin_transforms import TwinRandomCrop, OneHotEncoding, OneHotToPixelLabelling
+from src.datamodules.util.transformations.wrapper_transforms import OnlyImage, OnlyTarget
 from src.utils import utils
 
 log = utils.get_logger(__name__)
@@ -38,9 +37,9 @@ class DIVAHisDBDataModuleCropped(AbstractDatamodule):
                                                              transforms.Normalize(mean=self.mean, std=self.std)]))
         self.target_transform = OnlyTarget(transforms.Compose([
             # transforms the gt image into a one-hot encoded matrix
-            custom_transforms.OneHotEncodingDIVAHisDB(class_encodings=self.class_encodings),
+            OneHotEncoding(class_encodings=self.class_encodings),
             # transforms the one hot encoding to argmax labels -> for the cross-entropy criterion
-            custom_transforms.OneHotToPixelLabelling()]))
+            OneHotToPixelLabelling()]))
         self.twin_transform = TwinRandomCrop(crop_size=crop_size)
 
         self.num_workers = num_workers
@@ -49,7 +48,7 @@ class DIVAHisDBDataModuleCropped(AbstractDatamodule):
         self.shuffle = shuffle
         self.drop_last_batch = drop_last_batch
 
-        self.data_dir = validate_path(data_dir)
+        self.data_dir = validate_path_for_segmentation(data_dir)
 
         self.selection_train = selection_train
         self.selection_val = selection_val
