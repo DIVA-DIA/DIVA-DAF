@@ -10,7 +10,7 @@ from PIL import Image
 from tqdm import tqdm
 
 from src.datamodules.hisDBDataModule.DIVAHisDBDataModule import DIVAHisDBDataModuleCropped
-from src.datamodules.hisDBDataModule.cropped_hisdb_dataset import CroppedHisDBDataset
+from src.datamodules.datasets.cropped_hisdb_dataset import CroppedHisDBDataset
 from src.tasks.semantic_segmentation.utils.output_tools import merge_patches, save_output_page_image
 from tools.generate_cropped_dataset import pil_loader
 from tools.viz import visualize
