@@ -96,7 +96,7 @@ class SemanticSegmentation(AbstractTask):
         if not hasattr(self.trainer.datamodule, 'get_img_name_coordinates'):
             raise NotImplementedError('Datamodule does not provide detailed information of the crop')
 
-        for patch, idx in zip(output[OutputKeys.PREDICTION].data.detach().cpu().numpy(),
+        for patch, idx in zip(output[OutputKeys.PREDICTION].detach().cpu().numpy(),
                               input_idx.detach().cpu().numpy()):
             patch_info = self.trainer.datamodule.get_img_name_coordinates(idx)
             img_name = patch_info[0]
