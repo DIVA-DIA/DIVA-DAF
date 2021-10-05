@@ -25,7 +25,7 @@ def main(config: DictConfig):
 
     # Pretty print config using Rich library
     if config.get("print_config"):
-        utils.print_config(config, resolve=True)
+        utils.print_config(config, resolve=False)
 
     # Train model
     return train(config)
