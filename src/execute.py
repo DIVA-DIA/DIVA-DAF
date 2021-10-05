@@ -81,14 +81,7 @@ def execute(config: DictConfig) -> Optional[float]:
         for _, lg_conf in config["logger"].items():
             if "_target_" in lg_conf:
                 log.info(f"Instantiating logger <{lg_conf._target_}>")
-                task_name = config.task._target_.split('.')[-1]
-                backbone_name = config.model.backbone._target_.split('.')[-1]
-                header_name = config.model.header._target_.split('.')[-1]
-                datamodule_name = config.datamodule._target_.split('.')[-1]
-                post_fix_path = os.getcwd().split('/')[-2:]
-                logger.append(hydra.utils.instantiate(lg_conf, name='_'.join(
-                    [str(lg_conf.name), task_name, backbone_name, header_name, datamodule_name,
-                     '_'.join(post_fix_path)])))
+                logger.append(hydra.utils.instantiate(lg_conf))
 
     # Init Trainer Plugins
     plugin_list: List[plugins.Plugin] = []
