@@ -43,15 +43,15 @@ def merge_patches(patch, coordinates, full_output):
 
     # Resolve patch coordinates
     x1, y1 = coordinates
-    x2, y2 = x1 + patch.shape[1], y1 + patch.shape[2]
+    x2, y2 = x1 + patch.shape[2], y1 + patch.shape[1]
 
     # If this triggers it means that a patch is 'out-of-bounds' of the image and that should never happen!
-    assert x2 <= full_output.shape[1]
-    assert y2 <= full_output.shape[2]
+    assert x2 <= full_output.shape[2]
+    assert y2 <= full_output.shape[1]
 
-    mask = np.isnan(full_output[:, x1:x2, y1:y2])
+    mask = np.isnan(full_output[:, y1:y2, x1:x2])
     # if still NaN in full_output just insert value from crop, if there is a value then take max
-    full_output[:, x1:x2, y1:y2] = np.where(mask, patch, np.maximum(patch, full_output[:, x1:x2, y1:y2]))
+    full_output[:, y1:y2, x1:x2] = np.where(mask, patch, np.maximum(patch, full_output[:, y1:y2, x1:x2]))
 
     return full_output
 

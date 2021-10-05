@@ -7,7 +7,7 @@ import os
 from PIL import Image
 
 
-def main(img):
+def visualize(img, out):
     read_img = np.asarray(Image.open(img))
     # class_encodings = [(1, 'Background'), (2, 'Comment'), (4, 'Decoration'), (6, 'Comment + Decoration'),
     #                    (8, 'Main Text'), (10, 'Main Text + Comment'), (12, 'Main Text + Decoration')]
@@ -19,7 +19,7 @@ def main(img):
                        (10, 'Main Text + Comment', (0, 0, 255)),
                        (12, 'Main Text + Decoration', (0, 255, 255))]
 
-    dest_filename = os.path.join('images', os.path.basename(img)[:-4], 'viz_' + os.path.basename(img))
+    dest_filename = out  # os.path.join('images', os.path.basename(img)[:-4], 'viz_' + os.path.basename(img))
     if not os.path.exists(os.path.dirname(dest_filename)):
         os.makedirs(os.path.dirname(dest_filename))
 
@@ -101,5 +101,9 @@ if __name__ == '__main__':
                         help='Path to the gt image',
                         type=str,
                         required=True)
+    parser.add_argument('-o', '--out',
+                        help='Path to output image',
+                        type=str,
+                        required=True)
     args = parser.parse_args()
-    main(**args.__dict__)
+    visualize(**args.__dict__)

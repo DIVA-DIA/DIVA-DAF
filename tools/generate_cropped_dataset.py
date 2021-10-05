@@ -121,8 +121,12 @@ class ToTensorSlidingWindowCrop(object):
         x_position = coordinates[0]
         y_position = coordinates[1]
 
-        return F.to_tensor(F.crop(img, x_position, y_position, self.crop_size, self.crop_size)), \
-               F.to_tensor(F.crop(gt, x_position, y_position, self.crop_size, self.crop_size))
+        img_crop = F.to_tensor(
+            F.crop(img=img, left=x_position, top=y_position, width=self.crop_size, height=self.crop_size))
+        gt_crop = F.to_tensor(
+            F.crop(img=gt, left=x_position, top=y_position, width=self.crop_size, height=self.crop_size))
+
+        return img_crop, gt_crop
 
 
 class CroppedDatasetGenerator:
@@ -204,6 +208,8 @@ class CropGenerator:
         self.override_existing = override_existing
         self.progress_title = progress_title
 
+        self.step_size = int(self.crop_size * (1 - self.overlap))
+
         # List of tuples that contain the path to the gt and image that belong together
         self.img_paths = get_gt_data_paths_uncropped(input_path)
         self.num_imgs_in_set = len(self.img_paths)
@@ -278,10 +284,9 @@ class CropGenerator:
             gt_img = pil_loader(gt_path)
             # Ensure that data and gt image are of the same size
             assert gt_img.size == data_img.size
-            img_names_sizes.append((gt_path.name, data_img.size[::-1]))
-            step_size = self.crop_size * self.overlap
-            num_horiz_crops.append(math.ceil((data_img.size[1] - self.crop_size) / step_size + 1))
-            num_vert_crops.append(math.ceil((data_img.size[0] - self.crop_size) / step_size + 1))
+            img_names_sizes.append((gt_path.name, data_img.size))
+            num_horiz_crops.append(math.ceil((data_img.size[0] - self.crop_size) / self.step_size + 1))
+            num_vert_crops.append(math.ceil((data_img.size[1] - self.crop_size) / self.step_size + 1))
 
         return img_names_sizes, num_horiz_crops, num_vert_crops
 
@@ -297,7 +302,7 @@ class CropGenerator:
             # We are at the end of a line
             x_position = self.img_names_sizes[img_index][1][0] - self.crop_size
         else:
-            x_position = int(self.crop_size / (1 / self.overlap)) * hcrop_index
+            x_position = self.step_size * hcrop_index
             assert x_position < self.img_names_sizes[img_index][1][0] - self.crop_size
 
         # Y coordinate
@@ -305,7 +310,7 @@ class CropGenerator:
             # We are at the bottom end
             y_position = self.img_names_sizes[img_index][1][1] - self.crop_size
         else:
-            y_position = int(self.crop_size / (1 / self.overlap)) * vcrop_index
+            y_position = self.step_size * vcrop_index
             assert y_position < self.img_names_sizes[img_index][1][1] - self.crop_size
 
         return img_index, x_position, y_position
