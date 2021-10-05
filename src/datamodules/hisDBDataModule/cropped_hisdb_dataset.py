@@ -3,7 +3,6 @@ Load a dataset of historic documents by specifying the folder where its located.
 """
 
 # Utils
-import logging
 import re
 from pathlib import Path
 from typing import List, Tuple, Union, Optional
@@ -13,7 +12,7 @@ from omegaconf import ListConfig
 from torch import is_tensor
 from torchvision.transforms import ToTensor
 
-from src.datamodules.hisDBDataModule.util.misc import has_extension, pil_loader
+from src.datamodules.util.misc import has_extension, pil_loader
 from src.utils import utils
 
 IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm']

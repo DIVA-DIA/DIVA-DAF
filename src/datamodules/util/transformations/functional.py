@@ -4,7 +4,7 @@ import torch
 from sklearn.preprocessing import OneHotEncoder
 
 
-def gt_to_one_hot_hisdb(matrix, class_encodings):
+def gt_to_one_hot(matrix, class_encodings):
     """
     Convert ground truth tensor or numpy matrix to one-hot encoded matrix
 

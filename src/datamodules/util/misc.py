@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-from src.datamodules.hisDBDataModule.util.exceptions import PathMissingDirinSplitDir, PathNone, PathNotDir, PathMissingSplitDir
+from src.datamodules.util.exceptions import PathMissingDirinSplitDir, PathNone, PathNotDir, PathMissingSplitDir
 
 try:
     import accimage
@@ -48,7 +48,7 @@ def convert_to_rgb(pic):
     return pic
 
 
-def validate_path(data_dir):
+def validate_path_for_segmentation(data_dir):
     if data_dir is None:
         raise PathNone("Please provide the path to root dir of the dataset "
                        "(folder containing the train/val/test folder)")
