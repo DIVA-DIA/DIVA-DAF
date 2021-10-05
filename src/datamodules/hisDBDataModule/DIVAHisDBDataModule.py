@@ -5,7 +5,7 @@ import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from datamodules.base_datamodule import AbstractDatamodule
+from src.datamodules.base_datamodule import AbstractDatamodule
 from src.datamodules.hisDBDataModule.cropped_hisdb_dataset import CroppedHisDBDataset
 from src.datamodules.hisDBDataModule.image_folder_segmentation import ImageFolderSegmentationDataset
 from src.datamodules.hisDBDataModule.util.analytics.image_analytics import get_analytics
