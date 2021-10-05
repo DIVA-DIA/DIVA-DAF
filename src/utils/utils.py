@@ -15,7 +15,8 @@ from pytorch_lightning.utilities import rank_zero_only
 from rich.syntax import Syntax
 from rich.tree import Tree
 
-REQUIRED_CONFIGS = ['datamodule', 'task', 'model.backbone', 'model.header', 'loss', 'optimizer', 'trainer']
+REQUIRED_CONFIGS = ['datamodule', 'task', 'model.backbone', 'model.header', 'loss', 'optimizer', 'trainer', 'train',
+                    'test']
 
 
 def get_logger(name=__name__, level=logging.INFO):

@@ -27,7 +27,7 @@ to your `README.md`.
 -->
 
 ## Introduction
-This template tries to be as general as possible - you can easily delete any unwanted features from the pipeline or rewire the configuration, by modifying behavior in [src/train.py](src/train.py).
+This template tries to be as general as possible - you can easily delete any unwanted features from the pipeline or rewire the configuration, by modifying behavior in [src/train.py](src/execute.py).
 
 > Effective usage of this template requires learning of a couple of technologies: [PyTorch](https://pytorch.org), [PyTorch Lightning](https://www.pytorchlightning.ai) and [Hydra](https://hydra.cc). Knowledge of some experiment logging framework like [Weights&Biases](https://wandb.com), [Neptune](https://neptune.ai) or [MLFlow](https://mlflow.org) is also recommended.
 
@@ -50,7 +50,7 @@ It makes your code neatly organized and provides lots of useful features, like a
 ## Main Ideas Of This Template
 - **Predefined Structure**: clean and scalable so that work can easily be extended and replicated (see [#Project Structure](#project-structure))
 - **Rapid Experimentation**: thanks to automating pipeline with config files and hydra command line superpowers
-- **Little Boilerplate**: so pipeline can be easily modified (see [src/train.py](src/train.py))
+- **Little Boilerplate**: so pipeline can be easily modified (see [src/train.py](src/execute.py))
 - **Main Configuration**: main config file specifies default training configuration (see [#Main Project Configuration](#main-project-configuration))
 - **Experiment Configurations**: stored in a separate folder, they can be composed out of smaller configs, override chosen parameters or define everything from scratch (see [#Experiment Configuration](#experiment-configuration))
 - **Experiment Tracking**: many logging frameworks can be easily integrated! (see [#Experiment Tracking](#experiment-tracking))
@@ -376,7 +376,7 @@ Have a question? Found a bug? Missing a specific feature? Ran into a problem? Fe
 
 
 ### How it works
-By design, every run is initialized by [run.py](run.py) file. [train.py](src/train.py) contains training pipeline.
+By design, every run is initialized by [run.py](run.py) file. [train.py](src/execute.py) contains training pipeline.
 You can create different pipelines for different needs (e.g. for k-fold cross validation or for testing only).
 
 All PyTorch Lightning modules are dynamically instantiated from module paths specified in config, e.g. the model can be instantiated with the following line:
@@ -656,7 +656,7 @@ List of extra utilities available in the template:
 - method for logging hyperparameters to loggers
 - (TODO) resuming latest run
 
-You can easily remove any of those by modifying [run.py](run.py) and [src/train.py](src/train.py).
+You can easily remove any of those by modifying [run.py](run.py) and [src/train.py](src/execute.py).
 <br><br>
 
 
