@@ -1,0 +1,4 @@
+# more infos about parameters: https://torchmetrics.readthedocs.io/en/latest/references/modules.html#iou
+_target_: torchmetrics.IoU
+
+num_classes: 8

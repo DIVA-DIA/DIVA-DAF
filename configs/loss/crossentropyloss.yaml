@@ -1,0 +1,2 @@
+# documentation: https://pytorch.org/docs/stable/generated/torch.nn.CrossEntropyLoss.html#torch.nn.CrossEntropyLoss
+_target_: torch.nn.CrossEntropyLoss

@@ -1,0 +1,2 @@
+# documentation: https://pytorch.org/docs/stable/generated/torch.nn.L1Loss.html#torch.nn.L1Loss
+_target_: torch.nn.L1Loss
