@@ -39,8 +39,8 @@ def test_merge_patches_one_image():
 def test_merge_patches_two_images():
     output_img = np.empty((4, 2, 3))
     output_img[:] = np.nan
-    coordiantes = [(0, 0), (0, 1)]
-    for patch, coords in zip(BATCH, coordiantes):
+    coordinates = [(0, 0), (1, 0)]
+    for patch, coords in zip(BATCH, coordinates):
         merge_patches(patch, coords, output_img)
     expected_output = np.array(
         [[[0.0, 0.30000001192092896, 3.0999999046325684], [4.0, 5.300000190734863, 0.800000011920929]],
