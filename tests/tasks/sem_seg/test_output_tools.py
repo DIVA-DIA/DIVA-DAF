@@ -57,7 +57,7 @@ def test_save_output(tmp_path):
     img = BATCH[0]
     img_name = 'test.png'
     save_output_page_image(img_name, img, tmp_path, CLASS_ENCODINGS)
-    img_output_path = tmp_path / 'images' / ('output_' + img_name)
+    img_output_path = tmp_path / img_name
     loaded_img = Image.open(img_output_path)
     assert img_output_path.exists()
     assert np.array_equal(output_to_class_encodings(img, CLASS_ENCODINGS), np.array(loaded_img))

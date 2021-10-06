@@ -46,10 +46,6 @@ class SemanticSegmentation(AbstractTask):
         )
         self.save_hyperparameters()
 
-        # paths
-        self.test_output_path = Path(test_output_path)  # / f'{datetime.now():%Y-%m-%d_%H-%M-%S}'
-        self.test_output_path.mkdir(parents=True, exist_ok=True)
-
     def setup(self, stage: str) -> None:
         super().setup(stage)
 
@@ -96,7 +92,7 @@ class SemanticSegmentation(AbstractTask):
         if not hasattr(self.trainer.datamodule, 'get_img_name_coordinates'):
             raise NotImplementedError('Datamodule does not provide detailed information of the crop')
 
-        for patch, idx in zip(output[OutputKeys.PREDICTION].data.detach().cpu().numpy(),
+        for patch, idx in zip(output[OutputKeys.PREDICTION].detach().cpu().numpy(),
                               input_idx.detach().cpu().numpy()):
             patch_info = self.trainer.datamodule.get_img_name_coordinates(idx)
             img_name = patch_info[0]
@@ -108,3 +104,11 @@ class SemanticSegmentation(AbstractTask):
             np.save(file=str(dest_filename), arr=patch)
 
         return output
+
+    def on_test_end(self) -> None:
+        datamodule_path = self.trainer.datamodule.data_dir
+        prediction_path = (self.test_output_path / 'patches').absolute()
+        output_path = (self.test_output_path / 'result').absolute()
+
+        log.info(f'To run the merging of patches:')
+        log.info(f'python tools/merge_cropped_output.py -d {datamodule_path} -p {prediction_path} -o {output_path}')
