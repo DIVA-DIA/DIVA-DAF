@@ -332,5 +332,5 @@ def _get_class_frequencies_weights_segmentation(gt_images, **kwargs):
 
 
 if __name__ == '__main__':
-    # print(get_analytics(input_path=Path('/dataset/DIVA-HisDB/segmentation/CB55/'), inmem=True, workers=16))
+    # print(get_analytics(input_path=Path('/netscratch/datasets/semantic_segmentation/datasets/CB55/'), inmem=True, workers=16))
     print(get_analytics(input_path=Path('tests/dummy_data/dummy_dataset')))
