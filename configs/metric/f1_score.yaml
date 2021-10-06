@@ -1,0 +1,4 @@
+# more infos about parameters: https://torchmetrics.readthedocs.io/en/latest/references/modules.html#f1
+_target_: torchmetrics.F1
+
+mdmc_average: samplewise

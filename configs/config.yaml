@@ -2,29 +2,41 @@
 
 # specify here default training configuration
 defaults:
-    - trainer: default_trainer.yaml
-    - model: mnist_model.yaml
-    - datamodule: mnist_datamodule.yaml
+    - trainer: null
+    - plugins: default.yaml
+    - task: null
+    - loss: null
+    - metric: null
+    - model/backbone: null
+    - model/header: null
+    - optimizer: adam.yaml
+    - datamodule: cb55_cropped_datamodule.yaml
     - callbacks: default_callbacks.yaml  # set this to null if you don't want to use callbacks
-    - logger: null  # set logger here or use command line (e.g. `python run.py logger=wandb`)
+    - logger:
+      - wandb.yaml # set logger here or use command line (e.g. `python run.py logger=wandb`)
+      - csv.yaml
 
-    - experiment: null
+    - experiment: development_baby_unet_cb55_10.yaml
     - hparams_search: null
 
-    # enable color logging
-    - override hydra/hydra_logging: colorlog
-    - override hydra/job_logging: colorlog
+    - hydra: default.yaml
 
+    # enable color logging
+    - override hydra/job_logging: colorlog
+    - override hydra/hydra_logging: colorlog
+
+
+train: True
+test: True
+save_config: True
+
+checkpoint_folder_name: '{epoch}/'
 
 # path to original working directory
 # hydra hijacks working directory by changing it to the current log directory,
 # so it's useful to have this path as a special variable
 # learn more here: https://hydra.cc/docs/next/tutorials/basic/running_your_app/working_directory
 work_dir: ${hydra:runtime.cwd}
-
-
-# path to folder with data
-data_dir: ${work_dir}/data/
 
 
 # use `python run.py debug=true` for easy debugging!
@@ -40,21 +52,3 @@ print_config: True
 
 # disable python warnings if they annoy you
 disable_warnings: True
-
-
-hydra:
-    # output paths for hydra logs
-    run:
-        dir: logs/runs/${now:%Y-%m-%d}/${now:%H-%M-%S}
-    sweep:
-        dir: logs/multiruns/${now:%Y-%m-%d_%H-%M-%S}
-        subdir: ${hydra.job.num}
-
-    job:
-        # you can set here environment variables that are universal for all users
-        # for system specific variables (like data paths) it's better to use .env file!
-        env_set:
-            # currently there are some issues with running sweeps alongside wandb
-            # https://github.com/wandb/client/issues/1314
-            # this env var fixes that
-            WANDB_START_METHOD: thread

@@ -1,0 +1,5 @@
+# info and parameters https://pytorch-lightning.readthedocs.io/en/1.4.7/api/pytorch_lightning.plugins.training_type.DDPPlugin.html#pytorch_lightning.plugins.training_type.DDPPlugin
+ddp_plugin:
+    _target_: pytorch_lightning.plugins.DDPPlugin
+
+    find_unused_parameters: False

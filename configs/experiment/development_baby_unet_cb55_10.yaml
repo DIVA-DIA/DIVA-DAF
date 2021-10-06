@@ -1,0 +1,52 @@
+# @package _global_
+
+# to execute this experiment run:
+# python run.py +experiment=exp_example_full
+
+defaults:
+    - override /loss: crossentropyloss.yaml
+    - override /trainer: null  # override trainer to null so it's not loaded from main config defaults...
+    - override /task: semantic_segmentation_task.yaml
+    - override /model/backbone: baby_unet_model.yaml
+    - override /model/header: identity.yaml
+    - override /datamodule: null
+    - override /metric: hisdbiou.yaml
+    - override /callbacks: default_callbacks.yaml
+
+# we override default configurations with nulls to prevent them from loading at all
+# instead we define all modules and their paths directly in this config,
+# so everything is stored in one place for more readibility
+
+seed: 42
+
+override test: False
+
+trainer:
+    _target_: pytorch_lightning.Trainer
+    gpus: -1
+    accelerator: 'ddp'
+    min_epochs: 1
+    max_epochs: 3
+    weights_summary: full
+    precision: 16
+
+datamodule:
+    _target_: src.datamodules.hisDBDataModule.DIVAHisDBDataModule.DIVAHisDBDataModuleCropped
+
+    data_dir: /data/usl_experiments/semantic_segmentation/datasets_cropped/CB55-10-segmentation
+    crop_size: 256
+    num_workers: 4
+    batch_size: 16
+    shuffle: True
+    drop_last_batch: True
+
+callbacks:
+    model_checkpoint:
+        filename: ${checkpoint_folder_name}dev-baby-unet-cb55-10
+
+logger:
+    wandb:
+        name: 'dev-baby-unet-cb55-10'
+        tags: ["best_model", "USL"]
+        group: 'dev-runs'
+        notes: "Testing"

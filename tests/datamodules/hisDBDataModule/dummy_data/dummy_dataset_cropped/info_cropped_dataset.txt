@@ -1,0 +1,12 @@
+Running CroppedDatasetGenerator.write_crops():
+- start_time:       	2021-02-25_14-10-28
+- input_path:       	/Users/voegtlil/Documents/01_Research/unsupervised_framework/code/hisDBDataModule/tests/dummy_data/dummy_dataset
+- output_path:      	/Users/voegtlil/Documents/01_Research/unsupervised_framework/code/hisDBDataModule/tests/dummy_dataset/dummy_data_cropped
+- crop_size_train:  	300
+- crop_size_val:    	300
+- crop_size_test:   	256
+- overlap:          	0.5
+- leading_zeros_len:	4
+- override_existing:	False
+- end_time:         	2021-02-25_14-10-30
+
