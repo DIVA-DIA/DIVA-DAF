@@ -43,20 +43,20 @@ def merge_patches(patch, coordinates, full_output):
 
     # Resolve patch coordinates
     x1, y1 = coordinates
-    x2, y2 = x1 + patch.shape[1], y1 + patch.shape[2]
+    x2, y2 = x1 + patch.shape[2], y1 + patch.shape[1]
 
     # If this triggers it means that a patch is 'out-of-bounds' of the image and that should never happen!
-    assert x2 <= full_output.shape[1]
-    assert y2 <= full_output.shape[2]
+    assert x2 <= full_output.shape[2]
+    assert y2 <= full_output.shape[1]
 
-    mask = np.isnan(full_output[:, x1:x2, y1:y2])
+    mask = np.isnan(full_output[:, y1:y2, x1:x2])
     # if still NaN in full_output just insert value from crop, if there is a value then take max
-    full_output[:, x1:x2, y1:y2] = np.where(mask, patch, np.maximum(patch, full_output[:, x1:x2, y1:y2]))
+    full_output[:, y1:y2, x1:x2] = np.where(mask, patch, np.maximum(patch, full_output[:, y1:y2, x1:x2]))
 
     return full_output
 
 
-def save_output_page_image(image_name, output_image, output_folder, class_encoding):
+def save_output_page_image(image_name, output_image, output_folder: Path, class_encoding):
     """
     Helper function to save the output during testing in the DIVAHisDB format
 
@@ -79,9 +79,9 @@ def save_output_page_image(image_name, output_image, output_folder, class_encodi
 
     output_encoded = output_to_class_encodings(output_image, class_encoding)
 
-    dest_folder = output_folder / 'images'
+    dest_folder = output_folder
     dest_folder.mkdir(parents=True, exist_ok=True)
-    dest_filename = dest_folder / f'output_{image_name}'
+    dest_filename = dest_folder / image_name
 
     # Save the output
     Image.fromarray(output_encoded.astype(np.uint8)).save(str(dest_filename))

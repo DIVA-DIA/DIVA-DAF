@@ -65,7 +65,7 @@ def convert_to_rgb(pic):
     return pic
 
 
-def get_gt_data_paths(directory):
+def get_gt_data_paths_uncropped(directory):
     """
     Parameters
     ----------
@@ -89,11 +89,11 @@ def get_gt_data_paths(directory):
 
     for img_name, gt_name in zip(sorted(path_imgs.iterdir()), sorted(path_gts.iterdir())):
         assert has_extension(str(img_name), IMG_EXTENSIONS) == has_extension(str(gt_name), IMG_EXTENSIONS), \
-            'get_gt_data_paths(): image file aligned with non-image file'
+            'get_gt_data_paths_uncropped(): image file aligned with non-image file'
 
         if has_extension(str(img_name), IMG_EXTENSIONS) and has_extension(str(gt_name), IMG_EXTENSIONS):
             assert img_name.suffix[0] == gt_name.suffix[0], \
-                'get_gt_data_paths(): mismatch between data filename and gt filename'
+                'get_gt_data_paths_uncropped(): mismatch between data filename and gt filename'
             paths.append((path_imgs / img_name, path_gts / gt_name))
 
     return paths
@@ -121,8 +121,12 @@ class ToTensorSlidingWindowCrop(object):
         x_position = coordinates[0]
         y_position = coordinates[1]
 
-        return F.to_tensor(F.crop(img, x_position, y_position, self.crop_size, self.crop_size)), \
-               F.to_tensor(F.crop(gt, x_position, y_position, self.crop_size, self.crop_size))
+        img_crop = F.to_tensor(
+            F.crop(img=img, left=x_position, top=y_position, width=self.crop_size, height=self.crop_size))
+        gt_crop = F.to_tensor(
+            F.crop(img=gt, left=x_position, top=y_position, width=self.crop_size, height=self.crop_size))
+
+        return img_crop, gt_crop
 
 
 class CroppedDatasetGenerator:
@@ -204,8 +208,10 @@ class CropGenerator:
         self.override_existing = override_existing
         self.progress_title = progress_title
 
+        self.step_size = int(self.crop_size * (1 - self.overlap))
+
         # List of tuples that contain the path to the gt and image that belong together
-        self.img_paths = get_gt_data_paths(input_path)
+        self.img_paths = get_gt_data_paths_uncropped(input_path)
         self.num_imgs_in_set = len(self.img_paths)
         if self.num_imgs_in_set == 0:
             raise RuntimeError("Found 0 images in subfolders of: {} \n Supported image extensions are: {}".format(
@@ -278,10 +284,9 @@ class CropGenerator:
             gt_img = pil_loader(gt_path)
             # Ensure that data and gt image are of the same size
             assert gt_img.size == data_img.size
-            img_names_sizes.append((gt_path.name, data_img.size[::-1]))
-            step_size = self.crop_size * self.overlap
-            num_horiz_crops.append(math.ceil((data_img.size[1] - self.crop_size) / step_size + 1))
-            num_vert_crops.append(math.ceil((data_img.size[0] - self.crop_size) / step_size + 1))
+            img_names_sizes.append((gt_path.name, data_img.size))
+            num_horiz_crops.append(math.ceil((data_img.size[0] - self.crop_size) / self.step_size + 1))
+            num_vert_crops.append(math.ceil((data_img.size[1] - self.crop_size) / self.step_size + 1))
 
         return img_names_sizes, num_horiz_crops, num_vert_crops
 
@@ -297,7 +302,7 @@ class CropGenerator:
             # We are at the end of a line
             x_position = self.img_names_sizes[img_index][1][0] - self.crop_size
         else:
-            x_position = int(self.crop_size / (1 / self.overlap)) * hcrop_index
+            x_position = self.step_size * hcrop_index
             assert x_position < self.img_names_sizes[img_index][1][0] - self.crop_size
 
         # Y coordinate
@@ -305,7 +310,7 @@ class CropGenerator:
             # We are at the bottom end
             y_position = self.img_names_sizes[img_index][1][1] - self.crop_size
         else:
-            y_position = int(self.crop_size / (1 / self.overlap)) * vcrop_index
+            y_position = self.step_size * vcrop_index
             assert y_position < self.img_names_sizes[img_index][1][1] - self.crop_size
 
         return img_index, x_position, y_position
@@ -354,6 +359,18 @@ if __name__ == '__main__':
     # /Users/voegtlil/Documents/04_Datasets/003-DataSet/CB55-10-segmentation
     # -o
     # /Users/voegtlil/Desktop/fun
+    # -tr
+    # 300
+    # -v
+    # 300
+    # -te
+    # 256
+
+    # example call arguments
+    # -i
+    # /dataset/DIVA-HisDB/segmentation/CB55
+    # -o
+    # /data/usl_experiments/semantic_segmentation/datasets_cropped/temp-CB55
     # -tr
     # 300
     # -v
