@@ -13,3 +13,6 @@ conda activate unsupervised_learning
 
 # initialize hydra tab completion for bash
 eval "$(python run.py -sc install=zsh)"
+
+# add current dir to PYTHONPATH
+export PYTHONPATH=$PYTHONPATH:.
