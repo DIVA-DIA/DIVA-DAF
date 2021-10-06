@@ -28,27 +28,27 @@ class CropData:
     gt_path: Path
 
 
-def merge_cropped_output(data_dir, prediction_path: Path, outdir: Path):
+def merge_cropped_output(datamodule_path, prediction_path: Path, output_path: Path):
     info_list = ['Running merge_cropped_output.py:',
                  f'- start_time:        \t{datetime.now():%Y-%m-%d_%H-%M-%S}',
-                 f'- data_dir:          \t{data_dir}',
+                 f'- datamodule_path:   \t{datamodule_path}',
                  f'- prediction_path:   \t{prediction_path}',
-                 f'- outdir:            \t{outdir}',
+                 f'- output_path:       \t{output_path}',
                  '']  # empty string to get linebreak at the end when using join
     info_str = '\n'.join(info_list)
     print(info_str)
 
     # Write info_cropped_dataset.txt
-    outdir.mkdir(parents=True, exist_ok=True)
-    info_file = outdir / 'info_merge_cropped_output.txt'
+    output_path.mkdir(parents=True, exist_ok=True)
+    info_file = output_path / 'info_merge_cropped_output.txt'
     with info_file.open('a') as f:
         f.write(info_str)
 
-    data_module = DIVAHisDBDataModuleCropped(data_dir=data_dir)
+    data_module = DIVAHisDBDataModuleCropped(data_dir=datamodule_path)
     num_classes = data_module.num_classes
     class_encodings = data_module.class_encodings
 
-    img_paths_per_page = CroppedHisDBDataset.get_gt_data_paths(directory=data_dir / 'test')
+    img_paths_per_page = CroppedHisDBDataset.get_gt_data_paths(directory=datamodule_path / 'test')
 
     dataset_img_name_list = []
     dataset_dict = defaultdict(list)
@@ -130,17 +130,17 @@ def merge_cropped_output(data_dir, prediction_path: Path, outdir: Path):
             gt_canvas.paste(gt_crop, (crop_data.offset_x, crop_data.offset_y))
 
         # Save the image when done
-        outdir_img = outdir / 'img'
-        outdir_gt = outdir / 'gt'
-        outdir_pred = outdir / 'pred'
+        outdir_img = output_path / 'img'
+        outdir_gt = output_path / 'gt'
+        outdir_pred = output_path / 'pred'
 
         outdir_img.mkdir(parents=True, exist_ok=True)
         outdir_gt.mkdir(parents=True, exist_ok=True)
         outdir_pred.mkdir(parents=True, exist_ok=True)
 
-        outdir_gt_viz = outdir / 'gt_viz'
+        outdir_gt_viz = output_path / 'gt_viz'
         outdir_gt_viz.mkdir(parents=True, exist_ok=True)
-        outdir_pred_viz = outdir / 'pred_viz'
+        outdir_pred_viz = output_path / 'pred_viz'
         outdir_pred_viz.mkdir(parents=True, exist_ok=True)
 
         img_canvas.save(fp=outdir_img / f'{img_name}.png')
@@ -168,7 +168,7 @@ def merge_cropped_output(data_dir, prediction_path: Path, outdir: Path):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--data_dir',
+    parser.add_argument('-d', '--datamodule_path',
                         help='Path to the root folder of the dataset (contains train/val/test)',
                         type=Path,
                         required=True)
@@ -176,7 +176,7 @@ if __name__ == '__main__':
                         help='Path to the prediction patches folder',
                         type=Path,
                         required=True)
-    parser.add_argument('-o', '--outdir',
+    parser.add_argument('-o', '--output_path',
                         help='Path to the output folder',
                         type=Path,
                         required=True)

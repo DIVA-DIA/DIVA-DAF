@@ -46,10 +46,6 @@ class SemanticSegmentation(AbstractTask):
         )
         self.save_hyperparameters()
 
-        # paths
-        self.test_output_path = Path(test_output_path)  # / f'{datetime.now():%Y-%m-%d_%H-%M-%S}'
-        self.test_output_path.mkdir(parents=True, exist_ok=True)
-
     def setup(self, stage: str) -> None:
         super().setup(stage)
 
@@ -108,3 +104,11 @@ class SemanticSegmentation(AbstractTask):
             np.save(file=str(dest_filename), arr=patch)
 
         return output
+
+    def on_test_end(self) -> None:
+        datamodule_path = self.trainer.datamodule.data_dir
+        prediction_path = (self.test_output_path / 'patches').absolute()
+        output_path = (self.test_output_path / 'result').absolute()
+
+        log.info(f'To run the merging of patches:')
+        log.info(f'python tools/merge_cropped_output.py -d {datamodule_path} -p {prediction_path} -o {output_path}')

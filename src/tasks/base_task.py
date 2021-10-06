@@ -72,7 +72,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         self.metric_val = nn.ModuleDict({} if metric_val is None else get_callable_dict(metric_val))
         self.metric_test = nn.ModuleDict({} if metric_test is None else get_callable_dict(metric_test))
         self.lr = lr
-        self.test_output_path = test_output_path
+        self.test_output_path = Path(test_output_path)
         self.save_hyperparameters()
 
     def setup(self, stage: str):
