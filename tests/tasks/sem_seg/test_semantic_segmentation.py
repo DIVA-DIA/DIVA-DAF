@@ -1,5 +1,8 @@
+import os
+
 import pytorch_lightning as pl
 import torch.optim.optimizer
+from omegaconf import OmegaConf
 from pl_bolts.models.vision import UNet
 from pytorch_lightning import seed_everything
 
@@ -10,6 +13,7 @@ from tests.datamodules.hisDBDataModule.dummy_data.dummy_data import data_dir_cro
 
 
 def test_semantic_segmentation(data_dir_cropped, tmp_path):
+    OmegaConf.clear_resolvers()
     seed_everything(42)
 
     # datamodule
@@ -31,8 +35,8 @@ def test_semantic_segmentation(data_dir_cropped, tmp_path):
     patches_path = segmentation.test_output_path / 'patches'
     test_data_patch = data_dir_cropped / 'test' / 'data'
 
-    trainer = pl.Trainer(max_epochs=2, log_every_n_steps=10,
-                         default_root_dir=segmentation.test_output_path, accelerator='ddp_cpu')
+    os.environ['MKL_SERVICE_FORCE_INTEL'] = '1'
+    trainer = pl.Trainer(max_epochs=2, precision=32, default_root_dir=segmentation.test_output_path, accelerator='ddp_cpu')
 
     trainer.fit(segmentation, datamodule=data_module)
 

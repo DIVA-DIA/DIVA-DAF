@@ -23,9 +23,11 @@ Install dependencies
 git clone https://github.com/DIVA-DIA/unsupervised_learning.git
 cd unsupervised_learing
 
-# [OPTIONAL] create conda environment
+# create conda environment (IMPORTANT: needs Python 3.8+)
 conda env create -f conda_env_gpu.yaml
-conda activate unsupervised_learning
+
+# activate the environment using .autoenv
+source .autoenv
 
 # install requirements
 pip install -r requirements.txt
@@ -34,7 +36,7 @@ pip install -r requirements.txt
 Train model with default configuration.
 Care: you need to change the value of `data_dir` in `config/datamodule/cb55_10_cropped_datamodule.yaml`.
 ```yaml
-# default
+# default run based on config/config.yaml
 python run.py
 
 # train on CPU
@@ -42,6 +44,27 @@ python run.py trainer.gpus=0
 
 # train on GPU
 python run.py trainer.gpus=1
+```
+
+Train using GPU
+```yaml
+# [default] train on all available GPUs
+python run.py trainer.gpus=-1
+
+# train on one GPU
+python run.py trainer.gpus=1
+
+# train on two GPUs
+python run.py trainer.gpus=2
+
+# train on CPU
+python run.py trainer.accelerator=ddp_cpu
+```
+
+Train using CPU for debugging
+```yaml
+# train on CPU
+python run.py trainer.accelerator=ddp_cpu trainer.precision=32
 ```
 
 Train model with chosen experiment configuration from [configs/experiment/](configs/experiment/)

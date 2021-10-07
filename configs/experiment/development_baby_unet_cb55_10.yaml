@@ -19,7 +19,8 @@ defaults:
 
 seed: 42
 
-override test: False
+train: True
+test: True
 
 trainer:
     _target_: pytorch_lightning.Trainer
