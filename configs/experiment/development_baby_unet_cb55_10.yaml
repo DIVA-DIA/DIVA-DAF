@@ -18,7 +18,6 @@ defaults:
           - conf_mat_test_wandb.yaml
           - watch_model_wandb.yaml
           - f1_precision_recall_heatmap_wandb.yaml
-          - upload_checkpoint_wandb.yaml
     - /logger:
           - wandb.yaml # set logger here or use command line (e.g. `python run.py logger=wandb`)
           - csv.yaml
