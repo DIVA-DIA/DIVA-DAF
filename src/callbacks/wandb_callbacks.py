@@ -46,28 +46,6 @@ class WatchModelWithWandb(Callback):
         logger.watch(model=trainer.model, log=self.log, log_freq=self.log_freq)
 
 
-class UploadCheckpointsToWandbAsArtifact(Callback):
-    """Upload checkpoints to wandb as an artifact, at the end of run."""
-
-    def __init__(self, ckpt_dir: str = "checkpoints/", upload_best_only: bool = False):
-        self.ckpt_dir = ckpt_dir
-        self.upload_best_only = upload_best_only
-
-    def on_train_end(self, trainer, pl_module):
-        logger = get_wandb_logger(trainer=trainer)
-        experiment = logger.experiment
-
-        ckpts = wandb.Artifact("experiment-ckpts", type="checkpoints")
-
-        if self.upload_best_only:
-            ckpts.add_file(trainer.checkpoint_callback.best_model_path)
-        else:
-            for path in glob.glob(os.path.join(self.ckpt_dir, "**/*.ckpt"), recursive=True):
-                ckpts.add_file(path)
-
-        experiment.use_artifact(ckpts)
-
-
 class LogConfusionMatrixToWandbVal(Callback):
     """Generate confusion matrix every epoch and send it to wandb during validation.
     Expects validation step to return predictions and targets.
@@ -127,10 +105,10 @@ class LogConfusionMatrixToWandbTest(Callback):
         if not self.ready:
             return
 
-        _create_and_save_conf_mat(trainer=trainer, input_preds=self.preds, input_targets=self.targets, phase='test')
-
-        self.preds.clear()
-        self.targets.clear()
+        if trainer.is_global_zero:
+            _create_and_save_conf_mat(trainer=trainer, input_preds=self.preds, input_targets=self.targets, phase='val')
+            self.preds.clear()
+            self.targets.clear()
 
 
 def _create_and_save_conf_mat(trainer, input_preds, input_targets, phase):
@@ -216,6 +194,7 @@ class LogF1PrecRecHeatmapToWandb(Callback):
             self.preds.append(outputs[OutputKeys.PREDICTION].detach().cpu().numpy())
             self.targets.append(outputs[OutputKeys.TARGET].detach().cpu().numpy())
 
+    @rank_zero_only
     def on_validation_epoch_end(self, trainer, pl_module):
         """Generate f1, precision and recall heatmap."""
         if not self.ready:
