@@ -4,14 +4,24 @@
 # python run.py +experiment=exp_example_full
 
 defaults:
-    - override /loss: crossentropyloss.yaml
-    - override /trainer: null  # override trainer to null so it's not loaded from main config defaults...
-    - override /task: semantic_segmentation_task.yaml
-    - override /model/backbone: baby_unet_model.yaml
-    - override /model/header: identity.yaml
-    - override /datamodule: null
-    - override /metric: hisdbiou.yaml
-    - override /callbacks: default_callbacks.yaml
+    - /plugins: default.yaml
+    - /task: semantic_segmentation_task.yaml
+    - /loss: crossentropyloss.yaml
+    - /metric: hisdbiou.yaml
+    - /model/backbone: baby_unet_model.yaml
+    - /model/header: identity.yaml
+    - /optimizer: adam.yaml
+    - /callbacks:
+          - check_compatibility.yaml
+          - model_checkpoint.yaml
+          - conf_mat_val_wandb.yaml
+          - conf_mat_test_wandb.yaml
+          - watch_model_wandb.yaml
+          - f1_precision_recall_heatmap_wandb.yaml
+          - upload_checkpoint_wandb.yaml
+    - /logger:
+          - wandb.yaml # set logger here or use command line (e.g. `python run.py logger=wandb`)
+          - csv.yaml
 
 # we override default configurations with nulls to prevent them from loading at all
 # instead we define all modules and their paths directly in this config,
@@ -44,10 +54,12 @@ datamodule:
 callbacks:
     model_checkpoint:
         filename: ${checkpoint_folder_name}dev-baby-unet-cb55-10
+    watch_model:
+        log_freq: 1
 
 logger:
     wandb:
         name: 'dev-baby-unet-cb55-10'
-        tags: ["best_model", "USL"]
+        tags: [ "best_model", "USL" ]
         group: 'dev-runs'
         notes: "Testing"

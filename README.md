@@ -78,3 +78,19 @@ python run.py trainer.max_epochs=20 datamodule.batch_size=64
 ```
 
 <br>
+
+### Setup PyCharm
+
+1. Fork this repo
+2. Clone the repo to your local filesystem (`git clone CLONELINK`)
+3. Clone the repo onto your remote machine
+4. Move into the folder on your remote machine and create the conda environment (conda env create -f conda_env_gpu.yaml)
+5. Run `source .autoenv` in the root folder on your remote machine (activates the environment)
+6. Open the folder in PyCharm (File -> open)
+7. Add the interpreter (Preferences -> Project -> Python interpreter -> top left gear icon -> add... -> SSH Interpreter) follow the instructions (set the correct mapping to enable deployment)
+8. Upload the files (deployment)
+9. Create a wandb account (wandb.ai)
+10. Log via ssh onto your remote machine 
+11. Go to the root folder of the framework and activate the environment (source .autoenv OR conda activate unsupervised_learning)
+12. Log into wandb. Execute `wandb login` and follow the instructions
+13. Now you should be able to run the basic experiment from PyCharm
