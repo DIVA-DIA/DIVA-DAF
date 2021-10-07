@@ -26,8 +26,6 @@ defaults:
     - override hydra/hydra_logging: colorlog
 
 
-train: True
-test: True
 save_config: True
 
 checkpoint_folder_name: '{epoch}/'

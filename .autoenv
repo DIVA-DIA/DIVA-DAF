@@ -7,12 +7,14 @@
 # alternatively, you can load it manually each time with:
 #   source .autoenv
 
-
 # activate conda environment
 conda activate unsupervised_learning
 
-# initialize hydra tab completion for bash
-eval "$(python run.py -sc install=zsh)"
-
 # add current dir to PYTHONPATH
 export PYTHONPATH=$PYTHONPATH:.
+
+# initialize hydra tab completion for zsh
+if [[ $SHELL == *"zsh"* ]]; then
+  eval "$(python run.py -sc install=zsh)"
+fi
+
