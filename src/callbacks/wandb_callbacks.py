@@ -13,6 +13,7 @@ import wandb
 from matplotlib.patches import Rectangle
 from pytorch_lightning import Callback, Trainer
 from pytorch_lightning.loggers import LoggerCollection, WandbLogger
+from pytorch_lightning.utilities import rank_zero_only
 from sklearn.metrics import f1_score, precision_score, recall_score
 
 from src.tasks.utils.outputs import OutputKeys
@@ -39,31 +40,10 @@ class WatchModelWithWandb(Callback):
         self.log = log
         self.log_freq = log_freq
 
+    @rank_zero_only
     def on_train_start(self, trainer, pl_module):
         logger = get_wandb_logger(trainer=trainer)
         logger.watch(model=trainer.model, log=self.log, log_freq=self.log_freq)
-
-
-class UploadCheckpointsToWandbAsArtifact(Callback):
-    """Upload checkpoints to wandb as an artifact, at the end of run."""
-
-    def __init__(self, ckpt_dir: str = "checkpoints/", upload_best_only: bool = False):
-        self.ckpt_dir = ckpt_dir
-        self.upload_best_only = upload_best_only
-
-    def on_train_end(self, trainer, pl_module):
-        logger = get_wandb_logger(trainer=trainer)
-        experiment = logger.experiment
-
-        ckpts = wandb.Artifact("experiment-ckpts", type="checkpoints")
-
-        if self.upload_best_only:
-            ckpts.add_file(trainer.checkpoint_callback.best_model_path)
-        else:
-            for path in glob.glob(os.path.join(self.ckpt_dir, "**/*.ckpt"), recursive=True):
-                ckpts.add_file(path)
-
-        experiment.use_artifact(ckpts)
 
 
 class LogConfusionMatrixToWandbVal(Callback):
@@ -125,10 +105,10 @@ class LogConfusionMatrixToWandbTest(Callback):
         if not self.ready:
             return
 
-        _create_and_save_conf_mat(trainer=trainer, input_preds=self.preds, input_targets=self.targets, phase='test')
-
-        self.preds.clear()
-        self.targets.clear()
+        if trainer.is_global_zero:
+            _create_and_save_conf_mat(trainer=trainer, input_preds=self.preds, input_targets=self.targets, phase='val')
+            self.preds.clear()
+            self.targets.clear()
 
 
 def _create_and_save_conf_mat(trainer, input_preds, input_targets, phase):
@@ -146,7 +126,7 @@ def _create_and_save_conf_mat(trainer, input_preds, input_targets, phase):
     experiment = logger.experiment
 
     preds = []
-    for step_pred, step_target in zip(input_preds, input_targets):
+    for step_pred in input_preds:
         preds.append(trainer.model.module.module.to_metrics_format(np.array(step_pred)))
 
     preds = np.concatenate(preds).flatten()
@@ -214,6 +194,7 @@ class LogF1PrecRecHeatmapToWandb(Callback):
             self.preds.append(outputs[OutputKeys.PREDICTION].detach().cpu().numpy())
             self.targets.append(outputs[OutputKeys.TARGET].detach().cpu().numpy())
 
+    @rank_zero_only
     def on_validation_epoch_end(self, trainer, pl_module):
         """Generate f1, precision and recall heatmap."""
         if not self.ready:
@@ -222,7 +203,11 @@ class LogF1PrecRecHeatmapToWandb(Callback):
         logger = get_wandb_logger(trainer=trainer)
         experiment = logger.experiment
 
-        preds = np.concatenate(self.preds).flatten()
+        preds = []
+        for step_pred in self.preds:
+            preds.append(trainer.model.module.module.to_metrics_format(np.array(step_pred)))
+
+        preds = np.concatenate(preds).flatten()
         targets = np.concatenate(self.targets).flatten()
         f1 = f1_score(y_true=targets, y_pred=preds, average=None)
         r = recall_score(y_true=targets, y_pred=preds, average=None)
