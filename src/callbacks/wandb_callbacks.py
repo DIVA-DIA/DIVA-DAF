@@ -13,6 +13,7 @@ import wandb
 from matplotlib.patches import Rectangle
 from pytorch_lightning import Callback, Trainer
 from pytorch_lightning.loggers import LoggerCollection, WandbLogger
+from pytorch_lightning.utilities import rank_zero_only
 from sklearn.metrics import f1_score, precision_score, recall_score
 
 from src.tasks.utils.outputs import OutputKeys
@@ -39,6 +40,7 @@ class WatchModelWithWandb(Callback):
         self.log = log
         self.log_freq = log_freq
 
+    @rank_zero_only
     def on_train_start(self, trainer, pl_module):
         logger = get_wandb_logger(trainer=trainer)
         logger.watch(model=trainer.model, log=self.log, log_freq=self.log_freq)
@@ -146,7 +148,7 @@ def _create_and_save_conf_mat(trainer, input_preds, input_targets, phase):
     experiment = logger.experiment
 
     preds = []
-    for step_pred, step_target in zip(input_preds, input_targets):
+    for step_pred in input_preds:
         preds.append(trainer.model.module.module.to_metrics_format(np.array(step_pred)))
 
     preds = np.concatenate(preds).flatten()
@@ -222,7 +224,11 @@ class LogF1PrecRecHeatmapToWandb(Callback):
         logger = get_wandb_logger(trainer=trainer)
         experiment = logger.experiment
 
-        preds = np.concatenate(self.preds).flatten()
+        preds = []
+        for step_pred in self.preds:
+            preds.append(trainer.model.module.module.to_metrics_format(np.array(step_pred)))
+
+        preds = np.concatenate(preds).flatten()
         targets = np.concatenate(self.targets).flatten()
         f1 = f1_score(y_true=targets, y_pred=preds, average=None)
         r = recall_score(y_true=targets, y_pred=preds, average=None)
