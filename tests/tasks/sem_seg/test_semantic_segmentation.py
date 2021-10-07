@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 import pytorch_lightning as pl
 import torch.optim.optimizer
 from omegaconf import OmegaConf
@@ -42,6 +43,6 @@ def test_semantic_segmentation(data_dir_cropped, tmp_path):
 
     results = trainer.test()
     print(results)
-    assert results[0]['test/crossentropyloss'] == 1.0625288486480713
-    assert results[0]['test/crossentropyloss_epoch'] == 1.0625288486480713
+    assert np.isclose(results[0]['test/crossentropyloss'], 1.0625288486480713)
+    assert np.isclose(results[0]['test/crossentropyloss_epoch'], 1.0625288486480713)
     assert len(list(patches_path.glob('*/*.npy'))) == len(list(test_data_patch.glob('*/*.png')))
