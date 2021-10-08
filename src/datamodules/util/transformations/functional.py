@@ -52,4 +52,4 @@ def argmax_onehot(tensor):
     """
     # TODO
     """
-    return torch.LongTensor(np.array(np.argmax(tensor.numpy(), axis=0)))
+    return torch.LongTensor(torch.argmax(tensor, dim=0))

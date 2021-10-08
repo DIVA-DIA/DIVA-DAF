@@ -156,14 +156,8 @@ def empty(*args, **kwargs):
 @rank_zero_only
 def log_hyperparameters(
         config: DictConfig,
-        task: pl.LightningModule,
         model: pl.LightningModule,
-        loss: torch.nn.Module,
-        optimizer: torch.optim.Optimizer,
-        datamodule: pl.LightningDataModule,
         trainer: pl.Trainer,
-        callbacks: List[pl.Callback],
-        logger: List[pl.loggers.LightningLoggerBase],
 ) -> None:
     """This method controls which parameters from Hydra config are saved by Lightning loggers.
 
@@ -173,7 +167,8 @@ def log_hyperparameters(
     """
 
     hparams = {"trainer": config["trainer"], "task": config["task"], "model": config["model"],
-               "datamodule": config["datamodule"], 'loss': config['loss'], 'optimizer': config['optimizer']}
+               "datamodule": config["datamodule"], 'loss': config['loss'], 'optimizer': config['optimizer'],
+               "seed": config['seed'], 'callbacks': config['callbacks']}
 
     # choose which parts of hydra config will be saved to loggers
     if "optimizer" in config:

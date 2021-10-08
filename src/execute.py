@@ -102,13 +102,7 @@ def execute(config: DictConfig) -> Optional[float]:
     utils.log_hyperparameters(
         config=config,
         model=model,
-        loss=loss,
-        optimizer=optimizer,
-        task=task,
-        datamodule=datamodule,
         trainer=trainer,
-        callbacks=callbacks,
-        logger=logger,
     )
 
     if config.save_config:
