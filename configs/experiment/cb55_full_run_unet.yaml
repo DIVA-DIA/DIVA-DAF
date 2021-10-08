@@ -14,10 +14,10 @@ defaults:
     - /callbacks:
           - check_compatibility.yaml
           - model_checkpoint.yaml
-          - conf_mat_val_wandb.yaml
-          - conf_mat_test_wandb.yaml
-          - watch_model_wandb.yaml
-          - f1_precision_recall_heatmap_wandb.yaml
+#          - conf_mat_val_wandb.yaml
+#          - conf_mat_test_wandb.yaml
+#          - watch_model_wandb.yaml
+#          - f1_precision_recall_heatmap_wandb.yaml
     - /logger:
           - wandb.yaml # set logger here or use command line (e.g. `python run.py logger=wandb`)
           - csv.yaml
@@ -50,8 +50,8 @@ datamodule:
 callbacks:
     model_checkpoint:
         filename: ${checkpoint_folder_name}cb55-full-unet
-    watch_model:
-        log_freq: 1000
+#    watch_model:
+#        log_freq: 1000
 
 logger:
     wandb:
