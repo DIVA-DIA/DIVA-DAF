@@ -1,2 +1,5 @@
+# CARE: this callbacks can cause semaphore leaks
+# We are waiting for a pytorch lightning update which fixes this problem
+# https://github.com/DIVA-DIA/unsupervised_learning/issues/61
 save_confusion_matrix_val:
     _target_: src.callbacks.wandb_callbacks.LogConfusionMatrixToWandbVal
