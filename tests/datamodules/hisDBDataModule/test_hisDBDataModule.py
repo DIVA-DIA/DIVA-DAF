@@ -8,7 +8,7 @@ from tests.datamodules.hisDBDataModule.dummy_data.dummy_data import data_dir_cro
 
 @fixture
 def data_module_cropped(data_dir_cropped):
-    return DIVAHisDBDataModuleCropped(data_dir_cropped, num_workers=5)
+    return DIVAHisDBDataModuleCropped(data_dir_cropped, num_workers=4)
 
 
 def test__create_dataset_parameters_cropped(data_module_cropped):
