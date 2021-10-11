@@ -41,7 +41,8 @@ def evaluate(prediction_img_path: Path, gt_img_path: Path, output_path: Path, ev
                '-p', str(prediction_img_path),
                '-out', str(output_path)]
     if original_img_path is not None:
-        command.append(['-o', str(original_img_path)])
+        command.append('-o')
+        command.append(str(original_img_path))
     if no_visualization:
         command.append('-dv')
     else:
@@ -93,7 +94,7 @@ def main(gt_folder: Path, prediction_folder: Path, original_images: str, output_
     # For each file run
     results = list(pool.starmap(evaluate, zip(prediction_files_path,
                                               gt_files_path,
-                                              itertools.repeat(output_path),
+                                              itertools.repeat('..' / output_path),
                                               itertools.repeat(eval_tool),
                                               original_files_path,
                                               itertools.repeat(no_visualization)
