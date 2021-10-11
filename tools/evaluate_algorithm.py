@@ -145,7 +145,7 @@ if __name__ == "__main__":
     # Method parameters
     # Environment
     parser.add_argument('--eval-tool', type=Path,
-                        default='./utils/LayoutAnalysisEvaluator.jar',
+                        default='./tools/utils/LayoutAnalysisEvaluator.jar',
                         help='path to folder containing DIVA_Line_Segmentation_Evaluator')
     parser.add_argument('--processes', '-p', type=int,
                         default=0,
