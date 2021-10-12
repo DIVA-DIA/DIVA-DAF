@@ -4,7 +4,7 @@ import torch
 from pytest import fixture
 
 from src.datamodules.datasets.cropped_hisdb_dataset import CroppedHisDBDataset
-from tests.datamodules.hisDBDataModule.dummy_data.dummy_data import data_dir_cropped
+from tests.test_data.dummy_data_hisdb.dummy_data import data_dir_cropped
 
 
 @fixture
