@@ -1,0 +1,10 @@
+# explanation of the different parameters: https://pytorch.org/docs/stable/generated/torch.optim.Adamax.html#torch.optim.Adamax
+
+_target_: torch.optim.Adamax
+
+lr: 1e-3
+betas:
+    - 0.9
+    - 0.999
+eps: 1e-8
+weight_decay: 0
