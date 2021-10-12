@@ -122,6 +122,14 @@ class CroppedOutputMerger:
             f.write(info_str)
             f.write('\n')
 
+        print('Evaluation script command:')
+        print(f'python tools/evaluate_algorithm.py'
+              f' --gt_folder {self.output_path / "gt"}'
+              f' --prediction_folder {self.output_path / "pred"}'
+              f' --original_images {self.output_path / "img"}'
+              f' --output_path analysis'
+              f'\n')
+
         print('DONE!')
 
     def merge_page(self, img_name: str, lock, position):
