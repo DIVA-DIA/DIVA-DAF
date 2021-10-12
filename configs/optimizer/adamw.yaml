@@ -1,0 +1,11 @@
+# explanation of the different parameters: https://pytorch.org/docs/stable/generated/torch.optim.AdamW.html#torch.optim.AdamW
+
+_target_: torch.optim.AdamW
+
+lr: 1e-3
+betas:
+    - 0.9
+    - 0.999
+eps: 1e-8
+weight_decay: 0.01
+amsgrad: False
