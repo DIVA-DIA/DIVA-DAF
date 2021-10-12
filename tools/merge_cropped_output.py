@@ -1,4 +1,5 @@
 import argparse
+import math
 import re
 import threading
 from collections import defaultdict
@@ -69,6 +70,8 @@ class CroppedOutputMerger:
         else:
             self.num_threads = self.num_pages
 
+        assert self.num_pages > 0
+
     def merge_all(self):
         start_time = datetime.now()
         info_list = ['Running merge_cropped_output.py:',
@@ -122,7 +125,7 @@ class CroppedOutputMerger:
         print('DONE!')
 
     def merge_page(self, img_name: str, lock, position):
-        page_info_str = f'[{position + 1}/{self.num_pages}] {img_name}'
+        page_info_str = f'[{str(position + 1).rjust(int(math.log10(self.num_pages)) + 1)}/{self.num_pages}] {img_name}'
 
         preds_folder = self.prediction_path / img_name
         coordinates = re.compile(r'.+_x(\d+)_y(\d+)\.npy$')
