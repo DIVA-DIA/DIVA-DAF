@@ -1,5 +1,5 @@
+import argparse
 import re
-import sys
 import threading
 from collections import defaultdict
 from dataclasses import dataclass
@@ -7,16 +7,12 @@ from datetime import datetime
 from multiprocessing.pool import ThreadPool
 from pathlib import Path
 
-import argparse
-from time import sleep
-
 import numpy as np
 from PIL import Image
-from joblib import Parallel, delayed
 from tqdm import tqdm
 
-from src.datamodules.hisDBDataModule.DIVAHisDBDataModule import DIVAHisDBDataModuleCropped
 from src.datamodules.datasets.cropped_hisdb_dataset import CroppedHisDBDataset
+from src.datamodules.hisDBDataModule.DIVAHisDBDataModule import DIVAHisDBDataModuleCropped
 from src.tasks.semantic_segmentation.utils.output_tools import merge_patches, save_output_page_image
 from tools.generate_cropped_dataset import pil_loader
 from tools.viz import visualize
@@ -29,7 +25,6 @@ class CropData:
     offset_y: int
     height: int
     width: int
-    # pred: np.ndarray
     pred_path: Path
     img_path: Path
     gt_path: Path
@@ -108,14 +103,6 @@ class CroppedOutputMerger:
             for pbars in results:
                 pbars[i].close()
 
-        # Parallel(n_jobs=10)(delayed(self.merge_page)(img_name=img_name) for img_name in
-        #                     tqdm(self.img_name_list, desc='Processing pages'))
-
-        # pbar = tqdm(self.img_name_list)
-        # for img_name in pbar:
-        #     pbar.set_description(f'Processing {img_name}')
-        #     self.merge_page(img_name=img_name)
-
         end_time = datetime.now()
         duration = end_time - start_time
 
@@ -160,10 +147,8 @@ class CroppedOutputMerger:
         assert len(preds_list) == len(img_gt_list)
 
         crop_data_list = []
+
         # merge into one list
-        # for (x, y, pred_path), (img_path, gt_path, crop_name, x_data, y_data) in tqdm(zip(preds_list, img_gt_list),
-        #                                                                               desc='Merging path lists',
-        #                                                                               leave=True):
         with lock:
             pbar1 = tqdm(total=len(preds_list),
                          position=position,
@@ -199,7 +184,6 @@ class CroppedOutputMerger:
 
         with lock:
             pbar1.refresh()
-            # pbar1.close()
 
         # Create new canvas
         canvas_width = crop_data_list[-1].width + crop_data_list[-1].offset_x
@@ -212,8 +196,6 @@ class CroppedOutputMerger:
         img_canvas = Image.new(mode='RGB', size=(canvas_width, canvas_height))
         gt_canvas = Image.new(mode='RGB', size=(canvas_width, canvas_height))
 
-        # for crop_data in tqdm(crop_data_list, desc='Merging crops', leave=True):
-
         with lock:
             pbar2 = tqdm(total=len(crop_data_list),
                          position=position + (1 * self.num_pages),
@@ -223,7 +205,6 @@ class CroppedOutputMerger:
 
         for crop_data in crop_data_list:
             # Add the pred to the pred_canvas
-            # pred = crop_data.pred
             pred = np.load(str(crop_data.pred_path))
 
             # make sure all crops have same size
@@ -242,7 +223,6 @@ class CroppedOutputMerger:
 
         with lock:
             pbar2.refresh()
-            # pbar2.close()
 
         # Save the image when done
         outdir_img = self.output_path / 'img'
@@ -259,9 +239,6 @@ class CroppedOutputMerger:
         outdir_pred_viz.mkdir(parents=True, exist_ok=True)
 
         # Loop to allow progress bar
-        # pbar = tqdm(range(5), desc='Saving merged image files'.ljust(36), leave=True)
-        # for i in pbar:
-
         with lock:
             pbar3 = tqdm(total=5,
                          position=position + (2 * self.num_pages),
@@ -302,7 +279,6 @@ class CroppedOutputMerger:
 
         with lock:
             pbar3.refresh()
-            # pbar3.close()
 
         # The progress bars will be close in order in main thread
         return pbar1, pbar2, pbar3
