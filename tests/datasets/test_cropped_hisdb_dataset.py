@@ -22,6 +22,12 @@ def dataset_test(data_dir_cropped):
     return CroppedHisDBDataset(path=data_dir_cropped / 'test')
 
 
+def test__load_data_and_gt(dataset_train):
+    data_img, gt_img = dataset_train._load_data_and_gt(0)
+    assert data_img.size == (300, 300)
+    assert gt_img.size == (300, 300)
+
+
 def test__get_train_val_items_train(dataset_train):
     img, gt, boundary_mask = dataset_train._get_train_val_items(index=0)
     assert img.shape == torch.Size([3, 300, 300])
