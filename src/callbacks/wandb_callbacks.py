@@ -8,8 +8,8 @@ import numpy as np
 import pandas as pd
 import seaborn as sn
 import torch
-import torchmetrics
 import wandb
+from torchmetrics.functional import confusion_matrix, f1, precision, recall
 from matplotlib.patches import Rectangle
 from pytorch_lightning import Callback, Trainer
 from pytorch_lightning.loggers import LoggerCollection, WandbLogger
@@ -71,15 +71,61 @@ class LogConfusionMatrixToWandbVal(Callback):
             self.preds.append(outputs[OutputKeys.PREDICTION].detach().cpu().numpy())
             self.targets.append(outputs[OutputKeys.TARGET].detach().cpu().numpy())
 
+    @rank_zero_only
     def on_validation_epoch_end(self, trainer, pl_module):
         """Generate confusion matrix and upload it with the numbers or as image"""
         if not self.ready:
             return
 
-        if trainer.is_global_zero:
-            _create_and_save_conf_mat(trainer=trainer, input_preds=self.preds, input_targets=self.targets, phase='val')
-            self.preds.clear()
-            self.targets.clear()
+        conf_mat_name = f'CM_epoch_{trainer.current_epoch}'
+        logger = get_wandb_logger(trainer)
+        experiment = logger.experiment
+
+        preds = []
+        for step_pred in self.preds:
+            preds.append(trainer.model.module.module.to_metrics_format(np.array(step_pred)))
+
+        preds = np.concatenate(preds).flatten()
+        targets = np.concatenate(np.array(self.targets)).flatten()
+
+        # only works if preds and targets contains index of class (starting with 0)
+        num_classes = max(np.max(preds), np.max(targets)) + 1
+
+        conf_mat = confusion_matrix(target=torch.tensor(targets),
+                                                                    preds=torch.tensor(preds),
+                                                                    num_classes=num_classes)
+
+        # set figure size
+        plt.figure(figsize=(14, 8))
+        # set labels size
+        sn.set(font_scale=1.4)
+        # set font size
+        fig = sn.heatmap(conf_mat, annot=True, annot_kws={"size": 8}, fmt="g")
+
+        for i in range(conf_mat.shape[0]):
+            fig.add_patch(Rectangle((i, i), 1, 1, fill=False, edgecolor='yellow', lw=3))
+        plt.xlabel('Predictions')
+        plt.ylabel('Targets')
+        plt.title(conf_mat_name)
+
+        conf_mat_path = Path(os.getcwd()) / 'conf_mats' / 'val'
+        conf_mat_path.mkdir(parents=True, exist_ok=True)
+        conf_mat_file_path = conf_mat_path / (conf_mat_name + '.txt')
+        df = pd.DataFrame(conf_mat.detach().cpu().numpy())
+
+        # save as csv or tsv to disc
+        df.to_csv(path_or_buf=conf_mat_file_path, sep='\t')
+        # save tsv to wandb
+        experiment.save(glob_str=str(conf_mat_file_path), base_path=os.getcwd())
+        # names should be uniqe or else charts from different experiments in wandb will overlap
+        experiment.log({f"confusion_matrix_val_img/ep_{trainer.current_epoch}": wandb.Image(plt)},
+                       commit=False)
+        # according to wandb docs this should also work but it crashes
+        # experiment.log(f{"confusion_matrix/{experiment.name}": plt})
+        # reset plot
+        plt.clf()
+        self.preds.clear()
+        self.targets.clear()
 
 
 class LogConfusionMatrixToWandbTest(Callback):
@@ -100,6 +146,7 @@ class LogConfusionMatrixToWandbTest(Callback):
             self.preds.append(outputs[OutputKeys.PREDICTION].detach().cpu().numpy())
             self.targets.append(outputs[OutputKeys.TARGET].detach().cpu().numpy())
 
+    @rank_zero_only
     def on_test_epoch_end(self, trainer, pl_module):
         """Generate confusion matrix and upload it with the numbers or as image"""
         if not self.ready:
@@ -135,7 +182,7 @@ def _create_and_save_conf_mat(trainer, input_preds, input_targets, phase):
     # only works if preds and targets contains index of class (starting with 0)
     num_classes = max(np.max(preds), np.max(targets)) + 1
 
-    confusion_matrix = torchmetrics.functional.confusion_matrix(target=torch.tensor(targets), preds=torch.tensor(preds),
+    conf_mat = confusion_matrix(target=torch.tensor(targets), preds=torch.tensor(preds),
                                                                 num_classes=num_classes)
 
     # set figure size
@@ -143,9 +190,9 @@ def _create_and_save_conf_mat(trainer, input_preds, input_targets, phase):
     # set labels size
     sn.set(font_scale=1.4)
     # set font size
-    fig = sn.heatmap(confusion_matrix, annot=True, annot_kws={"size": 8}, fmt="g")
+    fig = sn.heatmap(conf_mat, annot=True, annot_kws={"size": 8}, fmt="g")
 
-    for i in range(confusion_matrix.shape[0]):
+    for i in range(conf_mat.shape[0]):
         fig.add_patch(Rectangle((i, i), 1, 1, fill=False, edgecolor='yellow', lw=3))
     plt.xlabel('Predictions')
     plt.ylabel('Targets')
@@ -154,7 +201,7 @@ def _create_and_save_conf_mat(trainer, input_preds, input_targets, phase):
     conf_mat_path = Path(os.getcwd()) / 'conf_mats' / phase
     conf_mat_path.mkdir(parents=True, exist_ok=True)
     conf_mat_file_path = conf_mat_path / (conf_mat_name + '.txt')
-    df = pd.DataFrame(confusion_matrix.detach().cpu().numpy())
+    df = pd.DataFrame(conf_mat.detach().cpu().numpy())
 
     # save as csv or tsv to disc
     df.to_csv(path_or_buf=conf_mat_file_path, sep='\t')
@@ -174,7 +221,7 @@ class LogF1PrecRecHeatmapToWandb(Callback):
     Expects validation step to return predictions and targets.
     """
 
-    def __init__(self, class_names: List[str] = None):
+    def __init__(self):
         self.preds = []
         self.targets = []
         self.ready = True
@@ -209,10 +256,17 @@ class LogF1PrecRecHeatmapToWandb(Callback):
 
         preds = np.concatenate(preds).flatten()
         targets = np.concatenate(self.targets).flatten()
-        f1 = f1_score(y_true=targets, y_pred=preds, average=None)
-        r = recall_score(y_true=targets, y_pred=preds, average=None)
-        p = precision_score(y_true=targets, y_pred=preds, average=None)
-        data = [f1, p, r]
+
+        # only works if preds and targets contains index of class (starting with 0)
+        num_classes = max(np.max(preds), np.max(targets)) + 1
+
+        preds = torch.tensor(preds)
+        targets = torch.tensor(targets)
+
+        f1_s = f1(preds=preds, target=targets, num_classes=num_classes, average='none')
+        r = recall(preds=preds, target=targets, num_classes=num_classes, average='none')
+        p = precision(preds=preds, target=targets, num_classes=num_classes, average='none')
+        data = [f1_s.numpy(), p.numpy(), r.numpy()]
 
         # set figure size
         plt.figure(figsize=(14, 3))
