@@ -1,7 +1,5 @@
-import glob
 import os
 from pathlib import Path
-from typing import List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,13 +7,13 @@ import pandas as pd
 import seaborn as sn
 import torch
 import wandb
-from torchmetrics.functional import confusion_matrix, f1, precision, recall
 from matplotlib.patches import Rectangle
 from pytorch_lightning import Callback, Trainer
 from pytorch_lightning.loggers import LoggerCollection, WandbLogger
 from pytorch_lightning.utilities import rank_zero_only
-from sklearn.metrics import f1_score, precision_score, recall_score
+from torchmetrics.functional import f1, precision, recall
 
+from src.metrics.divahisdb import HisDBIoU
 from src.tasks.utils.outputs import OutputKeys
 
 
@@ -68,8 +66,8 @@ class LogConfusionMatrixToWandbVal(Callback):
     ):
         """Gather data from single batch."""
         if self.ready:
-            self.preds.append(outputs[OutputKeys.PREDICTION].detach().cpu().numpy())
-            self.targets.append(outputs[OutputKeys.TARGET].detach().cpu().numpy())
+            self.preds.append(outputs[OutputKeys.PREDICTION].detach().cpu())
+            self.targets.append(outputs[OutputKeys.TARGET].detach().cpu())
 
     @rank_zero_only
     def on_validation_epoch_end(self, trainer, pl_module):
@@ -77,53 +75,8 @@ class LogConfusionMatrixToWandbVal(Callback):
         if not self.ready:
             return
 
-        conf_mat_name = f'CM_epoch_{trainer.current_epoch}'
-        logger = get_wandb_logger(trainer)
-        experiment = logger.experiment
-
-        preds = []
-        for step_pred in self.preds:
-            preds.append(trainer.model.module.module.to_metrics_format(np.array(step_pred)))
-
-        preds = np.concatenate(preds).flatten()
-        targets = np.concatenate(np.array(self.targets)).flatten()
-
-        # only works if preds and targets contains index of class (starting with 0)
-        num_classes = max(np.max(preds), np.max(targets)) + 1
-
-        conf_mat = confusion_matrix(target=torch.tensor(targets),
-                                                                    preds=torch.tensor(preds),
-                                                                    num_classes=num_classes)
-
-        # set figure size
-        plt.figure(figsize=(14, 8))
-        # set labels size
-        sn.set(font_scale=1.4)
-        # set font size
-        fig = sn.heatmap(conf_mat, annot=True, annot_kws={"size": 8}, fmt="g")
-
-        for i in range(conf_mat.shape[0]):
-            fig.add_patch(Rectangle((i, i), 1, 1, fill=False, edgecolor='yellow', lw=3))
-        plt.xlabel('Predictions')
-        plt.ylabel('Targets')
-        plt.title(conf_mat_name)
-
-        conf_mat_path = Path(os.getcwd()) / 'conf_mats' / 'val'
-        conf_mat_path.mkdir(parents=True, exist_ok=True)
-        conf_mat_file_path = conf_mat_path / (conf_mat_name + '.txt')
-        df = pd.DataFrame(conf_mat.detach().cpu().numpy())
-
-        # save as csv or tsv to disc
-        df.to_csv(path_or_buf=conf_mat_file_path, sep='\t')
-        # save tsv to wandb
-        experiment.save(glob_str=str(conf_mat_file_path), base_path=os.getcwd())
-        # names should be uniqe or else charts from different experiments in wandb will overlap
-        experiment.log({f"confusion_matrix_val_img/ep_{trainer.current_epoch}": wandb.Image(plt)},
-                       commit=False)
-        # according to wandb docs this should also work but it crashes
-        # experiment.log(f{"confusion_matrix/{experiment.name}": plt})
-        # reset plot
-        plt.clf()
+        _create_and_save_conf_mat(trainer=trainer, pl_module=pl_module, input_preds=self.preds,
+                                  input_targets=self.targets, phase='val')
         self.preds.clear()
         self.targets.clear()
 
@@ -136,29 +89,24 @@ class LogConfusionMatrixToWandbTest(Callback):
     def __init__(self):
         self.preds = []
         self.targets = []
-        self.ready = True
 
     def on_test_batch_end(
             self, trainer, pl_module, outputs, batch, batch_idx, dataloader_idx
     ):
         """Gather data from single batch."""
-        if self.ready:
-            self.preds.append(outputs[OutputKeys.PREDICTION].detach().cpu().numpy())
-            self.targets.append(outputs[OutputKeys.TARGET].detach().cpu().numpy())
+        self.preds.append(outputs[OutputKeys.PREDICTION].detach().cpu())
+        self.targets.append(outputs[OutputKeys.TARGET].detach().cpu())
 
-    @rank_zero_only
     def on_test_epoch_end(self, trainer, pl_module):
         """Generate confusion matrix and upload it with the numbers or as image"""
-        if not self.ready:
-            return
 
-        if trainer.is_global_zero:
-            _create_and_save_conf_mat(trainer=trainer, input_preds=self.preds, input_targets=self.targets, phase='val')
-            self.preds.clear()
-            self.targets.clear()
+        _create_and_save_conf_mat(trainer=trainer, pl_module=pl_module, input_preds=self.preds,
+                                  input_targets=self.targets, phase='test')
+        self.targets.clear()
+        self.preds.clear()
 
 
-def _create_and_save_conf_mat(trainer, input_preds, input_targets, phase):
+def _create_and_save_conf_mat(trainer, pl_module, input_preds, input_targets, phase):
     """
     This function creates a confusion matrix and saves it as a tsv file as well as uploading it to wandb as tsv and
     as an image.
@@ -172,27 +120,25 @@ def _create_and_save_conf_mat(trainer, input_preds, input_targets, phase):
     logger = get_wandb_logger(trainer)
     experiment = logger.experiment
 
-    preds = []
-    for step_pred in input_preds:
-        preds.append(trainer.model.module.module.to_metrics_format(np.array(step_pred)))
+    preds = list(map(pl_module.to_metrics_format, input_preds))
 
-    preds = np.concatenate(preds).flatten()
-    targets = np.concatenate(np.array(input_targets)).flatten()
+    preds = torch.cat(preds).cpu().flatten()
+    targets = torch.cat(input_targets).cpu().flatten()
 
     # only works if preds and targets contains index of class (starting with 0)
-    num_classes = max(np.max(preds), np.max(targets)) + 1
+    num_classes = torch.max(torch.max(preds), torch.max(targets)) + 1
 
-    conf_mat = confusion_matrix(target=torch.tensor(targets), preds=torch.tensor(preds),
-                                                                num_classes=num_classes)
+    # the images all have the same size
+    hist = HisDBIoU._fast_hist(targets, preds, num_classes).cpu().numpy()
 
     # set figure size
     plt.figure(figsize=(14, 8))
     # set labels size
     sn.set(font_scale=1.4)
     # set font size
-    fig = sn.heatmap(conf_mat, annot=True, annot_kws={"size": 8}, fmt="g")
+    fig = sn.heatmap(hist, annot=True, annot_kws={"size": 8}, fmt="g")
 
-    for i in range(conf_mat.shape[0]):
+    for i in range(hist.shape[0]):
         fig.add_patch(Rectangle((i, i), 1, 1, fill=False, edgecolor='yellow', lw=3))
     plt.xlabel('Predictions')
     plt.ylabel('Targets')
@@ -201,7 +147,7 @@ def _create_and_save_conf_mat(trainer, input_preds, input_targets, phase):
     conf_mat_path = Path(os.getcwd()) / 'conf_mats' / phase
     conf_mat_path.mkdir(parents=True, exist_ok=True)
     conf_mat_file_path = conf_mat_path / (conf_mat_name + '.txt')
-    df = pd.DataFrame(conf_mat.detach().cpu().numpy())
+    df = pd.DataFrame(hist)
 
     # save as csv or tsv to disc
     df.to_csv(path_or_buf=conf_mat_file_path, sep='\t')
