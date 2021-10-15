@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import seaborn as sn
 import torch
@@ -11,7 +10,6 @@ from matplotlib.patches import Rectangle
 from pytorch_lightning import Callback, Trainer
 from pytorch_lightning.loggers import LoggerCollection, WandbLogger
 from pytorch_lightning.utilities import rank_zero_only
-from torchmetrics.functional import f1, precision, recall
 
 from src.metrics.divahisdb import HisDBIoU
 from src.tasks.utils.outputs import OutputKeys
@@ -184,8 +182,8 @@ class LogF1PrecRecHeatmapToWandb(Callback):
     ):
         """Gather data from single batch."""
         if self.ready:
-            self.preds.append(outputs[OutputKeys.PREDICTION].detach().cpu().numpy())
-            self.targets.append(outputs[OutputKeys.TARGET].detach().cpu().numpy())
+            self.preds.append(outputs[OutputKeys.PREDICTION].detach().cpu())
+            self.targets.append(outputs[OutputKeys.TARGET].detach().cpu())
 
     @rank_zero_only
     def on_validation_epoch_end(self, trainer, pl_module):
@@ -196,23 +194,21 @@ class LogF1PrecRecHeatmapToWandb(Callback):
         logger = get_wandb_logger(trainer=trainer)
         experiment = logger.experiment
 
-        preds = []
-        for step_pred in self.preds:
-            preds.append(trainer.model.module.module.to_metrics_format(np.array(step_pred)))
+        preds = list(map(pl_module.to_metrics_format, self.preds))
 
-        preds = np.concatenate(preds).flatten()
-        targets = np.concatenate(self.targets).flatten()
+        preds = torch.cat(preds).cpu().flatten()
+        targets = torch.cat(self.targets).cpu().flatten()
 
         # only works if preds and targets contains index of class (starting with 0)
-        num_classes = max(np.max(preds), np.max(targets)) + 1
+        num_classes = torch.max(torch.max(preds), torch.max(targets)) + 1
 
-        preds = torch.tensor(preds)
-        targets = torch.tensor(targets)
+        hist = HisDBIoU._fast_hist(targets, preds, num_classes).cpu()
 
-        f1_s = f1(preds=preds, target=targets, num_classes=num_classes, average='none')
-        r = recall(preds=preds, target=targets, num_classes=num_classes, average='none')
-        p = precision(preds=preds, target=targets, num_classes=num_classes, average='none')
-        data = [f1_s.numpy(), p.numpy(), r.numpy()]
+        precision = torch.div(torch.diag(hist), torch.sum(hist, dim=0)).cpu().nan_to_num()
+        recall = torch.div(torch.diag(hist), torch.sum(hist, dim=1)).cpu().nan_to_num()
+        f1 = torch.div(torch.mul(2, torch.mul(recall, precision)), torch.add(precision, recall)).cpu().nan_to_num()
+
+        data = [f1.numpy(), precision.numpy(), recall.numpy()]
 
         # set figure size
         plt.figure(figsize=(14, 3))
