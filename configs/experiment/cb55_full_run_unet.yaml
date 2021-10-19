@@ -14,10 +14,6 @@ defaults:
     - /callbacks:
           - check_compatibility.yaml
           - model_checkpoint.yaml
-          - conf_mat_val_wandb.yaml
-          - conf_mat_test_wandb.yaml
-          - watch_model_wandb.yaml
-          - f1_precision_recall_heatmap_wandb.yaml
     - /logger:
           - wandb.yaml # set logger here or use command line (e.g. `python run.py logger=wandb`)
           - csv.yaml
@@ -36,6 +32,11 @@ trainer:
     min_epochs: 1
     max_epochs: 100
     precision: 16
+
+task:
+    confusion_matrix_log_every_epoch: 10
+    confusion_matrix_val: True
+    confusion_matrix_test: True
 
 datamodule:
     _target_: src.datamodules.hisDBDataModule.DIVAHisDBDataModule.DIVAHisDBDataModuleCropped

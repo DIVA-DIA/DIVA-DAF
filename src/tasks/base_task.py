@@ -1,9 +1,16 @@
+import os
 from abc import ABCMeta
 from pathlib import Path
 from typing import Optional, Union, Type, Mapping, Sequence, Callable, Dict, Any, Tuple, List
 
+import numpy as np
+import pandas as pd
+import seaborn as sn
 import torch
 import torchmetrics
+import wandb
+from matplotlib import pyplot as plt
+from matplotlib.patches import Rectangle
 from omegaconf import OmegaConf
 from pytorch_lightning import LightningModule
 from pytorch_lightning.trainer.states import RunningStage
@@ -12,9 +19,10 @@ from torch import nn
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import _LRScheduler
 
+from src.callbacks.wandb_callbacks import get_wandb_logger
+from src.tasks.utils.outputs import OutputKeys
 from src.tasks.utils.task_utils import get_callable_dict
 from src.utils import utils
-from src.tasks.utils.outputs import OutputKeys
 
 log = utils.get_logger(__name__)
 
@@ -48,6 +56,9 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             metric_train: Optional[torchmetrics.Metric] = None,
             metric_val: Optional[torchmetrics.Metric] = None,
             metric_test: Optional[torchmetrics.Metric] = None,
+            confusion_matrix_val: Optional[bool] = False,
+            confusion_matrix_test: Optional[bool] = False,
+            confusion_matrix_log_every_epoch: Optional[int] = 1,
             lr: float = 1e-3,
             test_output_path: Optional[Union[str, Path]] = 'predictions'
     ):
@@ -71,11 +82,18 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         self.metric_train = nn.ModuleDict({} if metric_train is None else get_callable_dict(metric_train))
         self.metric_val = nn.ModuleDict({} if metric_val is None else get_callable_dict(metric_val))
         self.metric_test = nn.ModuleDict({} if metric_test is None else get_callable_dict(metric_test))
+        self.confusion_matrix_val = confusion_matrix_val
+        self.confusion_matrix_test = confusion_matrix_test
+        self.confusion_matrix_log_every_epoch = confusion_matrix_log_every_epoch
         self.lr = lr
         self.test_output_path = Path(test_output_path)
         self.save_hyperparameters()
 
     def setup(self, stage: str):
+        if self.confusion_matrix_val:
+            self.metric_conf_mat_val = torchmetrics.ConfusionMatrix(self.trainer.datamodule.num_classes)
+        if self.confusion_matrix_test:
+            self.metric_conf_mat_test = torchmetrics.ConfusionMatrix(self.trainer.datamodule.num_classes)
         if self.trainer.distributed_backend == 'ddp':
             batch_size = self.trainer.datamodule.batch_size
             if stage == 'fit':
@@ -142,11 +160,11 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         return output
 
     @staticmethod
-    def to_loss_format(x: torch.Tensor) -> torch.Tensor:
+    def to_loss_format(x: torch.Tensor, **kwargs) -> torch.Tensor:
         return x
 
     @staticmethod
-    def to_metrics_format(x: torch.Tensor) -> torch.Tensor:
+    def to_metrics_format(x: torch.Tensor, **kwargs) -> torch.Tensor:
         return x
 
     def forward(self, x: Any) -> Any:
@@ -170,15 +188,45 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
 
     def validation_step(self, batch: Any, batch_idx: int, **kwargs) -> None:
         output = self.step(batch=batch, batch_idx=batch_idx, **kwargs)
+        if self.trainer.state.stage != RunningStage.SANITY_CHECKING \
+                and self.confusion_matrix_val \
+                and self.trainer.current_epoch % self.confusion_matrix_log_every_epoch == 0:
+            self.metric_conf_mat_val(output[OutputKeys.PREDICTION], output[OutputKeys.TARGET])
         for key, value in output[OutputKeys.LOG].items():
             self.log(f"val/{key}", value, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
         return output
 
+    def validation_epoch_end(self, outputs: Any) -> None:
+        if self.trainer.state.stage == RunningStage.SANITY_CHECKING \
+                or not self.confusion_matrix_val \
+                or self.trainer.current_epoch % self.confusion_matrix_log_every_epoch != 0:
+            return
+
+        hist = self.metric_conf_mat_val.compute()
+        hist = hist.cpu().numpy()
+
+        self._create_conf_mat(matrix=hist, phase='val')
+
+        self.metric_conf_mat_val.reset()
+
     def test_step(self, batch: Any, batch_idx: int, **kwargs) -> None:
         output = self.step(batch=batch, batch_idx=batch_idx, **kwargs)
+        if self.confusion_matrix_val and self.trainer.current_epoch % self.confusion_matrix_log_every_epoch == 0:
+            self.metric_conf_mat_test(output[OutputKeys.PREDICTION], output[OutputKeys.TARGET])
         for key, value in output[OutputKeys.LOG].items():
             self.log(f"test/{key}", value, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
         return output
+
+    def test_epoch_end(self, outputs: Any) -> None:
+        if not self.confusion_matrix_test:
+            return
+
+        hist = self.metric_conf_mat_test.compute()
+        hist = hist.cpu().numpy()
+
+        self._create_conf_mat(matrix=hist, phase='test')
+
+        self.metric_conf_mat_test.reset()
 
     def configure_optimizers(self) -> Union[Optimizer, Tuple[List[Optimizer], List[_LRScheduler]]]:
         optimizer = self.optimizer
@@ -209,3 +257,33 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             return self.metric_test
         return {}
 
+    def _create_conf_mat(self, matrix: np.ndarray, phase: str = 'val'):
+        # print(f'With all_gather: {str(len(outputs[0][OutputKeys.PREDICTION][0]))}')
+        conf_mat_name = f'CM_epoch_{self.trainer.current_epoch}'
+        logger = get_wandb_logger(self.trainer)
+        experiment = logger.experiment
+
+        # set figure size
+        plt.figure(figsize=(14, 8))
+        # set labels size
+        sn.set(font_scale=1.4)
+        # set font size
+        fig = sn.heatmap(matrix, annot=True, annot_kws={"size": 8}, fmt="g")
+        for i in range(matrix.shape[0]):
+            fig.add_patch(Rectangle((i, i), 1, 1, fill=False, edgecolor='yellow', lw=3))
+        plt.xlabel('Predictions')
+        plt.ylabel('Targets')
+        plt.title(conf_mat_name)
+        conf_mat_path = Path(os.getcwd()) / 'conf_mats' / phase
+        conf_mat_path.mkdir(parents=True, exist_ok=True)
+        conf_mat_file_path = conf_mat_path / (conf_mat_name + '.txt')
+        df = pd.DataFrame(matrix)
+
+        # save as csv or tsv to disc
+        if self.trainer.is_global_zero:
+            df.to_csv(path_or_buf=conf_mat_file_path, sep='\t')
+        # save tsv to wandb
+        experiment.save(glob_str=str(conf_mat_file_path), base_path=os.getcwd())
+        # names should be uniqe or else charts from different experiments in wandb will overlap
+        experiment.log({f"confusion_matrix_{phase}_img/ep_{self.trainer.current_epoch}": wandb.Image(plt)},
+                       commit=False)
