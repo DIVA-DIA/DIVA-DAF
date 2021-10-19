@@ -26,7 +26,7 @@ class SemanticSegmentation(AbstractTask):
                  test_output_path: Optional[Union[str, Path]] = 'predictions',
                  confusion_matrix_val: Optional[bool] = False,
                  confusion_matrix_test: Optional[bool] = False,
-                 confusion_matrix_log_every_epoch: Optional[int] = 1,
+                 confusion_matrix_log_every_n_epoch: Optional[int] = 1,
                  lr: float = 1e-3
                  ) -> None:
         """
@@ -48,7 +48,7 @@ class SemanticSegmentation(AbstractTask):
             lr=lr,
             confusion_matrix_val=confusion_matrix_val,
             confusion_matrix_test=confusion_matrix_test,
-            confusion_matrix_log_every_epoch=confusion_matrix_log_every_epoch,
+            confusion_matrix_log_every_n_epoch=confusion_matrix_log_every_n_epoch,
         )
         self.save_hyperparameters()
 

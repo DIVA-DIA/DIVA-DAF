@@ -38,7 +38,7 @@ trainer:
     precision: 16
 
 task:
-    confusion_matrix_log_every_epoch: 1
+    confusion_matrix_log_every_n_epoch: 1
     confusion_matrix_val: True
     confusion_matrix_test: True
 

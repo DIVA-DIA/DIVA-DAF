@@ -58,7 +58,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             metric_test: Optional[torchmetrics.Metric] = None,
             confusion_matrix_val: Optional[bool] = False,
             confusion_matrix_test: Optional[bool] = False,
-            confusion_matrix_log_every_epoch: Optional[int] = 1,
+            confusion_matrix_log_every_n_epoch: Optional[int] = 1,
             lr: float = 1e-3,
             test_output_path: Optional[Union[str, Path]] = 'predictions'
     ):
@@ -84,7 +84,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         self.metric_test = nn.ModuleDict({} if metric_test is None else get_callable_dict(metric_test))
         self.confusion_matrix_val = confusion_matrix_val
         self.confusion_matrix_test = confusion_matrix_test
-        self.confusion_matrix_log_every_epoch = confusion_matrix_log_every_epoch
+        self.confusion_matrix_log_every_n_epoch = confusion_matrix_log_every_n_epoch
         self.lr = lr
         self.test_output_path = Path(test_output_path)
         self.save_hyperparameters()
@@ -190,7 +190,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         output = self.step(batch=batch, batch_idx=batch_idx, **kwargs)
         if self.trainer.state.stage != RunningStage.SANITY_CHECKING \
                 and self.confusion_matrix_val \
-                and self.trainer.current_epoch % self.confusion_matrix_log_every_epoch == 0:
+                and self.trainer.current_epoch % self.confusion_matrix_log_every_n_epoch == 0:
             self.metric_conf_mat_val(output[OutputKeys.PREDICTION], output[OutputKeys.TARGET])
         for key, value in output[OutputKeys.LOG].items():
             self.log(f"val/{key}", value, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
@@ -199,7 +199,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
     def validation_epoch_end(self, outputs: Any) -> None:
         if self.trainer.state.stage == RunningStage.SANITY_CHECKING \
                 or not self.confusion_matrix_val \
-                or self.trainer.current_epoch % self.confusion_matrix_log_every_epoch != 0:
+                or self.trainer.current_epoch % self.confusion_matrix_log_every_n_epoch != 0:
             return
 
         hist = self.metric_conf_mat_val.compute()
@@ -211,7 +211,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
 
     def test_step(self, batch: Any, batch_idx: int, **kwargs) -> None:
         output = self.step(batch=batch, batch_idx=batch_idx, **kwargs)
-        if self.confusion_matrix_val and self.trainer.current_epoch % self.confusion_matrix_log_every_epoch == 0:
+        if self.confusion_matrix_val and self.trainer.current_epoch % self.confusion_matrix_log_every_n_epoch == 0:
             self.metric_conf_mat_test(output[OutputKeys.PREDICTION], output[OutputKeys.TARGET])
         for key, value in output[OutputKeys.LOG].items():
             self.log(f"test/{key}", value, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
