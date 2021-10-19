@@ -7,6 +7,7 @@ from omegaconf import OmegaConf
 class AbstractDatamodule(pl.LightningDataModule):
     def __init__(self):
         super().__init__()
+        self.num_classes = -1
         resolver_name = 'datamodule'
         OmegaConf.register_new_resolver(
             resolver_name,
