@@ -91,9 +91,11 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
 
     def setup(self, stage: str):
         if self.confusion_matrix_val:
-            self.metric_conf_mat_val = torchmetrics.ConfusionMatrix(self.trainer.datamodule.num_classes)
+            self.metric_conf_mat_val = torchmetrics.ConfusionMatrix(num_classes=self.trainer.datamodule.num_classes,
+                                                                    compute_on_step=False)
         if self.confusion_matrix_test:
-            self.metric_conf_mat_test = torchmetrics.ConfusionMatrix(self.trainer.datamodule.num_classes)
+            self.metric_conf_mat_test = torchmetrics.ConfusionMatrix(num_classes=self.trainer.datamodule.num_classes,
+                                                                     compute_on_step=False)
         if self.trainer.distributed_backend == 'ddp':
             batch_size = self.trainer.datamodule.batch_size
             if stage == 'fit':
@@ -190,8 +192,8 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         output = self.step(batch=batch, batch_idx=batch_idx, **kwargs)
         if self.trainer.state.stage != RunningStage.SANITY_CHECKING \
                 and self.confusion_matrix_val \
-                and self.trainer.current_epoch % self.confusion_matrix_log_every_n_epoch == 0:
-            self.metric_conf_mat_val(output[OutputKeys.PREDICTION], output[OutputKeys.TARGET])
+                and (self.trainer.current_epoch + 1) % self.confusion_matrix_log_every_n_epoch == 0:
+            self.metric_conf_mat_val(preds=output[OutputKeys.PREDICTION], target=output[OutputKeys.TARGET])
         for key, value in output[OutputKeys.LOG].items():
             self.log(f"val/{key}", value, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
         return output
@@ -199,20 +201,20 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
     def validation_epoch_end(self, outputs: Any) -> None:
         if self.trainer.state.stage == RunningStage.SANITY_CHECKING \
                 or not self.confusion_matrix_val \
-                or self.trainer.current_epoch % self.confusion_matrix_log_every_n_epoch != 0:
+                or (self.trainer.current_epoch + 1) % self.confusion_matrix_log_every_n_epoch != 0:
             return
 
         hist = self.metric_conf_mat_val.compute()
         hist = hist.cpu().numpy()
 
-        self._create_conf_mat(matrix=hist, phase='val')
+        self._create_conf_mat(matrix=hist, stage='val')
 
         self.metric_conf_mat_val.reset()
 
     def test_step(self, batch: Any, batch_idx: int, **kwargs) -> None:
         output = self.step(batch=batch, batch_idx=batch_idx, **kwargs)
-        if self.confusion_matrix_val and self.trainer.current_epoch % self.confusion_matrix_log_every_n_epoch == 0:
-            self.metric_conf_mat_test(output[OutputKeys.PREDICTION], output[OutputKeys.TARGET])
+        if self.confusion_matrix_test:
+            self.metric_conf_mat_test(preds=output[OutputKeys.PREDICTION], target=output[OutputKeys.TARGET])
         for key, value in output[OutputKeys.LOG].items():
             self.log(f"test/{key}", value, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
         return output
@@ -224,7 +226,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         hist = self.metric_conf_mat_test.compute()
         hist = hist.cpu().numpy()
 
-        self._create_conf_mat(matrix=hist, phase='test')
+        self._create_conf_mat(matrix=hist, stage='test')
 
         self.metric_conf_mat_test.reset()
 
@@ -257,7 +259,27 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             return self.metric_test
         return {}
 
-    def _create_conf_mat(self, matrix: np.ndarray, phase: str = 'val'):
+    def _create_conf_mat(self, matrix: np.ndarray, stage: str = 'val'):
+        # verify sum of conf mat entries
+        if stage == 'val':
+            if not self.trainer.val_dataloaders[0].drop_last:
+                expected_sum = len(self.trainer.val_dataloaders[0].dataset) * \
+                               self.trainer.datamodule.dims[1] * self.trainer.datamodule.dims[2]
+            else:
+                expected_sum = len(self.trainer.val_dataloaders[0]) * self.trainer.num_processes * \
+                               self.trainer.val_dataloaders[0].batch_size * \
+                               self.trainer.datamodule.dims[1] * self.trainer.datamodule.dims[2]
+        elif stage == 'test':
+            assert not self.trainer.test_dataloaders[0].drop_last
+            expected_sum = len(self.trainer.test_dataloaders[0].dataset) * \
+                           self.trainer.datamodule.dims[1] * self.trainer.datamodule.dims[2]
+        else:
+            raise ValueError(f'_create_conf_mat received unexpected stage ({stage})')
+
+        assert matrix.sum() == expected_sum, f'matrix.sum() is not expected_sum ' \
+                                             f'({matrix.sum()} != {expected_sum}, diff: {matrix.sum() - expected_sum}, ' \
+                                             f'diff_crops: {(matrix.sum() - expected_sum) / (self.trainer.datamodule.dims[1] * self.trainer.datamodule.dims[2])})'
+
         # print(f'With all_gather: {str(len(outputs[0][OutputKeys.PREDICTION][0]))}')
         conf_mat_name = f'CM_epoch_{self.trainer.current_epoch}'
         logger = get_wandb_logger(self.trainer)
@@ -274,7 +296,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         plt.xlabel('Predictions')
         plt.ylabel('Targets')
         plt.title(conf_mat_name)
-        conf_mat_path = Path(os.getcwd()) / 'conf_mats' / phase
+        conf_mat_path = Path(os.getcwd()) / 'conf_mats' / stage
         conf_mat_path.mkdir(parents=True, exist_ok=True)
         conf_mat_file_path = conf_mat_path / (conf_mat_name + '.txt')
         df = pd.DataFrame(matrix)
@@ -285,5 +307,5 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         # save tsv to wandb
         experiment.save(glob_str=str(conf_mat_file_path), base_path=os.getcwd())
         # names should be uniqe or else charts from different experiments in wandb will overlap
-        experiment.log({f"confusion_matrix_{phase}_img/ep_{self.trainer.current_epoch}": wandb.Image(plt)},
+        experiment.log({f"confusion_matrix_{stage}_img/ep_{self.trainer.current_epoch}": wandb.Image(plt)},
                        commit=False)
