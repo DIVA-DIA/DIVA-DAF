@@ -88,7 +88,7 @@ def check_config(config: DictConfig) -> None:
 
     # Set seed for random number generators in pytorch, numpy and python.random
     if "seed" in config:
-        seed_everything(config.seed)
+        seed_everything(config.seed, workers=True)
     else:
         seed = random.randint(np.iinfo(np.uint32).min, np.iinfo(np.uint32).max)
         config['seed'] = seed
