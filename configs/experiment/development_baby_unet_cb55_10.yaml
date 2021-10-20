@@ -50,7 +50,7 @@ datamodule:
     num_workers: 4
     batch_size: 16
     shuffle: True
-    drop_last_batch: True
+    drop_last: True
 
 callbacks:
     model_checkpoint:

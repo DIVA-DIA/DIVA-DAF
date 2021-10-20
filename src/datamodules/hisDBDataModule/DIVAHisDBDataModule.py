@@ -21,7 +21,7 @@ class DIVAHisDBDataModuleCropped(AbstractDatamodule):
                  selection_val: Optional[Union[int, List[str]]] = None,
                  selection_test: Optional[Union[int, List[str]]] = None,
                  crop_size: int = 256, num_workers: int = 4, batch_size: int = 8,
-                 shuffle: bool = True, drop_last_batch: bool = True):
+                 shuffle: bool = True, drop_last: bool = True):
         super().__init__()
 
         analytics = get_analytics(input_path=Path(data_dir),
@@ -46,7 +46,7 @@ class DIVAHisDBDataModuleCropped(AbstractDatamodule):
         self.batch_size = batch_size
 
         self.shuffle = shuffle
-        self.drop_last_batch = drop_last_batch
+        self.drop_last = drop_last
 
         self.data_dir = validate_path_for_segmentation(data_dir)
 
@@ -63,31 +63,31 @@ class DIVAHisDBDataModuleCropped(AbstractDatamodule):
             self.val = CroppedHisDBDataset(**self._create_dataset_parameters('val'), selection=self.selection_val)
 
             self._check_min_num_samples(num_samples=len(self.train), data_split='train',
-                                        drop_last_batch=self.drop_last_batch)
+                                        drop_last=self.drop_last)
             self._check_min_num_samples(num_samples=len(self.val), data_split='val',
-                                        drop_last_batch=self.drop_last_batch)
+                                        drop_last=self.drop_last)
 
         if stage == 'test' or stage is not None:
             self.test = CroppedHisDBDataset(**self._create_dataset_parameters('test'), selection=self.selection_test)
             # self._check_min_num_samples(num_samples=len(self.test), data_split='test',
-            #                             drop_last_batch=False)
+            #                             drop_last=False)
 
-    def _check_min_num_samples(self, num_samples: int, data_split: str, drop_last_batch: bool):
+    def _check_min_num_samples(self, num_samples: int, data_split: str, drop_last: bool):
         num_processes = self.trainer.num_processes
         batch_size = self.batch_size
-        if drop_last_batch:
+        if drop_last:
             if num_samples < (self.trainer.num_processes * self.batch_size):
                 log.error(
                     f'#samples ({num_samples}) in "{data_split}" smaller than '
                     f'#processes({num_processes}) times batch size ({batch_size}). '
-                    f'This only works if drop_last_batch is false!')
+                    f'This only works if drop_last is false!')
                 raise ValueError()
         else:
             if num_samples < (self.trainer.num_processes * self.batch_size):
                 log.warning(
                     f'#samples ({num_samples}) in "{data_split}" smaller than '
                     f'#processes ({num_processes}) times batch size ({batch_size}). '
-                    f'This works due to drop_last_batch=False, however samples will occur multiple times. '
+                    f'This works due to drop_last=False, however samples will occur multiple times. '
                     f'Check if this behavior is intended!')
 
     def train_dataloader(self, *args, **kwargs) -> DataLoader:
@@ -95,7 +95,7 @@ class DIVAHisDBDataModuleCropped(AbstractDatamodule):
                           batch_size=self.batch_size,
                           num_workers=self.num_workers,
                           shuffle=self.shuffle,
-                          drop_last=self.drop_last_batch,
+                          drop_last=self.drop_last,
                           pin_memory=True)
 
     def val_dataloader(self, *args, **kwargs) -> Union[DataLoader, List[DataLoader]]:
@@ -103,7 +103,7 @@ class DIVAHisDBDataModuleCropped(AbstractDatamodule):
                           batch_size=self.batch_size,
                           num_workers=self.num_workers,
                           shuffle=self.shuffle,
-                          drop_last=self.drop_last_batch,
+                          drop_last=self.drop_last,
                           pin_memory=True)
 
     def test_dataloader(self, *args, **kwargs) -> Union[DataLoader, List[DataLoader]]:

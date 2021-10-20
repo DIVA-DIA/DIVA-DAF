@@ -112,7 +112,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             if num_samples % self.trainer.datamodule.batch_size != 0:
                 log.warn(
                     f'Number of sample ({num_samples}) in {datasplit_name} not dividable by batch size ({batch_size}).')
-                log.warn(f'Last batch will be incomplete. Behavior depends on datamodule.drop_last_batch setting.')
+                log.warn(f'Last batch will be incomplete. Behavior depends on datamodule.drop_last setting.')
 
     def step(self,
              batch: Any,
@@ -261,24 +261,31 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
 
     def _create_conf_mat(self, matrix: np.ndarray, stage: str = 'val'):
         # verify sum of conf mat entries
+        pixels_per_crop = self.trainer.datamodule.dims[1] * self.trainer.datamodule.dims[2]
+        num_processes = self.trainer.num_processes
         if stage == 'val':
-            if not self.trainer.val_dataloaders[0].drop_last:
-                expected_sum = len(self.trainer.val_dataloaders[0].dataset) * \
-                               self.trainer.datamodule.dims[1] * self.trainer.datamodule.dims[2]
-            else:
-                expected_sum = len(self.trainer.val_dataloaders[0]) * self.trainer.num_processes * \
-                               self.trainer.val_dataloaders[0].batch_size * \
-                               self.trainer.datamodule.dims[1] * self.trainer.datamodule.dims[2]
+            dataloader = self.trainer.val_dataloaders[0]
         elif stage == 'test':
             assert not self.trainer.test_dataloaders[0].drop_last
-            expected_sum = len(self.trainer.test_dataloaders[0].dataset) * \
-                           self.trainer.datamodule.dims[1] * self.trainer.datamodule.dims[2]
+            dataloader = self.trainer.test_dataloaders[0]
         else:
             raise ValueError(f'_create_conf_mat received unexpected stage ({stage})')
 
+        num_samples = len(dataloader.dataset)
+        batch_size = dataloader.batch_size
+        if not dataloader.drop_last:
+            additional_crops = (num_samples % (batch_size * num_processes)) % num_processes
+            additional_crops = num_processes - additional_crops if additional_crops > 0 else 0
+            total_samples = num_samples + additional_crops
+            expected_sum = total_samples * pixels_per_crop
+        else:
+            num_steps = len(dataloader)
+            expected_sum = num_steps * num_processes * batch_size * pixels_per_crop
+
         assert matrix.sum() == expected_sum, f'matrix.sum() is not expected_sum ' \
-                                             f'({matrix.sum()} != {expected_sum}, diff: {matrix.sum() - expected_sum}, ' \
-                                             f'diff_crops: {(matrix.sum() - expected_sum) / (self.trainer.datamodule.dims[1] * self.trainer.datamodule.dims[2])})'
+                                             f'({matrix.sum()} != {expected_sum}, ' \
+                                             f'diff: {matrix.sum() - expected_sum}, ' \
+                                             f'diff_crops: {(matrix.sum() - expected_sum) / pixels_per_crop})'
 
         # print(f'With all_gather: {str(len(outputs[0][OutputKeys.PREDICTION][0]))}')
         conf_mat_name = f'CM_epoch_{self.trainer.current_epoch}'
