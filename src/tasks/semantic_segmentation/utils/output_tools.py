@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Union
 
 import numpy
 import numpy as np
@@ -6,7 +7,7 @@ import torch
 from PIL import Image
 
 
-def _get_argmax(output):
+def _get_argmax(output: Union[torch.Tensor, np.ndarray], dim=1):
     """
     takes the biggest value from a pixel across all classes
     :param output: (Batch_size x num_classes x W x H)
@@ -15,9 +16,9 @@ def _get_argmax(output):
         matrix with the hisdb class number for each pixel
     """
     if isinstance(output, torch.Tensor):
-        return torch.argmax(output, dim=1)
+        return torch.argmax(output, dim=dim)
     if isinstance(output, np.ndarray):
-        return np.argmax(output, axis=1)
+        return np.argmax(output, axis=dim)
     return output
 
 

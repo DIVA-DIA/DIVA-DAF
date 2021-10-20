@@ -24,6 +24,9 @@ class SemanticSegmentation(AbstractTask):
                  metric_val: Optional[torchmetrics.Metric] = None,
                  metric_test: Optional[torchmetrics.Metric] = None,
                  test_output_path: Optional[Union[str, Path]] = 'predictions',
+                 confusion_matrix_val: Optional[bool] = False,
+                 confusion_matrix_test: Optional[bool] = False,
+                 confusion_matrix_log_every_n_epoch: Optional[int] = 1,
                  lr: float = 1e-3
                  ) -> None:
         """
@@ -42,7 +45,10 @@ class SemanticSegmentation(AbstractTask):
             metric_val=metric_val,
             metric_test=metric_test,
             test_output_path=test_output_path,
-            lr=lr
+            lr=lr,
+            confusion_matrix_val=confusion_matrix_val,
+            confusion_matrix_test=confusion_matrix_test,
+            confusion_matrix_log_every_n_epoch=confusion_matrix_log_every_n_epoch,
         )
         self.save_hyperparameters()
 
@@ -58,8 +64,8 @@ class SemanticSegmentation(AbstractTask):
         return self.model(x)
 
     @staticmethod
-    def to_metrics_format(x: torch.Tensor) -> torch.Tensor:
-        return _get_argmax(x)
+    def to_metrics_format(x: torch.Tensor, **kwargs) -> torch.Tensor:
+        return _get_argmax(x, **kwargs)
 
     #############################################################################################
     ########################################### TRAIN ###########################################
