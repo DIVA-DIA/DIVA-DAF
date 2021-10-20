@@ -274,8 +274,9 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         num_samples = len(dataloader.dataset)
         batch_size = dataloader.batch_size
         if not dataloader.drop_last:
-            additional_crops = (num_samples % (batch_size * num_processes)) % num_processes
-            additional_crops = num_processes - additional_crops if additional_crops > 0 else 0
+            num_samples_in_last_step = num_samples % (batch_size * num_processes)  # == 0, when last step is filled
+            num_process_filled = num_samples_in_last_step % num_processes  # == 0, when all evenly filled
+            additional_crops = num_processes - num_process_filled if num_process_filled > 0 else 0
             total_samples = num_samples + additional_crops
             expected_sum = total_samples * pixels_per_crop
         else:
