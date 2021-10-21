@@ -109,7 +109,8 @@ class SemanticSegmentation(AbstractTask):
 
             np.save(file=str(dest_filename), arr=patch)
 
-        return output
+        # return output
+        return
 
     def on_test_end(self) -> None:
         datamodule_path = self.trainer.datamodule.data_dir
