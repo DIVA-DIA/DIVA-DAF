@@ -283,11 +283,12 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             num_steps = len(dataloader)
             expected_sum = num_steps * num_processes * batch_size * pixels_per_crop
 
-        if matrix.sum() != expected_sum:
-            log.warn(f'matrix.sum() is not expected_sum '
-                     f'({matrix.sum()} != {expected_sum}, '
-                     f'diff: {matrix.sum() - expected_sum}, '
-                     f'diff_crops: {(matrix.sum() - expected_sum) / pixels_per_crop})')
+        matrix_sum = matrix.sum()
+        if not np.isclose(a=expected_sum, b=matrix_sum, rtol=2.5e-7):
+            log.warn(f'matrix.sum() is not close to expected_sum '
+                     f'({matrix_sum} != {expected_sum}, '
+                     f'diff: {matrix_sum - expected_sum}, '
+                     f'diff_crops: {(matrix_sum - expected_sum) / pixels_per_crop})')
 
         # print(f'With all_gather: {str(len(outputs[0][OutputKeys.PREDICTION][0]))}')
         conf_mat_name = f'CM_epoch_{self.trainer.current_epoch}'
