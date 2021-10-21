@@ -9,7 +9,7 @@ import torchmetrics
 from src.tasks.base_task import AbstractTask
 from src.tasks.semantic_segmentation.utils.output_tools import _get_argmax
 from src.utils import utils
-from src.tasks.utils.outputs import OutputKeys
+from src.tasks.utils.outputs import OutputKeys, reduce_dict
 
 log = utils.get_logger(__name__)
 
@@ -73,8 +73,9 @@ class SemanticSegmentation(AbstractTask):
     def training_step(self, batch, batch_idx, **kwargs):
         input_batch, target_batch, mask_batch = batch
         metric_kwargs = {'hisdbiou': {'mask': mask_batch}}
-        return super().training_step(batch=(input_batch, target_batch), batch_idx=batch_idx,
+        output = super().training_step(batch=(input_batch, target_batch), batch_idx=batch_idx,
                                      metric_kwargs=metric_kwargs)
+        return reduce_dict(input_dict=output, key_list=[OutputKeys.LOSS])
 
     #############################################################################################
     ############################################ VAL ############################################
@@ -83,8 +84,9 @@ class SemanticSegmentation(AbstractTask):
     def validation_step(self, batch, batch_idx, **kwargs):
         input_batch, target_batch, mask_batch = batch
         metric_kwargs = {'hisdbiou': {'mask': mask_batch}}
-        return super().validation_step(batch=(input_batch, target_batch), batch_idx=batch_idx,
+        output = super().validation_step(batch=(input_batch, target_batch), batch_idx=batch_idx,
                                        metric_kwargs=metric_kwargs)
+        return reduce_dict(input_dict=output, key_list=[])
 
     #############################################################################################
     ########################################### TEST ############################################
@@ -109,8 +111,7 @@ class SemanticSegmentation(AbstractTask):
 
             np.save(file=str(dest_filename), arr=patch)
 
-        # return output
-        return
+        return reduce_dict(input_dict=output, key_list=[])
 
     def on_test_end(self) -> None:
         datamodule_path = self.trainer.datamodule.data_dir
