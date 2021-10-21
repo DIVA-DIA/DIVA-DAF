@@ -51,6 +51,7 @@ datamodule:
 callbacks:
     model_checkpoint:
         monitor: "val/hisdbiou"
+        mode: "max"
         filename: ${checkpoint_folder_name}cb55-full-unet
 #    watch_model:
 #        log_freq: 1000
