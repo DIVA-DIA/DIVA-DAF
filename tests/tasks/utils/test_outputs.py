@@ -1,6 +1,6 @@
 from _pytest.fixtures import fixture
 
-from tasks.utils.outputs import OutputKeys, reduce_dict
+from src.tasks.utils.outputs import OutputKeys, reduce_dict
 
 
 @fixture

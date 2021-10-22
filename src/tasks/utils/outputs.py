@@ -14,4 +14,4 @@ class OutputKeys(LightningEnum):
 
 
 def reduce_dict(input_dict: Dict, key_list: List) -> Dict:
-    return {key: value for (key, value) in input_dict.items() if key in key_list}
+    return {key: input_dict[key] for key in key_list if key in input_dict}
