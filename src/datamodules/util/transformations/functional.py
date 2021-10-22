@@ -1,10 +1,12 @@
+from typing import List
+
 import numpy as np
 import torch
 
 from sklearn.preprocessing import OneHotEncoder
 
 
-def gt_to_one_hot(matrix, class_encodings):
+def gt_to_one_hot(matrix: torch.Tensor, class_encodings: List[int]):
     """
     Convert ground truth tensor or numpy matrix to one-hot encoded matrix
 
@@ -48,7 +50,7 @@ def gt_to_one_hot(matrix, class_encodings):
     return torch.LongTensor(one_hot_matrix.transpose((2, 0, 1)))
 
 
-def argmax_onehot(tensor):
+def argmax_onehot(tensor: torch.Tensor):
     """
     # TODO
     """
