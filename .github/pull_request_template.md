@@ -1,5 +1,3 @@
-### Issue (card url)
-
 ### Description
 
 
