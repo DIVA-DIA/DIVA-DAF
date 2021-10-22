@@ -1,2 +1,0 @@
-save_confusion_matrix_val:
-    _target_: src.callbacks.wandb_callbacks.LogConfusionMatrixToWandbVal

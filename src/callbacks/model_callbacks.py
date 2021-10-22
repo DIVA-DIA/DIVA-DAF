@@ -65,6 +65,7 @@ class CheckBackboneHeaderCompatibility(Callback):
     def __init__(self):
         self.checked = False
 
+    @rank_zero_only
     def setup(self, trainer: "pl.Trainer", pl_module: "pl.LightningModule", stage: Optional[str] = None) -> None:
         if self.checked:
             return

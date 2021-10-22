@@ -93,12 +93,12 @@ class CroppedHisDBDataset(data.Dataset):
 
     def _get_train_val_items(self, index):
         data_img, gt_img = self._load_data_and_gt(index=index)
-        img, gt, boundary_mask = self.apply_transformation(data_img, gt_img)
+        img, gt, boundary_mask = self._apply_transformation(data_img, gt_img)
         return img, gt, boundary_mask
 
     def _get_test_items(self, index):
         data_img, gt_img = self._load_data_and_gt(index=index)
-        img, gt, boundary_mask = self.apply_transformation(data_img, gt_img)
+        img, gt, boundary_mask = self._apply_transformation(data_img, gt_img)
         return img, gt, boundary_mask, index
 
     def _load_data_and_gt(self, index):
@@ -107,7 +107,7 @@ class CroppedHisDBDataset(data.Dataset):
 
         return data_img, gt_img
 
-    def apply_transformation(self, img, gt):
+    def _apply_transformation(self, img, gt):
         """
         Applies the transformations that have been defined in the setup (setup.py). If no transformations
         have been defined, the PIL image is returned instead.

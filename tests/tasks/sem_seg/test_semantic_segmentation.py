@@ -10,7 +10,7 @@ from pytorch_lightning import seed_everything
 from src.datamodules.hisDBDataModule.DIVAHisDBDataModule import DIVAHisDBDataModuleCropped
 from src.tasks.semantic_segmentation.semantic_segmentation import SemanticSegmentation
 
-from tests.datamodules.hisDBDataModule.dummy_data.dummy_data import data_dir_cropped
+from tests.test_data.dummy_data_hisdb.dummy_data import data_dir_cropped
 
 
 def test_semantic_segmentation(data_dir_cropped, tmp_path):
@@ -43,6 +43,6 @@ def test_semantic_segmentation(data_dir_cropped, tmp_path):
 
     results = trainer.test()
     print(results)
-    assert np.isclose(results[0]['test/crossentropyloss'], 1.0625288486480713, atol=1e-03)
-    assert np.isclose(results[0]['test/crossentropyloss_epoch'], 1.0625288486480713, atol=1e-03)
+    assert np.isclose(results[0]['test/crossentropyloss'], 1.0896027088165283, rtol=2e-03)
+    assert np.isclose(results[0]['test/crossentropyloss_epoch'], 1.0896027088165283, rtol=2e-03)
     assert len(list(patches_path.glob('*/*.npy'))) == len(list(test_data_patch.glob('*/*.png')))

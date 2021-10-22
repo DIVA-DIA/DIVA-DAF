@@ -4,17 +4,26 @@
 # python run.py +experiment=exp_example_full
 
 defaults:
-    - override /loss: crossentropyloss.yaml
-    - override /trainer: null  # override trainer to null so it's not loaded from main config defaults...
-    - override /task: semantic_segmentation_task.yaml
-    - override /model/backbone: unet_model.yaml
-    - override /model/header: identity.yaml
-    - override /datamodule: null
-    - override /metric: hisdbiou.yaml
+    - /plugins: default.yaml
+    - /task: semantic_segmentation_task.yaml
+    - /loss: crossentropyloss.yaml
+    - /metric: hisdbiou.yaml
+    - /model/backbone: unet_model.yaml
+    - /model/header: identity.yaml
+    - /optimizer: adam.yaml
+    - /callbacks:
+          - check_compatibility.yaml
+          - model_checkpoint.yaml
+    - /logger:
+          - wandb.yaml # set logger here or use command line (e.g. `python run.py logger=wandb`)
+          - csv.yaml
 
 # we override default configurations with nulls to prevent them from loading at all
 # instead we define all modules and their paths directly in this config,
 # so everything is stored in one place for more readibility
+
+train: True
+test: True
 
 trainer:
     _target_: pytorch_lightning.Trainer
@@ -24,6 +33,11 @@ trainer:
     max_epochs: 50
     precision: 16
 
+task:
+    confusion_matrix_log_every_n_epoch: 10
+    confusion_matrix_val: True
+    confusion_matrix_test: True
+
 datamodule:
     _target_: src.datamodules.hisDBDataModule.DIVAHisDBDataModule.DIVAHisDBDataModuleCropped
 
@@ -32,14 +46,18 @@ datamodule:
     num_workers: 4
     batch_size: 16
     shuffle: True
-    drop_last_batch: True
+    drop_last: True
 
 callbacks:
     model_checkpoint:
+        monitor: "val/hisdbiou"
+        mode: "max"
         filename: ${checkpoint_folder_name}cb55-full-unet
+#    watch_model:
+#        log_freq: 1000
 
 logger:
     wandb:
         name: 'cb55-full-unet'
-        tags: ["best_model", "USL"]
+        tags: ["best_model", "USL", "baseline"]
         group: 'baseline'

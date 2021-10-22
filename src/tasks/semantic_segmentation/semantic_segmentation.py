@@ -9,7 +9,7 @@ import torchmetrics
 from src.tasks.base_task import AbstractTask
 from src.tasks.semantic_segmentation.utils.output_tools import _get_argmax
 from src.utils import utils
-from src.tasks.utils.outputs import OutputKeys
+from src.tasks.utils.outputs import OutputKeys, reduce_dict
 
 log = utils.get_logger(__name__)
 
@@ -24,6 +24,9 @@ class SemanticSegmentation(AbstractTask):
                  metric_val: Optional[torchmetrics.Metric] = None,
                  metric_test: Optional[torchmetrics.Metric] = None,
                  test_output_path: Optional[Union[str, Path]] = 'predictions',
+                 confusion_matrix_val: Optional[bool] = False,
+                 confusion_matrix_test: Optional[bool] = False,
+                 confusion_matrix_log_every_n_epoch: Optional[int] = 1,
                  lr: float = 1e-3
                  ) -> None:
         """
@@ -42,7 +45,10 @@ class SemanticSegmentation(AbstractTask):
             metric_val=metric_val,
             metric_test=metric_test,
             test_output_path=test_output_path,
-            lr=lr
+            lr=lr,
+            confusion_matrix_val=confusion_matrix_val,
+            confusion_matrix_test=confusion_matrix_test,
+            confusion_matrix_log_every_n_epoch=confusion_matrix_log_every_n_epoch,
         )
         self.save_hyperparameters()
 
@@ -58,8 +64,8 @@ class SemanticSegmentation(AbstractTask):
         return self.model(x)
 
     @staticmethod
-    def to_metrics_format(x: torch.Tensor) -> torch.Tensor:
-        return _get_argmax(x)
+    def to_metrics_format(x: torch.Tensor, **kwargs) -> torch.Tensor:
+        return _get_argmax(x, **kwargs)
 
     #############################################################################################
     ########################################### TRAIN ###########################################
@@ -67,8 +73,9 @@ class SemanticSegmentation(AbstractTask):
     def training_step(self, batch, batch_idx, **kwargs):
         input_batch, target_batch, mask_batch = batch
         metric_kwargs = {'hisdbiou': {'mask': mask_batch}}
-        return super().training_step(batch=(input_batch, target_batch), batch_idx=batch_idx,
+        output = super().training_step(batch=(input_batch, target_batch), batch_idx=batch_idx,
                                      metric_kwargs=metric_kwargs)
+        return reduce_dict(input_dict=output, key_list=[OutputKeys.LOSS])
 
     #############################################################################################
     ############################################ VAL ############################################
@@ -77,8 +84,9 @@ class SemanticSegmentation(AbstractTask):
     def validation_step(self, batch, batch_idx, **kwargs):
         input_batch, target_batch, mask_batch = batch
         metric_kwargs = {'hisdbiou': {'mask': mask_batch}}
-        return super().validation_step(batch=(input_batch, target_batch), batch_idx=batch_idx,
+        output = super().validation_step(batch=(input_batch, target_batch), batch_idx=batch_idx,
                                        metric_kwargs=metric_kwargs)
+        return reduce_dict(input_dict=output, key_list=[])
 
     #############################################################################################
     ########################################### TEST ############################################
@@ -103,7 +111,7 @@ class SemanticSegmentation(AbstractTask):
 
             np.save(file=str(dest_filename), arr=patch)
 
-        return output
+        return reduce_dict(input_dict=output, key_list=[])
 
     def on_test_end(self) -> None:
         datamodule_path = self.trainer.datamodule.data_dir

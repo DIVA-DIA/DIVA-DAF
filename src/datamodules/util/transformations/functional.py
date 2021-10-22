@@ -28,6 +28,8 @@ def gt_to_one_hot(matrix, class_encodings):
         # TODO: ugly fix -> better to not normalize in the first place
         np_array = (matrix * 255).numpy().astype(np.uint8)
         im_np = np_array[2, :, :].astype(np.uint8)
+        border_mask = np_array[0, :, :].astype(np.uint8) != 0
+        im_np[border_mask] = 1
 
     integer_encoded = np.array([i for i in range(num_classes)])
     onehot_encoder = OneHotEncoder(sparse=False, categories='auto')
@@ -50,4 +52,4 @@ def argmax_onehot(tensor):
     """
     # TODO
     """
-    return torch.LongTensor(np.array(np.argmax(tensor.numpy(), axis=0)))
+    return torch.LongTensor(torch.argmax(tensor, dim=0))

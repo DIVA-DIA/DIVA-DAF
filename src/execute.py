@@ -1,9 +1,10 @@
-import os
+import shutil
 from pathlib import Path
 from typing import List, Optional
 
 import hydra
 import torch
+import wandb
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import LightningModule, LightningDataModule, Callback, Trainer, plugins
 from pytorch_lightning.loggers import LightningLoggerBase
@@ -102,20 +103,18 @@ def execute(config: DictConfig) -> Optional[float]:
     utils.log_hyperparameters(
         config=config,
         model=model,
-        loss=loss,
-        optimizer=optimizer,
-        task=task,
-        datamodule=datamodule,
         trainer=trainer,
-        callbacks=callbacks,
-        logger=logger,
     )
 
     if config.save_config:
         log.info("Saving the current config into the output directory!")
         # cwd is already the output directory so we dont need a full path
-        with open('config.yaml', mode='w') as fp:
-            OmegaConf.save(config=config, f=fp)
+        if trainer.is_global_zero:
+            with open('config.yaml', mode='w') as fp:
+                OmegaConf.save(config=config, f=fp)
+            run_config_folder_path = Path(wandb.run.dir) / 'run_config'
+            run_config_folder_path.mkdir(exist_ok=True)
+            shutil.copyfile('config.yaml', str(run_config_folder_path / 'config.yaml'))
 
     if config.train:
         # Train the model
