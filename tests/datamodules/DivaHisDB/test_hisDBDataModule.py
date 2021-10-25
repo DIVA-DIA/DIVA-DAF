@@ -6,7 +6,7 @@ from pytest import fixture
 
 from src.datamodules.DivaHisDB.datamodule_cropped import DivaHisDBDataModuleCropped
 from tests.test_data.dummy_data_hisdb.dummy_data import data_dir_cropped
-from tests.datasets.test_cropped_hisdb_dataset import dataset_test
+from tests.datamodules.DivaHisDB.datasets.test_cropped_hisdb_dataset import dataset_test
 
 NUM_WORKERS = 4
 
