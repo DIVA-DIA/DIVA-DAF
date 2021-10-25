@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 
 from src.datamodules.base_datamodule import AbstractDatamodule
-from src.datamodules.DivaHisDB.datasets.cropped_hisdb_dataset import CroppedHisDBDataset
+from src.datamodules.DivaHisDB.datasets.cropped_dataset import CroppedHisDBDataset
 from src.datamodules.DivaHisDB.utils.image_analytics import get_analytics
 from src.datamodules.DivaHisDB.utils.misc import validate_path_for_segmentation
 from src.datamodules.DivaHisDB.utils.twin_transforms import TwinRandomCrop, OneHotEncoding, OneHotToPixelLabelling

@@ -2,7 +2,7 @@ import json
 
 import numpy as np
 
-from src.datamodules.DivaHisDB.datasets.cropped_hisdb_dataset import CroppedHisDBDataset
+from src.datamodules.DivaHisDB.datasets.cropped_dataset import CroppedHisDBDataset
 from src.datamodules.DivaHisDB.utils.image_analytics import get_analytics
 from tests.test_data.dummy_data_hisdb.dummy_data import data_dir_cropped
 
