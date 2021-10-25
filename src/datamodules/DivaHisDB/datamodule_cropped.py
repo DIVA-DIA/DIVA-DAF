@@ -16,7 +16,7 @@ log = utils.get_logger(__name__)
 
 
 class DivaHisDBDataModuleCropped(AbstractDatamodule):
-    def __init__(self, data_dir: str = None,
+    def __init__(self, data_dir: str = None, data_folder_name: str = 'data', gt_folder_name: str = 'gt',
                  selection_train: Optional[Union[int, List[str]]] = None,
                  selection_val: Optional[Union[int, List[str]]] = None,
                  selection_test: Optional[Union[int, List[str]]] = None,
@@ -48,7 +48,10 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
         self.shuffle = shuffle
         self.drop_last = drop_last
 
-        self.data_dir = validate_path_for_segmentation(data_dir)
+        self.data_folder_name = data_folder_name
+        self.gt_folder_name = gt_folder_name
+        self.data_dir = validate_path_for_segmentation(data_dir=data_dir, data_folder_name=self.data_folder_name,
+                                                       gt_folder_name=self.gt_folder_name)
 
         self.selection_train = selection_train
         self.selection_val = selection_val
