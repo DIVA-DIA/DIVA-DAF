@@ -1,4 +1,4 @@
-_target_: src.datamodules.hisDBDataModule.DIVAHisDBDataModule.DIVAHisDBDataModuleCropped
+_target_: src.datamodules.DivaHisDB.datamodule_cropped.DivaHisDBDataModuleCropped
 
 data_dir: /netscratch/datasets/semantic_segmentation/datasets_cropped/CB55
 crop_size: 256

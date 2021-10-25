@@ -2,7 +2,7 @@ import pytest
 import torch
 from _pytest.fixtures import fixture
 
-from src.datamodules.util.transformations.functional import gt_to_one_hot
+from src.datamodules.DivaHisDB.utils.functional import gt_to_one_hot
 
 
 @fixture

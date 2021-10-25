@@ -7,9 +7,8 @@ from omegaconf import OmegaConf
 from pl_bolts.models.vision import UNet
 from pytorch_lightning import seed_everything
 
-from src.datamodules.hisDBDataModule.DIVAHisDBDataModule import DIVAHisDBDataModuleCropped
-from src.tasks.semantic_segmentation.semantic_segmentation import SemanticSegmentation
-
+from src.datamodules.DivaHisDB.datamodule_cropped import DivaHisDBDataModuleCropped
+from src.tasks.DivaHisDB.semantic_segmentation import SemanticSegmentation
 from tests.test_data.dummy_data_hisdb.dummy_data import data_dir_cropped
 
 
@@ -18,7 +17,7 @@ def test_semantic_segmentation(data_dir_cropped, tmp_path):
     seed_everything(42)
 
     # datamodule
-    data_module = DIVAHisDBDataModuleCropped(
+    data_module = DivaHisDBDataModuleCropped(
         data_dir=str(data_dir_cropped),
         batch_size=2, num_workers=2)
 

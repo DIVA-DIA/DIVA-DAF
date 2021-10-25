@@ -12,9 +12,9 @@ import numpy as np
 from PIL import Image
 from tqdm import tqdm
 
-from src.datamodules.datasets.cropped_hisdb_dataset import CroppedHisDBDataset
-from src.datamodules.hisDBDataModule.DIVAHisDBDataModule import DIVAHisDBDataModuleCropped
-from src.tasks.semantic_segmentation.utils.output_tools import merge_patches, save_output_page_image
+from src.datamodules.DivaHisDB.datamodule_cropped import DivaHisDBDataModuleCropped
+from src.datamodules.DivaHisDB.datasets.cropped_hisdb_dataset import CroppedHisDBDataset
+from src.datamodules.DivaHisDB.utils.output_tools import merge_patches, save_output_page_image
 from tools.generate_cropped_dataset import pil_loader
 from tools.viz import visualize
 
@@ -40,7 +40,7 @@ class CroppedOutputMerger:
         self.prediction_path = prediction_path
         self.output_path = output_path
 
-        data_module = DIVAHisDBDataModuleCropped(data_dir=str(datamodule_path))
+        data_module = DivaHisDBDataModuleCropped(data_dir=str(datamodule_path))
         self.num_classes = data_module.num_classes
         self.class_encodings = data_module.class_encodings
 

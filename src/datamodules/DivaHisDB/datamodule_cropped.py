@@ -5,17 +5,17 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 
 from src.datamodules.base_datamodule import AbstractDatamodule
-from src.datamodules.datasets.cropped_hisdb_dataset import CroppedHisDBDataset
-from src.datamodules.util.analytics.image_analytics import get_analytics
-from src.datamodules.util.misc import validate_path_for_segmentation
-from src.datamodules.util.transformations.twin_transforms import TwinRandomCrop, OneHotEncoding, OneHotToPixelLabelling
-from src.datamodules.util.transformations.wrapper_transforms import OnlyImage, OnlyTarget
+from src.datamodules.DivaHisDB.datasets.cropped_hisdb_dataset import CroppedHisDBDataset
+from src.datamodules.DivaHisDB.utils.image_analytics import get_analytics
+from src.datamodules.DivaHisDB.utils.misc import validate_path_for_segmentation
+from src.datamodules.DivaHisDB.utils.twin_transforms import TwinRandomCrop, OneHotEncoding, OneHotToPixelLabelling
+from src.datamodules.DivaHisDB.utils.wrapper_transforms import OnlyImage, OnlyTarget
 from src.utils import utils
 
 log = utils.get_logger(__name__)
 
 
-class DIVAHisDBDataModuleCropped(AbstractDatamodule):
+class DivaHisDBDataModuleCropped(AbstractDatamodule):
     def __init__(self, data_dir: str = None,
                  selection_train: Optional[Union[int, List[str]]] = None,
                  selection_val: Optional[Union[int, List[str]]] = None,

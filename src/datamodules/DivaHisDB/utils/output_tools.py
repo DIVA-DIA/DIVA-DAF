@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import Union
 
-import numpy
 import numpy as np
 import torch
 from PIL import Image

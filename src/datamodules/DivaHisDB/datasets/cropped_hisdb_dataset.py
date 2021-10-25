@@ -12,7 +12,7 @@ from omegaconf import ListConfig
 from torch import is_tensor
 from torchvision.transforms import ToTensor
 
-from src.datamodules.util.misc import has_extension, pil_loader
+from src.datamodules.DivaHisDB.utils.misc import has_extension, pil_loader
 from src.utils import utils
 
 IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm']
