@@ -7,7 +7,7 @@ import torch.optim
 import torchmetrics
 
 from src.tasks.base_task import AbstractTask
-from src.tasks.semantic_segmentation.utils.output_tools import _get_argmax
+from src.datamodules.DivaHisDB.utils.output_tools import _get_argmax
 from src.utils import utils
 from src.tasks.utils.outputs import OutputKeys, reduce_dict
 

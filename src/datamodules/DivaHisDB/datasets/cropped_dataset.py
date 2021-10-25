@@ -12,7 +12,7 @@ from omegaconf import ListConfig
 from torch import is_tensor
 from torchvision.transforms import ToTensor
 
-from src.datamodules.util.misc import has_extension, pil_loader
+from src.datamodules.DivaHisDB.utils.misc import has_extension, pil_loader
 from src.utils import utils
 
 IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm']
@@ -31,7 +31,8 @@ class CroppedHisDBDataset(data.Dataset):
         root/data/xxz.png
     """
 
-    def __init__(self, path: Path, selection: Optional[Union[int, List[str]]] = None,
+    def __init__(self, path: Path, data_folder_name: str = 'data', gt_folder_name: str = 'gt',
+                 selection: Optional[Union[int, List[str]]] = None,
                  is_test=False, image_transform=None, target_transform=None, twin_transform=None,
                  classes=None, **kwargs):
         """
@@ -53,6 +54,8 @@ class CroppedHisDBDataset(data.Dataset):
         """
 
         self.path = path
+        self.data_folder_name = data_folder_name
+        self.gt_folder_name = gt_folder_name
         self.selection = selection
 
         # Init list
@@ -67,7 +70,8 @@ class CroppedHisDBDataset(data.Dataset):
         self.is_test = is_test
 
         # List of tuples that contain the path to the gt and image that belong together
-        self.img_paths_per_page = self.get_gt_data_paths(path, selection=self.selection)
+        self.img_paths_per_page = self.get_gt_data_paths(path, data_folder_name=self.data_folder_name,
+                                                         gt_folder_name=self.gt_folder_name, selection=self.selection)
 
         # TODO: make more fanzy stuff here
         # self.img_paths = [pair for page in self.img_paths_per_page for pair in page]
@@ -144,7 +148,8 @@ class CroppedHisDBDataset(data.Dataset):
         return img, gt, border_mask
 
     @staticmethod
-    def get_gt_data_paths(directory: Path, selection: Optional[Union[int, List[str]]] = None) \
+    def get_gt_data_paths(directory: Path, data_folder_name: str = 'data', gt_folder_name: str = 'gt',
+                          selection: Optional[Union[int, List[str]]] = None) \
                     -> List[Tuple[Path, Path, str, str, Tuple[int, int]]]:
         """
         Structure of the folder
@@ -161,8 +166,8 @@ class CroppedHisDBDataset(data.Dataset):
         paths = []
         directory = directory.expanduser()
 
-        path_data_root = directory / 'data'
-        path_gt_root = directory / 'gt'
+        path_data_root = directory / data_folder_name
+        path_gt_root = directory / gt_folder_name
 
         if not (path_data_root.is_dir() or path_gt_root.is_dir()):
             log.error("folder data or gt not found in " + str(directory))

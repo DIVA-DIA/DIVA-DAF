@@ -2,7 +2,7 @@ import numpy as np
 from PIL import Image
 from torch import tensor, equal
 
-from src.tasks.semantic_segmentation.utils.output_tools import _get_argmax, merge_patches, output_to_class_encodings, \
+from src.datamodules.DivaHisDB.utils.output_tools import _get_argmax, merge_patches, output_to_class_encodings, \
     save_output_page_image
 
 # batchsize (2) x classes (4) x W (2) x H (2)

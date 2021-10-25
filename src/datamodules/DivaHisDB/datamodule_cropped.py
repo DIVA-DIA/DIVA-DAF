@@ -5,18 +5,18 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 
 from src.datamodules.base_datamodule import AbstractDatamodule
-from src.datamodules.datasets.cropped_hisdb_dataset import CroppedHisDBDataset
-from src.datamodules.util.analytics.image_analytics import get_analytics
-from src.datamodules.util.misc import validate_path_for_segmentation
-from src.datamodules.util.transformations.twin_transforms import TwinRandomCrop, OneHotEncoding, OneHotToPixelLabelling
-from src.datamodules.util.transformations.wrapper_transforms import OnlyImage, OnlyTarget
+from src.datamodules.DivaHisDB.datasets.cropped_dataset import CroppedHisDBDataset
+from src.datamodules.DivaHisDB.utils.image_analytics import get_analytics
+from src.datamodules.DivaHisDB.utils.misc import validate_path_for_segmentation
+from src.datamodules.DivaHisDB.utils.twin_transforms import TwinRandomCrop, OneHotEncoding, OneHotToPixelLabelling
+from src.datamodules.DivaHisDB.utils.wrapper_transforms import OnlyImage, OnlyTarget
 from src.utils import utils
 
 log = utils.get_logger(__name__)
 
 
-class DIVAHisDBDataModuleCropped(AbstractDatamodule):
-    def __init__(self, data_dir: str = None,
+class DivaHisDBDataModuleCropped(AbstractDatamodule):
+    def __init__(self, data_dir: str = None, data_folder_name: str = 'data', gt_folder_name: str = 'gt',
                  selection_train: Optional[Union[int, List[str]]] = None,
                  selection_val: Optional[Union[int, List[str]]] = None,
                  selection_test: Optional[Union[int, List[str]]] = None,
@@ -48,7 +48,10 @@ class DIVAHisDBDataModuleCropped(AbstractDatamodule):
         self.shuffle = shuffle
         self.drop_last = drop_last
 
-        self.data_dir = validate_path_for_segmentation(data_dir)
+        self.data_folder_name = data_folder_name
+        self.gt_folder_name = gt_folder_name
+        self.data_dir = validate_path_for_segmentation(data_dir=data_dir, data_folder_name=self.data_folder_name,
+                                                       gt_folder_name=self.gt_folder_name)
 
         self.selection_train = selection_train
         self.selection_val = selection_val

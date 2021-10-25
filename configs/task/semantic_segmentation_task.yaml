@@ -1,1 +1,2 @@
-_target_: src.tasks.semantic_segmentation.semantic_segmentation.SemanticSegmentation
+_target_: src.tasks.DivaHisDB.semantic_segmentation.SemanticSegmentation
+
