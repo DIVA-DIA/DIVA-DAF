@@ -19,7 +19,7 @@ def test__load_data_and_gt(dataset_train):
     img = dataset_train._load_data_and_gt(0)
     assert img.size == (300, 300)
     assert img.format == 'PNG'
-    assert np.all(np.array(img)[150][150] == np.array([97, 72, 32]))
+    assert np.array_equal(np.array(img)[150][150], np.array([97, 72, 32]))
 
 
 def test__apply_transformation(dataset_train):
