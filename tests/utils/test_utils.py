@@ -1,11 +1,10 @@
 import pytest
-from _pytest.fixtures import fixture
 from omegaconf import DictConfig
 
 from src.utils.utils import _check_if_in_config, REQUIRED_CONFIGS, check_config
 
 
-@fixture
+@pytest.fixture
 def get_dict():
     return DictConfig({'plugins': {
         'ddp_plugin': {'_target_': 'pytorch_lightning.plugins.DDPPlugin', 'find_unused_parameters': False}}, 'task': {

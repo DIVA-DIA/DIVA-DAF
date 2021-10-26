@@ -2,23 +2,22 @@ from pathlib import PosixPath
 
 import pytest
 import torch
-from pytest import fixture
 
 from src.datamodules.DivaHisDB.datasets.cropped_dataset import CroppedHisDBDataset
 from tests.test_data.dummy_data_hisdb.dummy_data import data_dir_cropped
 
 
-@fixture
+@pytest.fixture
 def dataset_train(data_dir_cropped):
     return CroppedHisDBDataset(path=data_dir_cropped / 'train')
 
 
-@fixture
+@pytest.fixture
 def dataset_val(data_dir_cropped):
     return CroppedHisDBDataset(path=data_dir_cropped / 'val')
 
 
-@fixture
+@pytest.fixture
 def dataset_test(data_dir_cropped):
     return CroppedHisDBDataset(path=data_dir_cropped / 'test')
 
@@ -215,7 +214,7 @@ def test_get_gt_data_paths_test(data_dir_cropped):
     assert files_from_method == expected_result
 
 
-@fixture
+@pytest.fixture
 def get_train_file_names(data_dir_cropped):
     return [(PosixPath(
         data_dir_cropped / 'train/data/e-codices_fmb-cb-0055_0098v_max/e-codices_fmb-cb-0055_0098v_max_x0000_y0000.png'),

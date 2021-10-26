@@ -1,10 +1,10 @@
 import os
 from distutils import dir_util
 
-from pytest import fixture
+import pytest
 
 
-@fixture
+@pytest.fixture
 def data_dir(tmp_path):
     """
     Moves the test data into the tmp path of the testing environment.
@@ -21,7 +21,7 @@ def data_dir(tmp_path):
     return tmp_path
 
 
-@fixture
+@pytest.fixture
 def data_dir_cropped(tmp_path):
     """
     Moves the test data into the tmp path of the testing environment.

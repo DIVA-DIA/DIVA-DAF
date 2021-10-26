@@ -1,8 +1,8 @@
 from pathlib import PosixPath
 
 import numpy as np
+import pytest
 import torch
-from _pytest.fixtures import fixture
 from torchvision.transforms import ToTensor
 from torchvision.transforms.functional import rotate
 
@@ -10,7 +10,7 @@ from src.datamodules.RotNet.datasets.cropped_dataset import CroppedRotNet, ROTAT
 from tests.test_data.dummy_data_hisdb.dummy_data import data_dir_cropped
 
 
-@fixture
+@pytest.fixture
 def dataset_train(data_dir_cropped):
     return CroppedRotNet(path=data_dir_cropped / 'train')
 

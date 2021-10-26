@@ -1,9 +1,9 @@
-from _pytest.fixtures import fixture
+import pytest
 
 from src.tasks.utils.outputs import OutputKeys, reduce_dict
 
 
-@fixture
+@pytest.fixture
 def get_dict():
     return {OutputKeys.PREDICTION: [1, 2, 3, 3],
             OutputKeys.TARGET: [1, 2, 3, 4],
