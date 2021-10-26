@@ -6,7 +6,7 @@ from _pytest.fixtures import fixture
 from torchvision.transforms import ToTensor
 from torchvision.transforms.functional import rotate
 
-from src.datamodules.RotNet.datasets.cropped_dataset import CroppedRotNet, ROTATION_ANGELS
+from src.datamodules.RotNet.datasets.cropped_dataset import CroppedRotNet, ROTATION_ANGLES
 from tests.test_data.dummy_data_hisdb.dummy_data import data_dir_cropped
 
 
@@ -31,26 +31,26 @@ def test__apply_transformation(dataset_train):
 
     img0, gt0 = dataset_train._apply_transformation(img0_o, 0)
     assert torch.equal(img0, ToTensor()(img0_o))
-    assert gt0 == 0
+    assert torch.equal(gt0, torch.LongTensor([1, 0, 0, 0]))
 
     img1, gt1 = dataset_train._apply_transformation(img1_o, 1)
     assert not torch.equal(ToTensor()(img1_o), img1)
-    assert torch.equal(img1, rotate(img=ToTensor()(img1_o), angle=ROTATION_ANGELS[1]))
-    assert gt1 == 1
+    assert torch.equal(img1, rotate(img=ToTensor()(img1_o), angle=ROTATION_ANGLES[1]))
+    assert torch.equal(gt1, torch.LongTensor([0, 1, 0, 0]))
 
     img2, gt2 = dataset_train._apply_transformation(img2_o, 2)
     assert not torch.equal(ToTensor()(img2_o), img2)
-    assert torch.equal(img2, rotate(img=ToTensor()(img2_o), angle=ROTATION_ANGELS[2]))
-    assert gt2 == 2
+    assert torch.equal(img2, rotate(img=ToTensor()(img2_o), angle=ROTATION_ANGLES[2]))
+    assert torch.equal(gt2, torch.LongTensor([0, 0, 1, 0]))
 
     img3, gt3 = dataset_train._apply_transformation(img3_o, 3)
     assert not torch.equal(ToTensor()(img3_o), img3)
-    assert torch.equal(img3, rotate(img=ToTensor()(img3_o), angle=ROTATION_ANGELS[3]))
-    assert gt3 == 3
+    assert torch.equal(img3, rotate(img=ToTensor()(img3_o), angle=ROTATION_ANGLES[3]))
+    assert torch.equal(gt3, torch.LongTensor([0, 0, 0, 1]))
 
     img4, gt4 = dataset_train._apply_transformation(img4_o, 0)
     assert torch.equal(img4, ToTensor()(img4_o))
-    assert gt4 == 0
+    assert torch.equal(gt4, torch.LongTensor([1, 0, 0, 0]))
 
 
 def test_get_gt_data_paths(data_dir_cropped):

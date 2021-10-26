@@ -3,10 +3,11 @@ Load a dataset of historic documents by specifying the folder where its located.
 """
 
 # Utils
-import random
 from pathlib import Path
 from typing import List, Union, Optional
 
+import numpy as np
+import torch
 import torchvision.transforms.functional
 from omegaconf import ListConfig
 from torch import is_tensor
@@ -17,7 +18,7 @@ from src.datamodules.RotNet.utils.misc import has_extension, pil_loader
 from src.utils import utils
 
 IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm']
-ROTATION_ANGELS = [0, 90, 180, 270]
+ROTATION_ANGLES = [0, 90, 180, 270]
 
 log = utils.get_logger(__name__)
 
@@ -36,8 +37,7 @@ class CroppedRotNet(CroppedHisDBDataset):
 
     def __init__(self, path: Path, data_folder_name: str = 'data', gt_folder_name: str = 'gt',
                  selection: Optional[Union[int, List[str]]] = None,
-                 is_test=False, image_transform=None, twin_transform=None,
-                 classes=None, **kwargs):
+                 is_test=False, image_transform=None, **kwargs):
         """
         #TODO doc
         Parameters
@@ -59,8 +59,8 @@ class CroppedRotNet(CroppedHisDBDataset):
         super(CroppedRotNet, self).__init__(path=path, data_folder_name=data_folder_name, gt_folder_name=gt_folder_name,
                                             selection=selection,
                                             is_test=is_test, image_transform=image_transform,
-                                            target_transform=None, twin_transform=twin_transform,
-                                            classes=classes, **kwargs)
+                                            target_transform=None, twin_transform=None,
+                                            classes=None, **kwargs)
 
     def __getitem__(self, index):
         data_img = self._load_data_and_gt(index=index)
@@ -99,12 +99,14 @@ class CroppedRotNet(CroppedHisDBDataset):
         if not is_tensor(img):
             img = ToTensor()(img)
 
-        target_class = index % len(ROTATION_ANGELS)
-        rotation_angle = ROTATION_ANGELS[target_class]
+        target_class = index % len(ROTATION_ANGLES)
+        rotation_angle = ROTATION_ANGLES[target_class]
+        hot_hot_encoded = np.zeros(len(ROTATION_ANGLES))
+        hot_hot_encoded[target_class] = 1
 
         img = torchvision.transforms.functional.rotate(img=img, angle=rotation_angle)
 
-        return img, target_class
+        return img, torch.LongTensor(hot_hot_encoded)
 
     @staticmethod
     def get_gt_data_paths(directory: Path, data_folder_name: str = 'data', gt_folder_name: str = 'gt',
