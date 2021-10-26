@@ -15,7 +15,7 @@ import torchvision.transforms as transforms
 from PIL import Image
 
 
-def get_analytics(input_path: Path, get_gt_data_paths_func, **kwargs):
+def get_analytics(input_path: Path, get_data_paths_func, **kwargs):
     """
     Parameters
     ----------
@@ -30,19 +30,15 @@ def get_analytics(input_path: Path, get_gt_data_paths_func, **kwargs):
             analytics_dict = json.load(fp=f)
     else:
         train_path = input_path / 'train'
-        gt_data_path_list = get_gt_data_paths_func(train_path)
-        file_names_data = np.asarray([str(item[0]) for item in gt_data_path_list])
-        file_names_gt = np.asarray([str(item[1]) for item in gt_data_path_list])
+        data_path_list = get_data_paths_func(train_path)
+        file_names_data = np.asarray([str(item) for item in data_path_list])
         mean, std = compute_mean_std(file_names=file_names_data, **kwargs)
 
         # Measure weights for class balancing
         logging.info(f'Measuring class weights')
         # create a list with all gt file paths
-        class_weights, class_encodings = _get_class_frequencies_weights_segmentation(gt_images=file_names_gt, **kwargs)
         analytics_dict = {'mean': mean.tolist(),
-                          'std': std.tolist(),
-                          'class_weights': class_weights.tolist(),
-                          'class_encodings': class_encodings.tolist()}
+                          'std': std.tolist()}
         # save json
         try:
             with analytics_file_path.open(mode='w') as f:
