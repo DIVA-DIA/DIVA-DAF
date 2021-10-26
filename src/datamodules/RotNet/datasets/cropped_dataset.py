@@ -109,7 +109,7 @@ class CroppedRotNet(CroppedHisDBDataset):
         return img, torch.LongTensor(hot_hot_encoded)
 
     @staticmethod
-    def get_data_paths(directory: Path, data_folder_name: str = 'data', gt_folder_name: str = 'gt',
+    def get_gt_data_paths(directory: Path, data_folder_name: str = 'data', gt_folder_name: str = 'gt',
                           selection: Optional[Union[int, List[str]]] = None) \
             -> List[Path]:
         """
