@@ -98,23 +98,21 @@ class CroppedRotNet(CroppedHisDBDataset):
             img and gt after transformations
         """
         if self.twin_transform is not None and not self.is_test:
-            img, gt = self.twin_transform(img, None)
+            img, _ = self.twin_transform(img, None)
 
         if self.image_transform is not None:
             # perform transformations
-            img = self.image_transform(img, None)
+            img, _ = self.image_transform(img, None)
 
         if not is_tensor(img):
             img = ToTensor()(img)
 
         target_class = index % len(ROTATION_ANGLES)
         rotation_angle = ROTATION_ANGLES[target_class]
-        hot_hot_encoded = np.zeros(len(ROTATION_ANGLES))
-        hot_hot_encoded[target_class] = 1
 
         img = torchvision.transforms.functional.rotate(img=img, angle=rotation_angle)
 
-        return img, torch.LongTensor(hot_hot_encoded)
+        return img, target_class
 
     @staticmethod
     def get_gt_data_paths(directory: Path, data_folder_name: str = 'data', gt_folder_name: str = 'gt',
