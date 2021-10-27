@@ -14,6 +14,8 @@ import torchvision.datasets as datasets
 import torchvision.transforms as transforms
 from PIL import Image
 
+from src.datamodules.RGB.utils.misc import pil_loader
+
 
 def get_analytics(input_path: Path, get_gt_data_paths_func, **kwargs):
     """
@@ -317,7 +319,7 @@ def _get_class_frequencies_weights_segmentation(gt_images, **kwargs):
     label_counter = {}
 
     for path in gt_images:
-        img = np.array(Image.open(path))[:, :, 2].flatten()
+        img = np.array(pil_loader(path))[:, :, 2].flatten()
         total_num_pixels += len(img)
         for i, j in zip(*np.unique(img, return_counts=True)):
             label_counter[i] = label_counter.get(i, 0) + j

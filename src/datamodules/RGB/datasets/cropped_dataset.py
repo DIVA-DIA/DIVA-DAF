@@ -15,11 +15,11 @@ from torchvision.transforms import ToTensor
 from src.datamodules.RGB.utils.misc import has_extension, pil_loader
 from src.utils import utils
 
-IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm']
+IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.gif']
 
 log = utils.get_logger(__name__)
 
-class CroppedHisDBDataset(data.Dataset):
+class CroppedDatasetRGB(data.Dataset):
     """A generic data loader where the images are arranged in this way: ::
 
         root/gt/xxx.png
