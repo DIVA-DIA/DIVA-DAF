@@ -60,12 +60,20 @@ class CroppedRotNet(CroppedHisDBDataset):
                                             selection=selection,
                                             is_test=is_test, image_transform=image_transform,
                                             target_transform=None, twin_transform=None,
-                                            classes=None, **kwargs)
+                                            **kwargs)
 
     def __getitem__(self, index):
-        data_img = self._load_data_and_gt(index=index)
+        data_img = self._load_data_and_gt(index=int(index/len(ROTATION_ANGLES)))
         img, gt = self._apply_transformation(data_img, index=index)
         return img, gt
+
+    def __len__(self):
+        """
+        This function returns the length of an epoch so the data loader knows when to stop.
+        The length is different during train/val and test, because we process the whole image during testing,
+        and only sample from the images during train/val.
+        """
+        return self.num_samples * len(ROTATION_ANGLES)
 
     def _load_data_and_gt(self, index):
         data_img = pil_loader(self.img_paths_per_page[index])
@@ -94,7 +102,7 @@ class CroppedRotNet(CroppedHisDBDataset):
 
         if self.image_transform is not None:
             # perform transformations
-            img = self.image_transform(img)
+            img = self.image_transform(img, None)
 
         if not is_tensor(img):
             img = ToTensor()(img)
@@ -188,9 +196,6 @@ class CroppedRotNet(CroppedHisDBDataset):
 
             for path_data_file in sorted(path_data_subdir.iterdir()):
                 if has_extension(path_data_file.name, IMG_EXTENSIONS):
-                    paths.append(path_data_file)
-                    paths.append(path_data_file)
-                    paths.append(path_data_file)
                     paths.append(path_data_file)
 
         return paths
