@@ -98,13 +98,13 @@ class CroppedDatasetRGB(data.Dataset):
 
     def _get_train_val_items(self, index):
         data_img, gt_img = self._load_data_and_gt(index=index)
-        img, gt, boundary_mask = self._apply_transformation(data_img, gt_img)
-        return img, gt, boundary_mask
+        img, gt = self._apply_transformation(data_img, gt_img)
+        return img, gt
 
     def _get_test_items(self, index):
         data_img, gt_img = self._load_data_and_gt(index=index)
-        img, gt, boundary_mask = self._apply_transformation(data_img, gt_img)
-        return img, gt, boundary_mask, index
+        img, gt = self._apply_transformation(data_img, gt_img)
+        return img, gt, index
 
     def _load_data_and_gt(self, index):
         data_img = pil_loader(self.img_paths_per_page[index][0])
@@ -142,11 +142,10 @@ class CroppedDatasetRGB(data.Dataset):
         if not is_tensor(gt):
             gt = ToTensor()(gt)
 
-        border_mask = gt[0, :, :] != 0
         if self.target_transform is not None:
             img, gt = self.target_transform(img, gt)
 
-        return img, gt, border_mask
+        return img, gt
 
     @staticmethod
     def get_gt_data_paths(directory: Path, data_folder_name: str, gt_folder_name: str,
@@ -158,8 +157,9 @@ class CroppedDatasetRGB(data.Dataset):
         directory/data/ORIGINAL_FILENAME/FILE_NAME_X_Y.png
         directory/gt/ORIGINAL_FILENAME/FILE_NAME_X_Y.png
 
-
         :param directory:
+        :param data_folder_name:
+        :param gt_folder_name:
         :param selection:
         :return: tuple
             (path_data_file, path_gt_file, original_image_name, (x, y))

@@ -24,7 +24,12 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
                  shuffle: bool = True, drop_last: bool = True):
         super().__init__()
 
+        self.data_folder_name = data_folder_name
+        self.gt_folder_name = gt_folder_name
+
         analytics = get_analytics(input_path=Path(data_dir),
+                                  data_folder_name=self.data_folder_name,
+                                  gt_folder_name=self.gt_folder_name,
                                   get_gt_data_paths_func=CroppedHisDBDataset.get_gt_data_paths)
 
         self.mean = analytics['mean']
@@ -120,6 +125,8 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
     def _create_dataset_parameters(self, dataset_type: str = 'train'):
         is_test = dataset_type == 'test'
         return {'path': self.data_dir / dataset_type,
+                'data_folder_name': self.data_folder_name,
+                'gt_folder_name': self.gt_folder_name,
                 'image_transform': self.image_transform,
                 'target_transform': self.target_transform,
                 'twin_transform': self.twin_transform,

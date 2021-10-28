@@ -5,7 +5,7 @@
 
 defaults:
     - /plugins: default.yaml
-    - /task: semantic_segmentation_task.yaml
+    - /task: semantic_segmentation_HisDB.yaml
     - /loss: crossentropyloss.yaml
     - /metric: hisdbiou.yaml
     - /model/backbone: baby_unet_model.yaml

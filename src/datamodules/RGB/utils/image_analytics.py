@@ -17,7 +17,7 @@ from PIL import Image
 from src.datamodules.RGB.utils.misc import pil_loader
 
 
-def get_analytics(input_path: Path, data_folder_name, gt_folder_name, get_gt_data_paths_func, **kwargs):
+def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, get_gt_data_paths_func, **kwargs):
     """
     Parameters
     ----------

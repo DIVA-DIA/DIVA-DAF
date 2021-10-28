@@ -42,21 +42,21 @@ def path_missing_subfolder(tmp_path):
 
 def test_validate_path_none():
     with pytest.raises(PathNone):
-        validate_path_for_segmentation(data_dir=None)
+        validate_path_for_segmentation(data_dir=None, data_folder_name='data', gt_folder_name='gt')
 
 
 def test_validate_path_not_dir(tmp_path):
     tmp_file = tmp_path / "newfile"
     tmp_file.touch()
     with pytest.raises(PathNotDir):
-        validate_path_for_segmentation(data_dir=tmp_file)
+        validate_path_for_segmentation(data_dir=tmp_file, data_folder_name='data', gt_folder_name='gt')
 
 
 def test_validate_path_missing_split(path_missing_split):
     with pytest.raises(PathMissingSplitDir):
-        validate_path_for_segmentation(data_dir=path_missing_split)
+        validate_path_for_segmentation(data_dir=path_missing_split, data_folder_name='data', gt_folder_name='gt')
 
 
 def test_validate_path_missing_subfolder(path_missing_subfolder):
     with pytest.raises(PathMissingDirinSplitDir):
-        validate_path_for_segmentation(data_dir=path_missing_subfolder)
+        validate_path_for_segmentation(data_dir=path_missing_subfolder, data_folder_name='data', gt_folder_name='gt')

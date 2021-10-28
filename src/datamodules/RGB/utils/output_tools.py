@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Union
+from typing import Union, Tuple, List
 
 import numpy as np
 import torch
@@ -56,7 +56,7 @@ def merge_patches(patch, coordinates, full_output):
     return full_output
 
 
-def save_output_page_image(image_name, output_image, output_folder: Path, class_encoding):
+def save_output_page_image(image_name, output_image, output_folder: Path, class_encoding: List[Tuple[int]]):
     """
     Helper function to save the output during testing in the DIVAHisDB format
 
@@ -68,7 +68,7 @@ def save_output_page_image(image_name, output_image, output_folder: Path, class_
         output image at full size
     output_folder: Path
         path to the output folder for the test data
-    class_encoding: list(int)
+    class_encoding: list(tuple(int))
         list with the class encodings
 
     Returns
@@ -87,7 +87,7 @@ def save_output_page_image(image_name, output_image, output_folder: Path, class_
     Image.fromarray(output_encoded.astype(np.uint8)).save(str(dest_filename))
 
 
-def output_to_class_encodings(output, class_encodings, perform_argmax=True):
+def output_to_class_encodings(output, class_encodings):
     """
     This function converts the output prediction matrix to an image like it was provided in the ground truth
 
@@ -104,15 +104,16 @@ def output_to_class_encodings(output, class_encodings, perform_argmax=True):
     numpy array of size [C x H x W] (BGR)
     """
 
-    B = np.argmax(output, axis=0) if perform_argmax else output
+    integer_encoded = np.argmax(output, axis=0)
 
-    class_to_B = {i: j for i, j in enumerate(class_encodings)}
+    num_classes = len(class_encodings)
 
-    masks = [B == old for old in class_to_B.keys()]
+    masks = [integer_encoded == class_index for class_index in range(num_classes)]
 
-    for mask, (old, new) in zip(masks, class_to_B.items()):
-        B = np.where(mask, new, B)
-
-    rgb = np.dstack((np.zeros(shape=(B.shape[0], B.shape[1], 2), dtype=np.int8), B))
+    rgb = np.full((*integer_encoded.shape, 3), -1)
+    for mask, color in zip(masks, class_encodings):
+        rgb[:, :, 0] = np.where(mask, color[0], rgb[:, :, 0])
+        rgb[:, :, 1] = np.where(mask, color[1], rgb[:, :, 1])
+        rgb[:, :, 2] = np.where(mask, color[2], rgb[:, :, 2])
 
     return rgb

@@ -15,7 +15,7 @@ import torchvision.transforms as transforms
 from PIL import Image
 
 
-def get_analytics(input_path: Path, get_gt_data_paths_func, **kwargs):
+def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, get_gt_data_paths_func, **kwargs):
     """
     Parameters
     ----------
@@ -30,7 +30,8 @@ def get_analytics(input_path: Path, get_gt_data_paths_func, **kwargs):
             analytics_dict = json.load(fp=f)
     else:
         train_path = input_path / 'train'
-        gt_data_path_list = get_gt_data_paths_func(train_path)
+        gt_data_path_list = get_gt_data_paths_func(train_path, data_folder_name=data_folder_name,
+                                                   gt_folder_name=gt_folder_name)
         file_names_data = np.asarray([str(item[0]) for item in gt_data_path_list])
         file_names_gt = np.asarray([str(item[1]) for item in gt_data_path_list])
         mean, std = compute_mean_std(file_names=file_names_data, **kwargs)

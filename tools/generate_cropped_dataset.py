@@ -17,7 +17,7 @@ from torchvision.utils import save_image
 from tqdm import tqdm
 
 IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.gif']
-
+JPG_EXTENSIONS = ['.jpg', '.jpeg']
 
 def has_extension(filename, extensions):
     """Checks if a file is an allowed extension.
@@ -161,6 +161,11 @@ class CroppedDatasetGenerator:
 
     def write_crops(self):
         info_list = ['Running CroppedDatasetGenerator.write_crops():',
+                     f'- full_command:',
+                     f'python tools/generate_cropped_dataset.py -i {self.input_path} -o {self.output_path} '
+                     f'-tr {self.crop_size_train} -v {self.crop_size_val} -te {self.crop_size_test} -ov {self.overlap} '
+                     f'-l {self.leading_zeros_length}',
+                     f'',
                      f'- start_time:       \t{datetime.now():%Y-%m-%d_%H-%M-%S}',
                      f'- input_path:       \t{self.input_path}',
                      f'- output_path:      \t{self.output_path}',
@@ -242,7 +247,14 @@ class CropGenerator:
 
             img = self.get_crop(self.current_img, coordinates=coordinates, crop_function=crop_function)
 
-            save_image(img, dest_filename)
+            pil_img = F.to_pil_image(img, mode='RGB')
+
+            if extension in JPG_EXTENSIONS:
+                pil_img.save(dest_filename, quality=95)
+            else:
+                # save_image(img, dest_filename)
+                pil_img.save(dest_filename)
+
 
     def _load_image(self, img_index):
         """
