@@ -1,0 +1,69 @@
+# @package _global_
+
+# to execute this experiment run:
+# python run.py +experiment=exp_example_full
+
+defaults:
+    - /plugins: default.yaml
+    - /task: semantic_segmentation_RGB.yaml
+    - /loss: crossentropyloss.yaml
+    - /metric: iou.yaml
+    - /model/backbone: baby_unet_model.yaml
+    - /model/header: identity.yaml
+    - /optimizer: adam.yaml
+    - /callbacks:
+          - check_compatibility.yaml
+          - model_checkpoint.yaml
+          - watch_model_wandb.yaml
+    - /logger:
+          - wandb.yaml # set logger here or use command line (e.g. `python run.py logger=wandb`)
+          - csv.yaml
+
+# we override default configurations with nulls to prevent them from loading at all
+# instead we define all modules and their paths directly in this config,
+# so everything is stored in one place for more readibility
+
+seed: 42
+
+train: True
+test: True
+
+trainer:
+    _target_: pytorch_lightning.Trainer
+    gpus: -1
+    accelerator: 'ddp'
+    min_epochs: 1
+    max_epochs: 2000
+    weights_summary: full
+    precision: 16
+
+task:
+    confusion_matrix_log_every_n_epoch: 100
+    confusion_matrix_val: True
+    confusion_matrix_test: True
+
+datamodule:
+    _target_: src.datamodules.RGB.datamodule_cropped.DataModuleCroppedRGB
+
+    data_dir: /netscratch/datasets/semantic_segmentation/synthetic_cropped/SetA1_sizeM/layoutR/split
+    crop_size: 256
+    num_workers: 4
+    batch_size: 16
+    shuffle: True
+    drop_last: True
+    data_folder_name: data
+    gt_folder_name: gtD
+
+callbacks:
+    model_checkpoint:
+        monitor: "val/iou"
+        mode: "max"
+        filename: ${checkpoint_folder_name}dev-baby-unet-rgb-data
+    watch_model:
+        log_freq: 100
+
+logger:
+    wandb:
+        name: 'synthetic-baby-unet-rolf-layoutR-gtD'
+        tags: [ "best_model", "synthetic", "layoutR", "gtD", "Rolf" ]
+        group: 'synthetic'
