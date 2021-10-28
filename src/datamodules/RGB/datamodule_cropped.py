@@ -12,8 +12,6 @@ from src.datamodules.RGB.utils.twin_transforms import TwinRandomCrop, OneHotEnco
 from src.datamodules.RGB.utils.wrapper_transforms import OnlyImage, OnlyTarget
 from src.utils import utils
 
-from functools import partial
-
 log = utils.get_logger(__name__)
 
 
@@ -29,16 +27,16 @@ class DataModuleCroppedRGB(AbstractDatamodule):
         self.data_folder_name = data_folder_name
         self.gt_folder_name = gt_folder_name
 
-        analytics = get_analytics(input_path=Path(data_dir),
-                                  get_gt_data_paths_func=partial(CroppedDatasetRGB.get_gt_data_paths,
-                                                                 data_folder_name=self.data_folder_name,
-                                                                 gt_folder_name=self.gt_folder_name))
+        analytics_data, analytics_gt = get_analytics(input_path=Path(data_dir),
+                                                     data_folder_name=self.data_folder_name,
+                                                     gt_folder_name=self.gt_folder_name,
+                                                     get_gt_data_paths_func=CroppedDatasetRGB.get_gt_data_paths)
 
-        self.mean = analytics['mean']
-        self.std = analytics['std']
-        self.class_encodings = analytics['class_encodings']
+        self.mean = analytics_data['mean']
+        self.std = analytics_data['std']
+        self.class_encodings = analytics_gt['class_encodings']
         self.num_classes = len(self.class_encodings)
-        self.class_weights = analytics['class_weights']
+        self.class_weights = analytics_gt['class_weights']
 
         self.image_transform = OnlyImage(transforms.Compose([transforms.ToTensor(),
                                                              transforms.Normalize(mean=self.mean, std=self.std)]))
