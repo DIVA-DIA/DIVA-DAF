@@ -1,12 +1,10 @@
 from typing import List
 
-import numpy as np
 import torch
+from torch.nn.functional import one_hot
 
-from sklearn.preprocessing import OneHotEncoder
 
-
-def gt_to_one_hot(matrix: torch.Tensor, class_encodings: List[int]):
+def gt_to_one_hot(matrix: torch.Tensor, class_encodings: torch.Tensor):
     """
     Convert ground truth tensor or numpy matrix to one-hot encoded matrix
 
@@ -21,33 +19,19 @@ def gt_to_one_hot(matrix: torch.Tensor, class_encodings: List[int]):
     torch.LongTensor of size [#C x H x W]
         sparse one-hot encoded multi-class matrix, where #C is the number of classes
     """
-    num_classes = len(class_encodings)
+    num_classes = class_encodings.shape[0]
 
-    if type(matrix).__module__ == np.__name__:
-        im_np = matrix[:, :, 2].astype(np.uint8)
-        border_mask = matrix[:, :, 0].astype(np.uint8) != 0
-    else:
-        # TODO: ugly fix -> better to not normalize in the first place
-        np_array = (matrix * 255).numpy().astype(np.uint8)
-        im_np = np_array[2, :, :].astype(np.uint8)
-        border_mask = np_array[0, :, :].astype(np.uint8) != 0
-        im_np[border_mask] = 1
+    integer_encoded = torch.full(size=matrix[0].shape, fill_value=-1, dtype=torch.long)
+    for index, encoding in enumerate(class_encodings):
+        mask = torch.logical_and(torch.logical_and(
+                torch.where(matrix[0] == encoding[0], True, False),
+                torch.where(matrix[1] == encoding[1], True, False)),
+                torch.where(matrix[2] == encoding[2], True, False))
+        integer_encoded[mask] = index
 
-    integer_encoded = np.array([i for i in range(num_classes)])
-    onehot_encoder = OneHotEncoder(sparse=False, categories='auto')
-    integer_encoded = integer_encoded.reshape(len(integer_encoded), 1)
-    onehot_encoded = onehot_encoder.fit_transform(integer_encoded).astype(np.int8)
+    onehot_encoded = one_hot(input=integer_encoded, num_classes=num_classes)
 
-    np.place(im_np, im_np == 0,
-             1)  # needed to deal with 0 fillers at the borders during testing (replace with background)
-    replace_dict = {k: v for k, v in zip(class_encodings, onehot_encoded)}
-
-    # create the one hot matrix
-    one_hot_matrix = np.asanyarray(
-        [[replace_dict[im_np[i, j]] for j in range(im_np.shape[1])] for i in range(im_np.shape[0])]).astype(
-        np.uint8)
-
-    return torch.LongTensor(one_hot_matrix.transpose((2, 0, 1)))
+    return onehot_encoded
 
 
 def argmax_onehot(tensor: torch.Tensor):

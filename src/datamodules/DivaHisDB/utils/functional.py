@@ -23,15 +23,10 @@ def gt_to_one_hot(matrix: torch.Tensor, class_encodings: List[int]):
     """
     num_classes = len(class_encodings)
 
-    if type(matrix).__module__ == np.__name__:
-        im_np = matrix[:, :, 2].astype(np.uint8)
-        border_mask = matrix[:, :, 0].astype(np.uint8) != 0
-    else:
-        # TODO: ugly fix -> better to not normalize in the first place
-        np_array = (matrix * 255).numpy().astype(np.uint8)
-        im_np = np_array[2, :, :].astype(np.uint8)
-        border_mask = np_array[0, :, :].astype(np.uint8) != 0
-        im_np[border_mask] = 1
+    np_array = (matrix * 255).numpy().astype(np.uint8)
+    im_np = np_array[2, :, :].astype(np.uint8)
+    border_mask = np_array[0, :, :].astype(np.uint8) != 0
+    im_np[border_mask] = 1
 
     integer_encoded = np.array([i for i in range(num_classes)])
     onehot_encoder = OneHotEncoder(sparse=False, categories='auto')

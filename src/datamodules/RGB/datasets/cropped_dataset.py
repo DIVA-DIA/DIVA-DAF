@@ -19,6 +19,7 @@ IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.gif']
 
 log = utils.get_logger(__name__)
 
+
 class CroppedDatasetRGB(data.Dataset):
     """A generic data loader where the images are arranged in this way: ::
 
@@ -31,7 +32,7 @@ class CroppedDatasetRGB(data.Dataset):
         root/data/xxz.png
     """
 
-    def __init__(self, path: Path, data_folder_name: str = 'data', gt_folder_name: str = 'gt',
+    def __init__(self, path: Path, data_folder_name: str, gt_folder_name: str,
                  selection: Optional[Union[int, List[str]]] = None,
                  is_test=False, image_transform=None, target_transform=None, twin_transform=None,
                  classes=None, **kwargs):
@@ -148,7 +149,7 @@ class CroppedDatasetRGB(data.Dataset):
         return img, gt, border_mask
 
     @staticmethod
-    def get_gt_data_paths(directory: Path, data_folder_name: str = 'data', gt_folder_name: str = 'gt',
+    def get_gt_data_paths(directory: Path, data_folder_name: str, gt_folder_name: str,
                           selection: Optional[Union[int, List[str]]] = None) \
                     -> List[Tuple[Path, Path, str, str, Tuple[int, int]]]:
         """

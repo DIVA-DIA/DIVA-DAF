@@ -1,22 +1,23 @@
 from pathlib import Path
 from typing import Union, List, Optional
 
+import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from src.datamodules.base_datamodule import AbstractDatamodule
 from src.datamodules.RGB.datasets.cropped_dataset import CroppedDatasetRGB
 from src.datamodules.RGB.utils.image_analytics import get_analytics
 from src.datamodules.RGB.utils.misc import validate_path_for_segmentation
 from src.datamodules.RGB.utils.twin_transforms import TwinRandomCrop, OneHotEncoding, OneHotToPixelLabelling
 from src.datamodules.RGB.utils.wrapper_transforms import OnlyImage, OnlyTarget
+from src.datamodules.base_datamodule import AbstractDatamodule
 from src.utils import utils
 
 log = utils.get_logger(__name__)
 
 
 class DataModuleCroppedRGB(AbstractDatamodule):
-    def __init__(self, data_dir: str = None, data_folder_name: str = 'data', gt_folder_name: str = 'gt',
+    def __init__(self, data_dir: str, data_folder_name: str, gt_folder_name: str,
                  selection_train: Optional[Union[int, List[str]]] = None,
                  selection_val: Optional[Union[int, List[str]]] = None,
                  selection_test: Optional[Union[int, List[str]]] = None,
@@ -35,17 +36,18 @@ class DataModuleCroppedRGB(AbstractDatamodule):
         self.mean = analytics_data['mean']
         self.std = analytics_data['std']
         self.class_encodings = analytics_gt['class_encodings']
+        self.class_encodings_np = torch.tensor(self.class_encodings) / 255
         self.num_classes = len(self.class_encodings)
         self.class_weights = analytics_gt['class_weights']
 
+        self.twin_transform = TwinRandomCrop(crop_size=crop_size)
         self.image_transform = OnlyImage(transforms.Compose([transforms.ToTensor(),
                                                              transforms.Normalize(mean=self.mean, std=self.std)]))
         self.target_transform = OnlyTarget(transforms.Compose([
             # transforms the gt image into a one-hot encoded matrix
-            OneHotEncoding(class_encodings=self.class_encodings),
+            OneHotEncoding(class_encodings=self.class_encodings_np),
             # transforms the one hot encoding to argmax labels -> for the cross-entropy criterion
             OneHotToPixelLabelling()]))
-        self.twin_transform = TwinRandomCrop(crop_size=crop_size)
 
         self.num_workers = num_workers
         self.batch_size = batch_size

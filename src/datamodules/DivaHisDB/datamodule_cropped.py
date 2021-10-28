@@ -16,7 +16,7 @@ log = utils.get_logger(__name__)
 
 
 class DivaHisDBDataModuleCropped(AbstractDatamodule):
-    def __init__(self, data_dir: str = None, data_folder_name: str = 'data', gt_folder_name: str = 'gt',
+    def __init__(self, data_dir: str, data_folder_name: str, gt_folder_name: str,
                  selection_train: Optional[Union[int, List[str]]] = None,
                  selection_val: Optional[Union[int, List[str]]] = None,
                  selection_test: Optional[Union[int, List[str]]] = None,

@@ -48,7 +48,7 @@ def convert_to_rgb(pic):
     return pic
 
 
-def validate_path_for_segmentation(data_dir, data_folder_name: str = 'data', gt_folder_name: str = 'gt'):
+def validate_path_for_segmentation(data_dir, data_folder_name: str, gt_folder_name: str):
     if data_dir is None:
         raise PathNone("Please provide the path to root dir of the dataset "
                        "(folder containing the train/val/test folder)")
