@@ -5,7 +5,7 @@ import numpy as np
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from src.datamodules.DivaHisDB.utils.image_analytics import get_analytics
+from src.datamodules.RotNet.utils.image_analytics import get_analytics
 from src.datamodules.RotNet.datasets.cropped_dataset import CroppedRotNet, ROTATION_ANGLES
 from src.datamodules.RotNet.utils.misc import validate_path_for_self_supervised
 from src.datamodules.RotNet.utils.wrapper_transforms import OnlyImage
@@ -25,7 +25,7 @@ class RotNetDivaHisDBDataModuleCropped(AbstractDatamodule):
         super().__init__()
 
         analytics = get_analytics(input_path=Path(data_dir),
-                                  get_data_paths_func=CroppedRotNet.get_gt_data_paths)
+                                  get_gt_data_paths_func=CroppedRotNet.get_gt_data_paths)
 
         self.mean = analytics['mean']
         self.std = analytics['std']
