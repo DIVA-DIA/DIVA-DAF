@@ -5,7 +5,7 @@ import numpy as np
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from src.datamodules.RotNet.utils.image_analytics import get_analytics
+from src.datamodules.RotNet.utils.image_analytics import get_analytics_data
 from src.datamodules.RotNet.datasets.cropped_dataset import CroppedRotNet, ROTATION_ANGLES
 from src.datamodules.RotNet.utils.misc import validate_path_for_self_supervised
 from src.datamodules.RotNet.utils.wrapper_transforms import OnlyImage
@@ -16,7 +16,7 @@ log = utils.get_logger(__name__)
 
 
 class RotNetDivaHisDBDataModuleCropped(AbstractDatamodule):
-    def __init__(self, data_dir: str = None, data_folder_name: str = 'data',
+    def __init__(self, data_dir: str, data_folder_name: str,
                  selection_train: Optional[Union[int, List[str]]] = None,
                  selection_val: Optional[Union[int, List[str]]] = None,
                  selection_test: Optional[Union[int, List[str]]] = None,
@@ -24,14 +24,15 @@ class RotNetDivaHisDBDataModuleCropped(AbstractDatamodule):
                  shuffle: bool = True, drop_last: bool = True):
         super().__init__()
 
-        analytics = get_analytics(input_path=Path(data_dir),
-                                  get_gt_data_paths_func=CroppedRotNet.get_gt_data_paths)
+        self.data_folder_name = data_folder_name
+        analytics_data = get_analytics_data(input_path=Path(data_dir), data_folder_name=self.data_folder_name,
+                                            get_gt_data_paths_func=CroppedRotNet.get_gt_data_paths)
 
-        self.mean = analytics['mean']
-        self.std = analytics['std']
+        self.mean = analytics_data['mean']
+        self.std = analytics_data['std']
         self.class_encodings = np.array(ROTATION_ANGLES)
         self.num_classes = len(self.class_encodings)
-        self.class_weights = np.ones(self.num_classes)
+        self.class_weights = np.array([1 / self.num_classes for _ in range(self.num_classes)])
 
         self.image_transform = OnlyImage(transforms.Compose([transforms.ToTensor(),
                                                              transforms.Normalize(mean=self.mean, std=self.std),
@@ -43,7 +44,6 @@ class RotNetDivaHisDBDataModuleCropped(AbstractDatamodule):
         self.shuffle = shuffle
         self.drop_last = drop_last
 
-        self.data_folder_name = data_folder_name
         self.data_dir = validate_path_for_self_supervised(data_dir=data_dir, data_folder_name=self.data_folder_name)
 
         self.selection_train = selection_train
@@ -113,7 +113,7 @@ class RotNetDivaHisDBDataModuleCropped(AbstractDatamodule):
     def _create_dataset_parameters(self, dataset_type: str = 'train'):
         is_test = dataset_type == 'test'
         return {'path': self.data_dir / dataset_type,
+                'data_folder_name': self.data_folder_name,
                 'image_transform': self.image_transform,
                 'classes': self.class_encodings,
                 'is_test': is_test}
-

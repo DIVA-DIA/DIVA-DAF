@@ -15,7 +15,7 @@ import torchvision.transforms as transforms
 from PIL import Image
 
 
-def get_analytics(input_path: Path, get_gt_data_paths_func, **kwargs):
+def get_analytics_data(input_path: Path, data_folder_name: str, get_gt_data_paths_func, **kwargs):
     """
     Parameters
     ----------
@@ -24,32 +24,41 @@ def get_analytics(input_path: Path, get_gt_data_paths_func, **kwargs):
     Returns
     -------
     """
-    analytics_file_path = input_path / 'analytics.json'
-    if analytics_file_path.exists():
-        with analytics_file_path.open(mode='r') as f:
-            analytics_dict = json.load(fp=f)
-    else:
-        train_path = input_path / 'train'
-        data_path_list = get_gt_data_paths_func(train_path)
-        file_names_data = np.asarray([str(item) for item in data_path_list])
-        mean, std = compute_mean_std(file_names=file_names_data, **kwargs)
+    expected_keys_data = ['mean', 'std']
 
-        # Measure weights for class balancing
-        logging.info(f'Measuring class weights')
-        # create a list with all gt file paths
-        analytics_dict = {'mean': mean.tolist(),
-                          'std': std.tolist()}
-        # save json
-        try:
-            with analytics_file_path.open(mode='w') as f:
-                json.dump(obj=analytics_dict, fp=f)
-        except IOError as e:
-            if e.errno == errno.EACCES:
-                print(f'WARNING: No permissions to write analytics file ({analytics_file_path})')
-            else:
-                raise
-    # returns the 'mean[RGB]', 'std[RGB]', 'class_frequencies_weights[num_classes]', 'class_encodings'
-    return analytics_dict
+    analytics_path_data = input_path / f'analytics.data.{data_folder_name}.json'
+
+    analytics_data = None
+
+    missing_analytics_data = True
+
+    if analytics_path_data.exists():
+        with analytics_path_data.open(mode='r') as f:
+            analytics_data = json.load(fp=f)
+        # check if analytics file is complete
+        if all(k in analytics_data for k in expected_keys_data):
+            missing_analytics_data = False
+
+    if missing_analytics_data:
+        train_path = input_path / 'train'
+        gt_data_path_list = get_gt_data_paths_func(train_path, data_folder_name=data_folder_name, gt_folder_name=None)
+        file_names_data = np.asarray([str(item) for item in gt_data_path_list])
+
+        if missing_analytics_data:
+            mean, std = compute_mean_std(file_names=file_names_data, **kwargs)
+            analytics_data = {'mean': mean.tolist(),
+                              'std': std.tolist()}
+            # save json
+            try:
+                with analytics_path_data.open(mode='w') as f:
+                    json.dump(obj=analytics_data, fp=f)
+            except IOError as e:
+                if e.errno == errno.EACCES:
+                    print(f'WARNING: No permissions to write analytics file ({analytics_path_data})')
+                else:
+                    raise
+
+    return analytics_data
 
 
 def compute_mean_std(file_names: List[Path], inmem=False, workers=4, **kwargs):
@@ -328,5 +337,4 @@ def _get_class_frequencies_weights_segmentation(gt_images, **kwargs):
 
 
 if __name__ == '__main__':
-    # print(get_analytics(input_path=Path('/netscratch/datasets/semantic_segmentation/datasets/CB55/'), inmem=True, workers=16))
-    print(get_analytics(input_path=Path('tests/dummy_data/dummy_dataset')))
+    print(get_analytics_data(input_path=Path('tests/dummy_data/dummy_dataset')))

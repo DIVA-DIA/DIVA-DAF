@@ -9,10 +9,15 @@ from torchvision.transforms.functional import rotate
 from src.datamodules.RotNet.datasets.cropped_dataset import CroppedRotNet, ROTATION_ANGLES
 from tests.test_data.dummy_data_hisdb.dummy_data import data_dir_cropped
 
+DATA_FOLDER_NAME = 'data'
+GT_FOLDER_NAME = None
+DATASET_PREFIX = 'e-codices_fmb-cb-0055_0098v_max/e-codices_fmb-cb-0055_0098v_max'
+
 
 @pytest.fixture
 def dataset_train(data_dir_cropped):
-    return CroppedRotNet(path=data_dir_cropped / 'train')
+    return CroppedRotNet(path=data_dir_cropped / 'train',
+                         data_folder_name=DATA_FOLDER_NAME)
 
 
 def test__load_data_and_gt(dataset_train):
@@ -64,32 +69,34 @@ def test__apply_transformation(dataset_train):
 
 
 def test_get_gt_data_paths(data_dir_cropped):
-    file_paths = CroppedRotNet.get_gt_data_paths(directory=data_dir_cropped / 'train')
+    file_paths = CroppedRotNet.get_gt_data_paths(directory=data_dir_cropped / 'train',
+                                                 data_folder_name=DATA_FOLDER_NAME)
+
     expected_result = [
         PosixPath(
-            data_dir_cropped / 'train/data/e-codices_fmb-cb-0055_0098v_max/e-codices_fmb-cb-0055_0098v_max_x0000_y0000.png'),
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0000_y0000.png'),
         PosixPath(
-            data_dir_cropped / 'train/data/e-codices_fmb-cb-0055_0098v_max/e-codices_fmb-cb-0055_0098v_max_x0000_y0150.png'),
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0000_y0150.png'),
         PosixPath(
-            data_dir_cropped / 'train/data/e-codices_fmb-cb-0055_0098v_max/e-codices_fmb-cb-0055_0098v_max_x0000_y0187.png'),
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0000_y0187.png'),
         PosixPath(
-            data_dir_cropped / 'train/data/e-codices_fmb-cb-0055_0098v_max/e-codices_fmb-cb-0055_0098v_max_x0150_y0000.png'),
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0150_y0000.png'),
         PosixPath(
-            data_dir_cropped / 'train/data/e-codices_fmb-cb-0055_0098v_max/e-codices_fmb-cb-0055_0098v_max_x0150_y0150.png'),
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0150_y0150.png'),
         PosixPath(
-            data_dir_cropped / 'train/data/e-codices_fmb-cb-0055_0098v_max/e-codices_fmb-cb-0055_0098v_max_x0150_y0187.png'),
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0150_y0187.png'),
         PosixPath(
-            data_dir_cropped / 'train/data/e-codices_fmb-cb-0055_0098v_max/e-codices_fmb-cb-0055_0098v_max_x0300_y0000.png'),
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0300_y0000.png'),
         PosixPath(
-            data_dir_cropped / 'train/data/e-codices_fmb-cb-0055_0098v_max/e-codices_fmb-cb-0055_0098v_max_x0300_y0150.png'),
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0300_y0150.png'),
         PosixPath(
-            data_dir_cropped / 'train/data/e-codices_fmb-cb-0055_0098v_max/e-codices_fmb-cb-0055_0098v_max_x0300_y0187.png'),
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0300_y0187.png'),
         PosixPath(
-            data_dir_cropped / 'train/data/e-codices_fmb-cb-0055_0098v_max/e-codices_fmb-cb-0055_0098v_max_x0349_y0000.png'),
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0349_y0000.png'),
         PosixPath(
-            data_dir_cropped / 'train/data/e-codices_fmb-cb-0055_0098v_max/e-codices_fmb-cb-0055_0098v_max_x0349_y0150.png'),
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0349_y0150.png'),
         PosixPath(
-            data_dir_cropped / 'train/data/e-codices_fmb-cb-0055_0098v_max/e-codices_fmb-cb-0055_0098v_max_x0349_y0187.png'),
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0349_y0187.png'),
         ]
     assert len(file_paths) == len(expected_result)
     assert file_paths == expected_result

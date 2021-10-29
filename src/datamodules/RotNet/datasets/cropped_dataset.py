@@ -35,7 +35,7 @@ class CroppedRotNet(CroppedHisDBDataset):
         root/data/xxz.png
     """
 
-    def __init__(self, path: Path, data_folder_name: str = 'data', gt_folder_name: str = 'gt',
+    def __init__(self, path: Path, data_folder_name: str, gt_folder_name: str = None,
                  selection: Optional[Union[int, List[str]]] = None,
                  is_test=False, image_transform=None, **kwargs):
         """
@@ -115,7 +115,7 @@ class CroppedRotNet(CroppedHisDBDataset):
         return img, target_class
 
     @staticmethod
-    def get_gt_data_paths(directory: Path, data_folder_name: str = 'data', gt_folder_name: str = 'gt',
+    def get_gt_data_paths(directory: Path, data_folder_name: str, gt_folder_name: str = None,
                           selection: Optional[Union[int, List[str]]] = None) \
             -> List[Path]:
         """
@@ -134,9 +134,8 @@ class CroppedRotNet(CroppedHisDBDataset):
         directory = directory.expanduser()
 
         path_data_root = directory / data_folder_name
-        path_gt_root = directory / gt_folder_name
 
-        if not (path_data_root.is_dir() or path_gt_root.is_dir()):
+        if not (path_data_root.is_dir()):
             log.error("folder data or gt not found in " + str(directory))
 
         # get all subitems (and files) sorted
