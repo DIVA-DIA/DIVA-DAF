@@ -28,16 +28,16 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
         self.data_folder_name = data_folder_name
         self.gt_folder_name = gt_folder_name
 
-        analytics = get_analytics(input_path=Path(data_dir),
-                                  data_folder_name=self.data_folder_name,
-                                  gt_folder_name=self.gt_folder_name,
-                                  get_gt_data_paths_func=CroppedHisDBDataset.get_gt_data_paths)
+        analytics_data, analytics_gt = get_analytics(input_path=Path(data_dir),
+                                                     data_folder_name=self.data_folder_name,
+                                                     gt_folder_name=self.gt_folder_name,
+                                                     get_gt_data_paths_func=CroppedHisDBDataset.get_gt_data_paths)
 
-        self.mean = analytics['mean']
-        self.std = analytics['std']
-        self.class_encodings = analytics['class_encodings']
+        self.mean = analytics_data['mean']
+        self.std = analytics_data['std']
+        self.class_encodings = analytics_gt['class_encodings']
         self.num_classes = len(self.class_encodings)
-        self.class_weights = analytics['class_weights']
+        self.class_weights = analytics_gt['class_weights']
 
         self.twin_transform = TwinRandomCrop(crop_size=crop_size)
         self.image_transform = OnlyImage(transforms.Compose([transforms.ToTensor(),
