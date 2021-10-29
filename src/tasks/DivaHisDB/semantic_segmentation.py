@@ -119,4 +119,4 @@ class SemanticSegmentationHisDB(AbstractTask):
         output_path = (self.test_output_path / 'result').absolute()
 
         log.info(f'To run the merging of patches:')
-        log.info(f'python tools/merge_cropped_output.py -d {datamodule_path} -p {prediction_path} -o {output_path}')
+        log.info(f'python tools/merge_cropped_output_HisDB.py -d {datamodule_path} -p {prediction_path} -o {output_path}')

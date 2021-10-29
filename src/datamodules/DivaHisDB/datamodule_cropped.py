@@ -8,7 +8,8 @@ from src.datamodules.base_datamodule import AbstractDatamodule
 from src.datamodules.DivaHisDB.datasets.cropped_dataset import CroppedHisDBDataset
 from src.datamodules.DivaHisDB.utils.image_analytics import get_analytics
 from src.datamodules.DivaHisDB.utils.misc import validate_path_for_segmentation
-from src.datamodules.DivaHisDB.utils.twin_transforms import TwinRandomCrop, OneHotEncoding, OneHotToPixelLabelling
+from src.datamodules.DivaHisDB.utils.twin_transforms import TwinRandomCrop, OneHotEncoding, OneHotToPixelLabelling, \
+    IntegerEncoding
 from src.datamodules.DivaHisDB.utils.wrapper_transforms import OnlyImage, OnlyTarget
 from src.utils import utils
 
@@ -38,14 +39,10 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
         self.num_classes = len(self.class_encodings)
         self.class_weights = analytics['class_weights']
 
+        self.twin_transform = TwinRandomCrop(crop_size=crop_size)
         self.image_transform = OnlyImage(transforms.Compose([transforms.ToTensor(),
                                                              transforms.Normalize(mean=self.mean, std=self.std)]))
-        self.target_transform = OnlyTarget(transforms.Compose([
-            # transforms the gt image into a one-hot encoded matrix
-            OneHotEncoding(class_encodings=self.class_encodings),
-            # transforms the one hot encoding to argmax labels -> for the cross-entropy criterion
-            OneHotToPixelLabelling()]))
-        self.twin_transform = TwinRandomCrop(crop_size=crop_size)
+        self.target_transform = OnlyTarget(IntegerEncoding(class_encodings=self.class_encodings))
 
         self.num_workers = num_workers
         self.batch_size = batch_size
@@ -144,5 +141,3 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
             raise Exception('This method can just be called during testing')
 
         return self.test.img_paths_per_page[index][2:]
-
-

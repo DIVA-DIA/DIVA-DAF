@@ -74,7 +74,7 @@ class CroppedOutputMerger:
 
     def merge_all(self):
         start_time = datetime.now()
-        info_list = ['Running merge_cropped_output.py:',
+        info_list = ['Running merge_cropped_output_HisDB.py:',
                      f'- start_time:                    \t{start_time:%Y-%m-%d_%H-%M-%S}',
                      f'- datamodule_path:               \t{self.datamodule_path}',
                      f'- prediction_path:               \t{self.prediction_path}',

@@ -6,6 +6,26 @@ import torch
 from sklearn.preprocessing import OneHotEncoder
 
 
+def gt_to_int_encoding(matrix: torch.Tensor, class_encodings: List[int]):
+    np_array = (matrix * 255).numpy().astype(np.uint8)
+
+    # take only blue channel
+    im_np = np_array[2, :, :].astype(np.uint8)
+
+    # change border pixels to background
+    border_mask = np_array[0, :, :].astype(np.uint8) != 0
+    im_np[border_mask] = 1
+
+    im_tensor = torch.tensor(im_np)
+
+    integer_encoded = torch.full(size=im_tensor.shape, fill_value=-1, dtype=torch.long)
+    for index, encoding in enumerate(class_encodings):
+        mask = torch.where(im_tensor == encoding, True, False)
+        integer_encoded[mask] = index
+
+    return integer_encoded
+
+
 def gt_to_one_hot(matrix: torch.Tensor, class_encodings: List[int]):
     """
     Convert ground truth tensor or numpy matrix to one-hot encoded matrix
