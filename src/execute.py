@@ -124,7 +124,8 @@ def execute(config: DictConfig) -> Optional[float]:
     # Evaluate model on test set after training
     if config.test:
         log.info("Starting testing!")
-        trainer.test(model=task, datamodule=datamodule)
+        results = trainer.test(model=task, datamodule=datamodule)
+        log.info(f'Test output: {results}')
 
     # Make sure everything closed properly
     log.info("Finalizing!")

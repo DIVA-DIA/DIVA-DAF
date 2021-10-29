@@ -85,6 +85,8 @@ class CheckBackboneHeaderCompatibility(Callback):
         except RuntimeError as e:
             log.error(f'Backbone and Header are not fitting together! Backbone output dimensions {b_output.shape}.'
                       f'Perhaps flatten header input first.')
+            log.error(f'Output size (first dimension = batch size) of the backbone flattened:'
+                      f' {torch.nn.Flatten()(b_output).shape}')
             log.error(e)
             log.error(traceback.format_exc())
             sys.exit(1)
