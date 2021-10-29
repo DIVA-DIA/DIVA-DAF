@@ -13,7 +13,8 @@ NUM_WORKERS = 4
 @pytest.fixture
 def data_module_cropped(data_dir_cropped):
     OmegaConf.clear_resolvers()
-    datamodules = DivaHisDBDataModuleCropped(data_dir_cropped, num_workers=NUM_WORKERS)
+    datamodules = DivaHisDBDataModuleCropped(data_dir_cropped, data_folder_name='data', gt_folder_name='gt',
+                                             num_workers=NUM_WORKERS)
     return datamodules
 
 

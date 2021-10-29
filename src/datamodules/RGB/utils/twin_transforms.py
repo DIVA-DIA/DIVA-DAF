@@ -2,7 +2,7 @@ import random
 
 from torchvision.transforms import functional as F
 
-from src.datamodules.DivaHisDB.utils import functional as F_custom
+from src.datamodules.RGB.utils import functional as F_custom
 
 
 class TwinCompose(object):

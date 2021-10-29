@@ -9,17 +9,17 @@ from tests.test_data.dummy_data_hisdb.dummy_data import data_dir_cropped
 
 @pytest.fixture
 def dataset_train(data_dir_cropped):
-    return CroppedHisDBDataset(path=data_dir_cropped / 'train')
+    return CroppedHisDBDataset(path=data_dir_cropped / 'train', data_folder_name='data', gt_folder_name='gt')
 
 
 @pytest.fixture
 def dataset_val(data_dir_cropped):
-    return CroppedHisDBDataset(path=data_dir_cropped / 'val')
+    return CroppedHisDBDataset(path=data_dir_cropped / 'val', data_folder_name='data', gt_folder_name='gt')
 
 
 @pytest.fixture
 def dataset_test(data_dir_cropped):
-    return CroppedHisDBDataset(path=data_dir_cropped / 'test')
+    return CroppedHisDBDataset(path=data_dir_cropped / 'test', data_folder_name='data', gt_folder_name='gt')
 
 
 def test__load_data_and_gt(dataset_train):
@@ -52,23 +52,27 @@ def test__get_train_val_items_test(dataset_test):
 
 def test_dataset_train_selection_int_error(data_dir_cropped):
     with pytest.raises(ValueError):
-        CroppedHisDBDataset.get_gt_data_paths(directory=data_dir_cropped / 'train', selection=2)
+        CroppedHisDBDataset.get_gt_data_paths(directory=data_dir_cropped / 'train',
+                                              data_folder_name='data', gt_folder_name='gt', selection=2)
 
 
 def test_dataset_train_selection_int(data_dir_cropped, get_train_file_names):
-    files_from_method = CroppedHisDBDataset.get_gt_data_paths(directory=data_dir_cropped / 'train', selection=1)
+    files_from_method = CroppedHisDBDataset.get_gt_data_paths(directory=data_dir_cropped / 'train',
+                                                              data_folder_name='data', gt_folder_name='gt', selection=1)
     assert len(files_from_method) == 12
     assert files_from_method == get_train_file_names
 
 
 def test_get_gt_data_paths_train(data_dir_cropped, get_train_file_names):
-    files_from_method = CroppedHisDBDataset.get_gt_data_paths(directory=data_dir_cropped / 'train')
+    files_from_method = CroppedHisDBDataset.get_gt_data_paths(directory=data_dir_cropped / 'train',
+                                                              data_folder_name='data', gt_folder_name='gt')
     assert len(files_from_method) == 12
     assert files_from_method == get_train_file_names
 
 
 def test_get_gt_data_paths_val(data_dir_cropped):
-    files_from_method = CroppedHisDBDataset.get_gt_data_paths(directory=data_dir_cropped / 'val')
+    files_from_method = CroppedHisDBDataset.get_gt_data_paths(directory=data_dir_cropped / 'val',
+                                                              data_folder_name='data', gt_folder_name='gt')
     expected_result = [(PosixPath(
         data_dir_cropped / 'val/data/e-codices_fmb-cb-0055_0098v_max/e-codices_fmb-cb-0055_0098v_max_x0000_y0000.png'),
                         PosixPath(
@@ -134,7 +138,8 @@ def test_get_gt_data_paths_val(data_dir_cropped):
 
 
 def test_get_gt_data_paths_test(data_dir_cropped):
-    files_from_method = CroppedHisDBDataset.get_gt_data_paths(directory=data_dir_cropped / 'test')
+    files_from_method = CroppedHisDBDataset.get_gt_data_paths(directory=data_dir_cropped / 'test',
+                                                              data_folder_name='data', gt_folder_name='gt')
     expected_result = [(PosixPath(
         data_dir_cropped / 'test/data/e-codices_fmb-cb-0055_0098v_max/e-codices_fmb-cb-0055_0098v_max_x0000_y0000.png'),
                         PosixPath(

@@ -12,9 +12,9 @@ import numpy as np
 from PIL import Image
 from tqdm import tqdm
 
-from src.datamodules.DivaHisDB.datamodule_cropped import DivaHisDBDataModuleCropped
-from src.datamodules.DivaHisDB.datasets.cropped_dataset import CroppedHisDBDataset
-from src.datamodules.DivaHisDB.utils.output_tools import merge_patches, save_output_page_image
+from src.datamodules.RGB.datasets.cropped_dataset import CroppedDatasetRGB
+from src.datamodules.RGB.utils.output_tools import merge_patches, save_output_page_image
+from src.datamodules.RGB.datamodule_cropped import DataModuleCroppedRGB
 from tools.generate_cropped_dataset import pil_loader
 from tools.viz import visualize
 
@@ -32,7 +32,8 @@ class CropData:
 
 
 class CroppedOutputMerger:
-    def __init__(self, datamodule_path: Path, prediction_path: Path, output_path: Path, num_threads: int = 10):
+    def __init__(self, datamodule_path: Path, prediction_path: Path, output_path: Path,
+                 data_folder_name: str, gt_folder_name: str, num_threads: int = 10):
         # Defaults
         self.load_only_first_crop_for_size = True  # All crops have to be the same size in the current implementation
 
@@ -40,11 +41,17 @@ class CroppedOutputMerger:
         self.prediction_path = prediction_path
         self.output_path = output_path
 
-        data_module = DivaHisDBDataModuleCropped(data_dir=str(datamodule_path))
+        self.data_folder_name = data_folder_name
+        self.gt_folder_name = gt_folder_name
+
+        data_module = DataModuleCroppedRGB(data_dir=str(datamodule_path), data_folder_name=self.data_folder_name,
+                                           gt_folder_name=self.gt_folder_name)
         self.num_classes = data_module.num_classes
         self.class_encodings = data_module.class_encodings
 
-        img_paths_per_page = CroppedHisDBDataset.get_gt_data_paths(directory=datamodule_path / 'test')
+        img_paths_per_page = CroppedDatasetRGB.get_gt_data_paths(directory=datamodule_path / 'test',
+                                                                 data_folder_name=self.data_folder_name,
+                                                                 gt_folder_name=self.gt_folder_name)
 
         dataset_img_name_list = []
         self.dataset_dict = defaultdict(list)
@@ -74,11 +81,13 @@ class CroppedOutputMerger:
 
     def merge_all(self):
         start_time = datetime.now()
-        info_list = ['Running merge_cropped_output.py:',
+        info_list = ['Running merge_cropped_output_RGB.py:',
                      f'- start_time:                    \t{start_time:%Y-%m-%d_%H-%M-%S}',
                      f'- datamodule_path:               \t{self.datamodule_path}',
                      f'- prediction_path:               \t{self.prediction_path}',
                      f'- output_path:                   \t{self.output_path}',
+                     f'- data_folder_name:              \t{self.data_folder_name}',
+                     f'- gt_folder_name:                \t{self.gt_folder_name}',
                      f'- num_pages:                     \t{self.num_pages}',
                      f'- num_threads:                   \t{self.num_threads}',
                      '']  # empty string to get linebreak at the end when using join
@@ -121,14 +130,6 @@ class CroppedOutputMerger:
         with info_file.open('a') as f:
             f.write(info_str)
             f.write('\n')
-
-        print('Evaluation script command:')
-        print(f'python tools/evaluate_algorithm.py'
-              f' --gt_folder {self.output_path / "gt"}'
-              f' --prediction_folder {self.output_path / "pred"}'
-              f' --original_images {self.output_path / "img"}'
-              f' --output_path analysis'
-              f'\n')
 
         print('DONE!')
 
@@ -244,47 +245,33 @@ class CroppedOutputMerger:
         outdir_gt.mkdir(parents=True, exist_ok=True)
         outdir_pred.mkdir(parents=True, exist_ok=True)
 
-        outdir_gt_viz = self.output_path / 'gt_viz'
-        outdir_gt_viz.mkdir(parents=True, exist_ok=True)
-        outdir_pred_viz = self.output_path / 'pred_viz'
-        outdir_pred_viz.mkdir(parents=True, exist_ok=True)
-
         # Loop to allow progress bar
         with lock:
-            pbar3 = tqdm(total=5,
+            pbar3 = tqdm(total=3,
                          position=position + (2 * self.num_pages),
                          # file=sys.stdout,
                          leave=True,
                          desc=f'{page_info_str}: Saving merged image files')
 
-        for i in range(5):
+        for i in range(3):
             if i == 0:
                 pbar3.set_description(f'{page_info_str}: Saving merged image files ' + '(img)'.ljust(10))
                 img_canvas.save(fp=outdir_img / f'{img_name}.png')
 
             elif i == 1:
                 pbar3.set_description(f'{page_info_str}: Saving merged image files ' + '(gt)'.ljust(10))
-                gt_canvas.save(fp=outdir_gt / f'{img_name}.png')
+                gt_canvas.save(fp=outdir_gt / f'{img_name}.gif')
 
             elif i == 2:
-                pbar3.set_description(f'{page_info_str}: Saving merged image files ' + '(gt_viz)'.ljust(10))
-                visualize(img=str(outdir_gt / f'{img_name}.png'), out=str(outdir_gt_viz / f'{img_name}.png'))
-
-            elif i == 3:
                 pbar3.set_description(f'{page_info_str}: Saving merged image files ' + '(pred)'.ljust(10))
                 # Save prediction only when complete
                 if not np.isnan(np.sum(pred_canvas)):
                     # Save the final image (image_name, output_image, output_folder, class_encoding)
-                    save_output_page_image(image_name=f'{img_name}.png', output_image=pred_canvas,
+                    save_output_page_image(image_name=f'{img_name}.gif', output_image=pred_canvas,
                                            output_folder=outdir_pred, class_encoding=self.class_encodings)
                 else:
                     print(f'WARNING: Test image {img_name} was not written! It still contains NaN values.')
                     break  # so last step is not
-
-            elif i == 4:
-                pbar3.set_description(f'{page_info_str}: Saving merged image files ' + '(pred_viz)'.ljust(10))
-                if (outdir_pred / f'{img_name}.png').exists():
-                    visualize(img=str(outdir_pred / f'{img_name}.png'), out=str(outdir_pred_viz / f'{img_name}.png'))
 
             pbar3.update()
 
@@ -308,6 +295,14 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--output_path',
                         help='Path to the output folder',
                         type=Path,
+                        required=True)
+    parser.add_argument('-df', '--data_folder_name',
+                        help='Name of data folder',
+                        type=str,
+                        required=True)
+    parser.add_argument('-gf', '--gt_folder_name',
+                        help='Name of gt folder',
+                        type=str,
                         required=True)
     parser.add_argument('-n', '--num_threads',
                         help='Number of threads for parallel processing',
