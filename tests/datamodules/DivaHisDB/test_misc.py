@@ -1,11 +1,10 @@
 import pytest
-from pytest import fixture
 
 from src.datamodules.utils.exceptions import PathNone, PathNotDir, PathMissingSplitDir, PathMissingDirinSplitDir
 from src.datamodules.DivaHisDB.utils.misc import validate_path_for_segmentation
 
 
-@fixture
+@pytest.fixture
 def path_missing_split(tmp_path):
     list_splits = ['train', 'test']
 
@@ -16,7 +15,7 @@ def path_missing_split(tmp_path):
     return tmp_path
 
 
-@fixture
+@pytest.fixture
 def path_missing_subfolder(tmp_path):
     list_splits_good = ['train', 'val']
     list_types_good = ['data', 'gt']
