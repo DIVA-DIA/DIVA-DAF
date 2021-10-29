@@ -23,8 +23,6 @@ defaults:
 # instead we define all modules and their paths directly in this config,
 # so everything is stored in one place for more readibility
 
-seed: 42
-
 train: True
 test: True
 
@@ -64,6 +62,6 @@ callbacks:
 
 logger:
     wandb:
-        name: 'synthetic-baby-unet-rolf-gtD'
-        tags: [ "best_model", "synthetic", "gtD", "Rolf" ]
+        name: 'synthetic-baby-unet-rolf-layoutD-gtD'
+        tags: [ "best_model", "synthetic", "layoutD", "gtD", "Rolf" ]
         group: 'synthetic'
