@@ -1,6 +1,5 @@
+import torch
 from torch import nn
-
-from src.models.utils.utils import Flatten
 
 
 class SingleLinear(nn.Module):
@@ -8,7 +7,7 @@ class SingleLinear(nn.Module):
         super(SingleLinear, self).__init__()
         
         self.fc = nn.Sequential(
-            Flatten(),
+            torch.nn.Flatten(),
             nn.Linear(input_size, num_classes)
         )
 
