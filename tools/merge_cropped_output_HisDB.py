@@ -32,7 +32,8 @@ class CropData:
 
 
 class CroppedOutputMerger:
-    def __init__(self, datamodule_path: Path, prediction_path: Path, output_path: Path, num_threads: int = 10):
+    def __init__(self, datamodule_path: Path, prediction_path: Path, output_path: Path,
+                 data_folder_name: str, gt_folder_name: str, num_threads: int = 10):
         # Defaults
         self.load_only_first_crop_for_size = True  # All crops have to be the same size in the current implementation
 
@@ -40,11 +41,17 @@ class CroppedOutputMerger:
         self.prediction_path = prediction_path
         self.output_path = output_path
 
-        data_module = DivaHisDBDataModuleCropped(data_dir=str(datamodule_path))
+        self.data_folder_name = data_folder_name
+        self.gt_folder_name = gt_folder_name
+
+        data_module = DivaHisDBDataModuleCropped(data_dir=str(datamodule_path), data_folder_name=self.data_folder_name,
+                                                 gt_folder_name=self.gt_folder_name)
         self.num_classes = data_module.num_classes
         self.class_encodings = data_module.class_encodings
 
-        img_paths_per_page = CroppedHisDBDataset.get_gt_data_paths(directory=datamodule_path / 'test')
+        img_paths_per_page = CroppedHisDBDataset.get_gt_data_paths(directory=datamodule_path / 'test',
+                                                                   data_folder_name=self.data_folder_name,
+                                                                   gt_folder_name=self.gt_folder_name)
 
         dataset_img_name_list = []
         self.dataset_dict = defaultdict(list)
@@ -308,6 +315,14 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--output_path',
                         help='Path to the output folder',
                         type=Path,
+                        required=True)
+    parser.add_argument('-df', '--data_folder_name',
+                        help='Name of data folder',
+                        type=str,
+                        required=True)
+    parser.add_argument('-gf', '--gt_folder_name',
+                        help='Name of gt folder',
+                        type=str,
                         required=True)
     parser.add_argument('-n', '--num_threads',
                         help='Number of threads for parallel processing',

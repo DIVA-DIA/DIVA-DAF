@@ -118,5 +118,9 @@ class SemanticSegmentationHisDB(AbstractTask):
         prediction_path = (self.test_output_path / 'patches').absolute()
         output_path = (self.test_output_path / 'result').absolute()
 
+        data_folder_name = self.trainer.datamodule.data_folder_name
+        gt_folder_name = self.trainer.datamodule.gt_folder_name
+
         log.info(f'To run the merging of patches:')
-        log.info(f'python tools/merge_cropped_output_HisDB.py -d {datamodule_path} -p {prediction_path} -o {output_path}')
+        log.info(f'python tools/merge_cropped_output_HisDB.py -d {datamodule_path} -p {prediction_path} '
+                 f'-o {output_path} -df {data_folder_name} -gf {gt_folder_name}')
