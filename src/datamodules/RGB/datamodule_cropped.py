@@ -1,22 +1,23 @@
 from pathlib import Path
 from typing import Union, List, Optional
 
+import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from src.datamodules.base_datamodule import AbstractDatamodule
-from src.datamodules.DivaHisDB.datasets.cropped_dataset import CroppedHisDBDataset
-from src.datamodules.DivaHisDB.utils.image_analytics import get_analytics
-from src.datamodules.DivaHisDB.utils.misc import validate_path_for_segmentation
-from src.datamodules.DivaHisDB.utils.twin_transforms import TwinRandomCrop, OneHotEncoding, OneHotToPixelLabelling, \
+from src.datamodules.RGB.datasets.cropped_dataset import CroppedDatasetRGB
+from src.datamodules.RGB.utils.image_analytics import get_analytics
+from src.datamodules.RGB.utils.misc import validate_path_for_segmentation
+from src.datamodules.RGB.utils.twin_transforms import TwinRandomCrop, OneHotEncoding, OneHotToPixelLabelling, \
     IntegerEncoding
-from src.datamodules.DivaHisDB.utils.wrapper_transforms import OnlyImage, OnlyTarget
+from src.datamodules.RGB.utils.wrapper_transforms import OnlyImage, OnlyTarget
+from src.datamodules.base_datamodule import AbstractDatamodule
 from src.utils import utils
 
 log = utils.get_logger(__name__)
 
 
-class DivaHisDBDataModuleCropped(AbstractDatamodule):
+class DataModuleCroppedRGB(AbstractDatamodule):
     def __init__(self, data_dir: str, data_folder_name: str, gt_folder_name: str,
                  selection_train: Optional[Union[int, List[str]]] = None,
                  selection_val: Optional[Union[int, List[str]]] = None,
@@ -28,21 +29,22 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
         self.data_folder_name = data_folder_name
         self.gt_folder_name = gt_folder_name
 
-        analytics = get_analytics(input_path=Path(data_dir),
-                                  data_folder_name=self.data_folder_name,
-                                  gt_folder_name=self.gt_folder_name,
-                                  get_gt_data_paths_func=CroppedHisDBDataset.get_gt_data_paths)
+        analytics_data, analytics_gt = get_analytics(input_path=Path(data_dir),
+                                                     data_folder_name=self.data_folder_name,
+                                                     gt_folder_name=self.gt_folder_name,
+                                                     get_gt_data_paths_func=CroppedDatasetRGB.get_gt_data_paths)
 
-        self.mean = analytics['mean']
-        self.std = analytics['std']
-        self.class_encodings = analytics['class_encodings']
+        self.mean = analytics_data['mean']
+        self.std = analytics_data['std']
+        self.class_encodings = analytics_gt['class_encodings']
+        self.class_encodings_tensor = torch.tensor(self.class_encodings) / 255
         self.num_classes = len(self.class_encodings)
-        self.class_weights = analytics['class_weights']
+        self.class_weights = analytics_gt['class_weights']
 
         self.twin_transform = TwinRandomCrop(crop_size=crop_size)
         self.image_transform = OnlyImage(transforms.Compose([transforms.ToTensor(),
                                                              transforms.Normalize(mean=self.mean, std=self.std)]))
-        self.target_transform = OnlyTarget(IntegerEncoding(class_encodings=self.class_encodings))
+        self.target_transform = OnlyTarget(IntegerEncoding(class_encodings=self.class_encodings_tensor))
 
         self.num_workers = num_workers
         self.batch_size = batch_size
@@ -50,8 +52,6 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
         self.shuffle = shuffle
         self.drop_last = drop_last
 
-        self.data_folder_name = data_folder_name
-        self.gt_folder_name = gt_folder_name
         self.data_dir = validate_path_for_segmentation(data_dir=data_dir, data_folder_name=self.data_folder_name,
                                                        gt_folder_name=self.gt_folder_name)
 
@@ -64,8 +64,8 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
     def setup(self, stage: Optional[str] = None):
         super().setup()
         if stage == 'fit' or stage is None:
-            self.train = CroppedHisDBDataset(**self._create_dataset_parameters('train'), selection=self.selection_train)
-            self.val = CroppedHisDBDataset(**self._create_dataset_parameters('val'), selection=self.selection_val)
+            self.train = CroppedDatasetRGB(**self._create_dataset_parameters('train'), selection=self.selection_train)
+            self.val = CroppedDatasetRGB(**self._create_dataset_parameters('val'), selection=self.selection_val)
 
             self._check_min_num_samples(num_samples=len(self.train), data_split='train',
                                         drop_last=self.drop_last)
@@ -73,7 +73,7 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
                                         drop_last=self.drop_last)
 
         if stage == 'test' or stage is not None:
-            self.test = CroppedHisDBDataset(**self._create_dataset_parameters('test'), selection=self.selection_test)
+            self.test = CroppedDatasetRGB(**self._create_dataset_parameters('test'), selection=self.selection_test)
             # self._check_min_num_samples(num_samples=len(self.test), data_split='test',
             #                             drop_last=False)
 

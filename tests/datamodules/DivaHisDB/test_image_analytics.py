@@ -13,7 +13,8 @@ TEST_JSON = {'mean': [0.7050454974582426, 0.6503181590413943, 0.5567698583877997
 
 
 def test_get_analytics_no_file(data_dir_cropped):
-    output = get_analytics(input_path=data_dir_cropped, get_gt_data_paths_func=CroppedHisDBDataset.get_gt_data_paths)
+    output = get_analytics(input_path=data_dir_cropped, data_folder_name='data', gt_folder_name='gt',
+                           get_gt_data_paths_func=CroppedHisDBDataset.get_gt_data_paths)
 
     assert np.array_equal(np.round(TEST_JSON['mean'], 8), np.round(output['mean'], 8))
     assert np.array_equal(np.round(TEST_JSON['std'], 8), np.round(output['std'], 8))
