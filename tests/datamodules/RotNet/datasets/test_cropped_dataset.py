@@ -23,33 +23,43 @@ def test__load_data_and_gt(dataset_train):
 
 
 def test__apply_transformation(dataset_train):
-    img0_o = dataset_train._load_data_and_gt(0)
-    img1_o = dataset_train._load_data_and_gt(1)
-    img2_o = dataset_train._load_data_and_gt(2)
-    img3_o = dataset_train._load_data_and_gt(3)
-    img4_o = dataset_train._load_data_and_gt(4)
+    org0 = dataset_train._load_data_and_gt(0)
+    org1 = dataset_train._load_data_and_gt(1)
 
-    img0, gt0 = dataset_train._apply_transformation(img0_o, 0)
-    assert torch.equal(img0, ToTensor()(img0_o))
-    assert gt0 == 0
+    img0, gt0 = dataset_train._apply_transformation(org0, 0)
+    img_index0, gt_index0 = dataset_train[0]
+    assert torch.equal(img0, img_index0)
+    assert gt0 == gt_index0
 
-    img1, gt1 = dataset_train._apply_transformation(img1_o, 1)
-    assert not torch.equal(ToTensor()(img1_o), img1)
-    assert torch.equal(img1, rotate(img=ToTensor()(img1_o), angle=ROTATION_ANGLES[1]))
+    img1, gt1 = dataset_train._apply_transformation(org0, 1)
+    img_index1, gt_index1 = dataset_train[1]
+    assert not torch.equal(ToTensor()(org0), img1)
+    assert torch.equal(img1, rotate(img=ToTensor()(org0), angle=ROTATION_ANGLES[1]))
+    assert torch.equal(img1, img_index1)
+    assert gt1 == gt_index1
     assert gt1 == 1
 
-    img2, gt2 = dataset_train._apply_transformation(img2_o, 2)
-    assert not torch.equal(ToTensor()(img2_o), img2)
-    assert torch.equal(img2, rotate(img=ToTensor()(img2_o), angle=ROTATION_ANGLES[2]))
+    img2, gt2 = dataset_train._apply_transformation(org0, 2)
+    img_index2, gt_index2 = dataset_train[2]
+    assert not torch.equal(ToTensor()(org0), img2)
+    assert torch.equal(img2, rotate(img=ToTensor()(org0), angle=ROTATION_ANGLES[2]))
+    assert torch.equal(img2, img_index2)
+    assert gt2 == gt_index2
     assert gt2 == 2
 
-    img3, gt3 = dataset_train._apply_transformation(img3_o, 3)
-    assert not torch.equal(ToTensor()(img3_o), img3)
-    assert torch.equal(img3, rotate(img=ToTensor()(img3_o), angle=ROTATION_ANGLES[3]))
+    img3, gt3 = dataset_train._apply_transformation(org0, 3)
+    img_index3, gt_index3 = dataset_train[3]
+    assert not torch.equal(ToTensor()(org0), img3)
+    assert torch.equal(img3, rotate(img=ToTensor()(org0), angle=ROTATION_ANGLES[3]))
+    assert torch.equal(img3, img_index3)
+    assert gt3 == gt_index3
     assert gt3 == 3
 
-    img4, gt4 = dataset_train._apply_transformation(img4_o, 0)
-    assert torch.equal(img4, ToTensor()(img4_o))
+    img4, gt4 = dataset_train._apply_transformation(org1, 0)
+    img_index4, gt_index4 = dataset_train[4]
+    assert torch.equal(img4, ToTensor()(org1))
+    assert torch.equal(img4, img_index4)
+    assert gt4 == gt_index4
     assert gt4 == 0
 
 
