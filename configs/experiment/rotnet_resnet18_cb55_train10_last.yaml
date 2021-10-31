@@ -1,0 +1,80 @@
+# @package _global_
+
+# to execute this experiment run:
+# python run.py +experiment=exp_example_full
+
+defaults:
+    - /plugins: default.yaml
+    - /task: classification.yaml
+    - /loss: crossentropyloss.yaml
+    - /metric: accuracy.yaml
+    - /model/backbone: resnet18.yaml
+    - /model/header: single_layer.yaml
+    - /optimizer: adam.yaml
+    - /callbacks:
+          - check_compatibility.yaml
+          - model_checkpoint.yaml
+          - watch_model_wandb.yaml
+    - /logger:
+          - wandb.yaml # set logger here or use command line (e.g. `python run.py logger=wandb`)
+          - csv.yaml
+
+# we override default configurations with nulls to prevent them from loading at all
+# instead we define all modules and their paths directly in this config,
+# so everything is stored in one place for more readibility
+
+train: True
+test: False
+
+trainer:
+    _target_: pytorch_lightning.Trainer
+    gpus: -1
+    accelerator: 'ddp'
+    min_epochs: 1
+    max_epochs: 50
+    weights_summary: full
+    precision: 16
+
+task:
+    confusion_matrix_log_every_n_epoch: 20
+    confusion_matrix_val: False
+    confusion_matrix_test: False
+
+datamodule:
+    _target_: src.datamodules.RotNet.datamodule_cropped.RotNetDivaHisDBDataModuleCropped
+
+    data_dir: /netscratch/datasets/semantic_segmentation/datasets_cropped/CB55
+    crop_size: 256
+    num_workers: 4
+    batch_size: 16
+    shuffle: True
+    drop_last: True
+    data_folder_name: data
+    selection_train:
+        - e-codices_fmb-cb-0055_0058v_max
+        - e-codices_fmb-cb-0055_0059r_max
+        - e-codices_fmb-cb-0055_0059v_max
+        - e-codices_fmb-cb-0055_0060r_max
+        - e-codices_fmb-cb-0055_0067v_max
+        - e-codices_fmb-cb-0055_0072v_max
+        - e-codices_fmb-cb-0055_0073v_max
+        - e-codices_fmb-cb-0055_0074v_max
+        - e-codices_fmb-cb-0055_0084r_max
+        - e-codices_fmb-cb-0055_0087r_max
+
+model:
+    header:
+        input_size: 2048
+
+
+callbacks:
+    model_checkpoint:
+        filename: ${checkpoint_folder_name}rotnet-resnet18-cb55
+    watch_model:
+        log_freq: 1
+
+logger:
+    wandb:
+        name: 'rotnet-resnet18-cb55'
+        tags: [ "best_model", "USL"]
+        group: 'rotnet-baseline'
