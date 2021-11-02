@@ -44,19 +44,18 @@ def get_analytics_data(input_path: Path, data_folder_name: str, get_gt_data_path
         gt_data_path_list = get_gt_data_paths_func(train_path, data_folder_name=data_folder_name, gt_folder_name=None)
         file_names_data = np.asarray([str(item) for item in gt_data_path_list])
 
-        if missing_analytics_data:
-            mean, std = compute_mean_std(file_names=file_names_data, **kwargs)
-            analytics_data = {'mean': mean.tolist(),
-                              'std': std.tolist()}
-            # save json
-            try:
-                with analytics_path_data.open(mode='w') as f:
-                    json.dump(obj=analytics_data, fp=f)
-            except IOError as e:
-                if e.errno == errno.EACCES:
-                    print(f'WARNING: No permissions to write analytics file ({analytics_path_data})')
-                else:
-                    raise
+        mean, std = compute_mean_std(file_names=file_names_data, **kwargs)
+        analytics_data = {'mean': mean.tolist(),
+                          'std': std.tolist()}
+        # save json
+        try:
+            with analytics_path_data.open(mode='w') as f:
+                json.dump(obj=analytics_data, fp=f)
+        except IOError as e:
+            if e.errno == errno.EACCES:
+                logging.warning(f'WARNING: No permissions to write analytics file ({analytics_path_data})')
+            else:
+                raise
 
     return analytics_data
 
