@@ -18,7 +18,7 @@ def test_get_gt_data_paths(data_dir):
 
 def test_dataset_rgb(dataset_train):
     data_tensor, gt_tensor = dataset_train[0]
-    assert data_tensor.shape == gt_tensor.shape
+    assert data_tensor.shape[-2:] == gt_tensor.shape[-2:]
     assert data_tensor.ndim == 3
     assert gt_tensor.ndim == 3
 

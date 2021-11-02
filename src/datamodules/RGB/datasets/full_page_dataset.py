@@ -96,13 +96,13 @@ class DatasetRGB(data.Dataset):
     def _get_train_val_items(self, index):
         data_img, gt_img = self._load_data_and_gt(index=index)
         img, gt = self._apply_transformation(data_img, gt_img)
-        assert img.shape == gt.shape
+        assert img.shape[-2:] == gt.shape[-2:]
         return img, gt
 
     def _get_test_items(self, index):
         data_img, gt_img = self._load_data_and_gt(index=index)
         img, gt = self._apply_transformation(data_img, gt_img)
-        assert img.shape == gt.shape
+        assert img.shape[-2:] == gt.shape[-2:]
         return img, gt, index
 
     def _load_data_and_gt(self, index):
