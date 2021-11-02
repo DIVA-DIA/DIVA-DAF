@@ -65,11 +65,12 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         super().__init__()
 
         resolver_name = 'task'
-        OmegaConf.register_new_resolver(
-            resolver_name,
-            lambda name: getattr(self, name),
-            use_cache=False
-        )
+        if not OmegaConf.has_resolver(resolver_name):
+            OmegaConf.register_new_resolver(
+                resolver_name,
+                lambda name: getattr(self, name),
+                use_cache=False
+            )
 
         if model is not None:
             self.model = model
