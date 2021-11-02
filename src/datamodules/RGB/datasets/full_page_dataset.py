@@ -74,12 +74,9 @@ class DatasetRGB(data.Dataset):
         self.img_paths_per_page = self.get_gt_data_paths(path, data_folder_name=self.data_folder_name,
                                                          gt_folder_name=self.gt_folder_name, selection=self.selection)
 
-        # TODO: make more fanzy stuff here
-        # self.img_paths = [pair for page in self.img_paths_per_page for pair in page]
-
         self.num_samples = len(self.img_paths_per_page)
         if self.num_samples == 0:
-            raise RuntimeError("Found 0 images in subfolders of: {} \n Supported image extensions are: {}".format(
+            raise RuntimeError("Found 0 images in: {} \n Supported image extensions are: {}".format(
                 path, ",".join(IMG_EXTENSIONS)))
 
     def __len__(self):
@@ -99,11 +96,13 @@ class DatasetRGB(data.Dataset):
     def _get_train_val_items(self, index):
         data_img, gt_img = self._load_data_and_gt(index=index)
         img, gt = self._apply_transformation(data_img, gt_img)
+        assert img.shape == gt.shape
         return img, gt
 
     def _get_test_items(self, index):
         data_img, gt_img = self._load_data_and_gt(index=index)
         img, gt = self._apply_transformation(data_img, gt_img)
+        assert img.shape == gt.shape
         return img, gt, index
 
     def _load_data_and_gt(self, index):
