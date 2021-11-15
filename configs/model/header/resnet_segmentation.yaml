@@ -1,0 +1,8 @@
+_target_: src.models.headers.fully_convolution.ResNetFCNHead
+
+#FCN header for resnets. The in_channels are fixed for the different resnet architectures:
+#resnet18, 34 = 512
+#resnet50, 101, 152 = 2048
+in_channels: 512
+num_classes: ${datamodule:num_classes}
+output_dims: ${datamodule:dims}
