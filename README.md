@@ -94,3 +94,20 @@ python run.py trainer.max_epochs=20 datamodule.batch_size=64
 11. Go to the root folder of the framework and activate the environment (source .autoenv OR conda activate unsupervised_learning)
 12. Log into wandb. Execute `wandb login` and follow the instructions
 13. Now you should be able to run the basic experiment from PyCharm
+
+
+### Loading models
+You can load the different model parts `backbone` or `header` as well as the whole task.
+To load the `backbone` or the `header` you need to add to your experiment config the field `path_to_weights`.
+e.g.
+```
+model:
+    header:
+        path_to_weights: /my/path/to/the/pth/file
+```
+To load the whole task you need to provide the path to the whole task to the trainer. This is with the field `resume_from_checkpoint`.
+e.g.
+```
+trainer:
+    resume_from_checkpoint: /path/to/.ckpt/file
+```
