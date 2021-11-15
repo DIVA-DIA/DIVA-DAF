@@ -1,0 +1,74 @@
+# @package _global_
+
+# to execute this experiment run:
+# python run.py +experiment=exp_example_full
+
+defaults:
+    - /plugins: default.yaml
+    - /task: semantic_segmentation_HisDB.yaml
+    - /loss: crossentropyloss.yaml
+    - /metric: hisdbiou.yaml
+    - /model/backbone: resnet18.yaml
+    - /model/header: resnet_segmentation.yaml
+    - /optimizer: adam.yaml
+    - /callbacks:
+          - check_compatibility.yaml
+          - model_checkpoint.yaml
+          - watch_model_wandb.yaml
+    - /logger:
+          - wandb.yaml # set logger here or use command line (e.g. `python run.py logger=wandb`)
+          - csv.yaml
+
+# we override default configurations with nulls to prevent them from loading at all
+# instead we define all modules and their paths directly in this config,
+# so everything is stored in one place for more readibility
+
+seed: 42
+
+train: True
+test: False
+
+trainer:
+    _target_: pytorch_lightning.Trainer
+    gpus: -1
+    accelerator: 'ddp'
+    min_epochs: 1
+    max_epochs: 3
+    weights_summary: full
+    precision: 16
+
+task:
+    confusion_matrix_log_every_n_epoch: 1
+    confusion_matrix_val: True
+    confusion_matrix_test: True
+
+datamodule:
+    _target_: src.datamodules.DivaHisDB.datamodule_cropped.DivaHisDBDataModuleCropped
+
+    data_dir: /netscratch/datasets/semantic_segmentation/datasets_cropped/CB55-10-segmentation
+    crop_size: 256
+    num_workers: 4
+    batch_size: 16
+    shuffle: True
+    drop_last: True
+    data_folder_name: data
+    gt_folder_name: gt
+
+model:
+    backbone:
+        path_to_weights: /netscratch/experiments_lars_paul/lars/2021-11-15/16-08-51/checkpoints/epoch=1/backbone.pth
+    header:
+        in_channels: 512
+
+callbacks:
+    model_checkpoint:
+        filename: ${checkpoint_folder_name}dev-rotnet-pt-resnet18-cb55-10-segmentation
+    watch_model:
+        log_freq: 1
+
+logger:
+    wandb:
+        name: 'dev-rotnet-pt-resnet18-cb55-10-segmetnation'
+        tags: [ "best_model", "USL" ]
+        group: 'dev-runs'
+        notes: "Testing"
