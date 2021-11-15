@@ -3,12 +3,12 @@ from torch import nn
 
 
 class SingleLinear(nn.Module):
-    def __init__(self, num_classes: int = 4, input_size: int = 109512):
+    def __init__(self, num_classes: int = 4, in_channels: int = 109512):
         super(SingleLinear, self).__init__()
         
         self.fc = nn.Sequential(
             torch.nn.Flatten(),
-            nn.Linear(input_size, num_classes)
+            nn.Linear(in_channels, num_classes)
         )
 
     def forward(self, x):
