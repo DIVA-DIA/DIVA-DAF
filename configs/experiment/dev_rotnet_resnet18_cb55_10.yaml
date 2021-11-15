@@ -9,7 +9,7 @@ defaults:
     - /loss: crossentropyloss.yaml
     - /metric: accuracy.yaml
     - /model/backbone: resnet18.yaml
-    - /model/header: single_layer.yaml
+    - /model/header: resnet_header.yaml
     - /optimizer: adam.yaml
     - /callbacks:
           - check_compatibility.yaml
