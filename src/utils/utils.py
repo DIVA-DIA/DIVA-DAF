@@ -208,3 +208,5 @@ def finish(
     for lg in logger:
         if isinstance(lg, WandbLogger):
             wandb.finish()
+    if isinstance(trainer.logger, WandbLogger):
+        trainer.logger.finish()

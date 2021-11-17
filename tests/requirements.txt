@@ -1,8 +1,8 @@
-coverage
-codecov>=2.1
-pytest>=3.0.5
-pytest-cov
-pytest-flake8
-flake8
-check-manifest
+coverage==6.0.1
+codecov==2.1.12
+pytest==6.2.3
+pytest-cov==3.0.0
+pytest-flake8==1.0.7
+flake8==3.9.2
+check-manifest==0.47
 twine==1.13.0
