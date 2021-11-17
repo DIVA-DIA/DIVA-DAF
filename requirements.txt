@@ -14,11 +14,10 @@ hydra-optuna-sweeper==1.1.0
 wandb==0.12.6
 
 # --------- others --------- #
-rich
-python-dotenv
-pre-commit
+rich==10.1.0
+python-dotenv==0.17.0
 scikit-learn==0.24.1
-pandas
-matplotlib
-seaborn
-pytest
+pandas==1.2.4
+matplotlib==3.4.1
+seaborn==0.11.1
+pytest==6.2.3
