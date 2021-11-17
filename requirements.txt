@@ -1,9 +1,9 @@
 # --------- pytorch --------- #
 torch==1.8.1
 torchvision==0.9.1
-pytorch-lightning==1.4.4
-lightning-bolts==0.3.2
-torchmetrics==0.5.0
+pytorch-lightning==1.4.8
+lightning-bolts==0.4.0
+torchmetrics==0.5.1
 
 # --------- hydra --------- #
 hydra-core==1.1.0
@@ -17,7 +17,7 @@ wandb==0.12.6
 rich
 python-dotenv
 pre-commit
-scikit-learn==0.23.2
+scikit-learn==0.24.1
 pandas
 matplotlib
 seaborn
