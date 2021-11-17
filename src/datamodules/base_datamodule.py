@@ -9,11 +9,12 @@ class AbstractDatamodule(pl.LightningDataModule):
         super().__init__()
         self.num_classes = -1
         resolver_name = 'datamodule'
-        OmegaConf.register_new_resolver(
-            resolver_name,
-            lambda name: getattr(self, name),
-            use_cache=False
-        )
+        if not OmegaConf.has_resolver(resolver_name):
+            OmegaConf.register_new_resolver(
+                resolver_name,
+                lambda name: getattr(self, name),
+                use_cache=False
+            )
 
     def setup(self, stage: Optional[str] = None) -> None:
         if not self.dims:
