@@ -108,11 +108,11 @@ class ResNet(nn.Module):
             raise ValueError(
                 f"replace_stride_with_dilation should be None or a 3-tuple, got {replace_stride_with_dilation}")
 
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=(7, 7), stride=2, padding=3,
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3),
                                bias=False)
         self.bn1 = nn.BatchNorm2d(64)
         self.relu = nn.ReLU(inplace=True)
-        self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
+        self.maxpool = nn.MaxPool2d(kernel_size=(3, 3), stride=(2, 2), padding=(1, 1))
         self.layer1 = self._make_layer(block, 64, layers[0])
         self.layer2 = self._make_layer(block, 128, layers[1], stride=2, dilate=replace_stride_with_dilation[0])
         self.layer3 = self._make_layer(block, 256, layers[2], stride=2, dilate=replace_stride_with_dilation[1])
@@ -136,7 +136,7 @@ class ResNet(nn.Module):
         if stride != 1 or self.inplanes != planes * block.expansion:
             downsample = nn.Sequential(
                 nn.Conv2d(self.inplanes, planes * block.expansion,
-                          kernel_size=(1, 1), stride=stride, bias=False),
+                          kernel_size=(1, 1), stride=(stride, stride), bias=False),
                 nn.BatchNorm2d(planes * block.expansion),
             )
 
