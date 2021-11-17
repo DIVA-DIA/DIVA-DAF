@@ -17,81 +17,24 @@ from PIL import Image
 from src.datamodules.RGB.utils.misc import pil_loader
 
 
-def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, get_gt_data_paths_func, **kwargs):
-    """
-    Parameters
-    ----------
-    input_path: Path to dataset
+def get_analytics_data(file_names_data, **kwargs):
+    mean, std = compute_mean_std(file_names=file_names_data, **kwargs)
+    analytics_data = {'mean': mean.tolist(),
+                      'std': std.tolist()}
 
-    Returns
-    -------
-    """
-    expected_keys_data = ['mean', 'std']
-    expected_keys_gt = ['class_weights', 'class_encodings']
+    return analytics_data
 
-    analytics_path_data = input_path / f'analytics.data.{data_folder_name}.json'
-    analytics_path_gt = input_path / f'analytics.gt.{gt_folder_name}.json'
 
-    analytics_data = None
-    analytics_gt = None
+def get_analytics_gt(file_names_gt, **kwargs):
+    # Measure weights for class balancing
+    logging.info(f'Measuring class weights')
+    # create a list with all gt file paths
+    class_weights, class_encodings = _get_class_frequencies_weights_segmentation(gt_images=file_names_gt,
+                                                                                 **kwargs)
+    analytics_gt = {'class_weights': class_weights,
+                    'class_encodings': class_encodings}
 
-    missing_analytics_data = True
-    missing_analytics_gt = True
-
-    if analytics_path_data.exists():
-        with analytics_path_data.open(mode='r') as f:
-            analytics_data = json.load(fp=f)
-        # check if analytics file is complete
-        if all(k in analytics_data for k in expected_keys_data):
-            missing_analytics_data = False
-
-    if analytics_path_gt.exists():
-        with analytics_path_gt.open(mode='r') as f:
-            analytics_gt = json.load(fp=f)
-        # check if analytics file is complete
-        if all(k in analytics_gt for k in expected_keys_gt):
-            missing_analytics_gt = False
-
-    if missing_analytics_data or missing_analytics_gt:
-        train_path = input_path / 'train'
-        gt_data_path_list = get_gt_data_paths_func(train_path, data_folder_name=data_folder_name,
-                                                   gt_folder_name=gt_folder_name)
-        file_names_data = np.asarray([str(item[0]) for item in gt_data_path_list])
-        file_names_gt = np.asarray([str(item[1]) for item in gt_data_path_list])
-
-        if missing_analytics_data:
-            mean, std = compute_mean_std(file_names=file_names_data, **kwargs)
-            analytics_data = {'mean': mean.tolist(),
-                              'std': std.tolist()}
-            # save json
-            try:
-                with analytics_path_data.open(mode='w') as f:
-                    json.dump(obj=analytics_data, fp=f)
-            except IOError as e:
-                if e.errno == errno.EACCES:
-                    print(f'WARNING: No permissions to write analytics file ({analytics_path_data})')
-                else:
-                    raise
-
-        if missing_analytics_gt:
-            # Measure weights for class balancing
-            logging.info(f'Measuring class weights')
-            # create a list with all gt file paths
-            class_weights, class_encodings = _get_class_frequencies_weights_segmentation(gt_images=file_names_gt,
-                                                                                         **kwargs)
-            analytics_gt = {'class_weights': class_weights,
-                            'class_encodings': class_encodings}
-            # save json
-            try:
-                with analytics_path_gt.open(mode='w') as f:
-                    json.dump(obj=analytics_gt, fp=f)
-            except IOError as e:
-                if e.errno == errno.EACCES:
-                    print(f'WARNING: No permissions to write analytics file ({analytics_path_gt})')
-                else:
-                    raise
-
-    return analytics_data, analytics_gt
+    return analytics_gt
 
 
 def compute_mean_std(file_names: List[Path], inmem=False, workers=4, **kwargs):
@@ -368,7 +311,3 @@ def _get_class_frequencies_weights_segmentation(gt_images, **kwargs):
     # Normalize vector to sum up to 1.0 (in case the Loss function does not do it)
     class_weights = (1 / num_samples_per_class) / ((1 / num_samples_per_class).sum())
     return class_weights.tolist(), classes
-
-
-if __name__ == '__main__':
-    print(get_analytics(input_path=Path('tests/dummy_data/dummy_dataset')))

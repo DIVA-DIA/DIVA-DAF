@@ -2,37 +2,44 @@ from pathlib import Path
 from typing import Union, List, Optional
 
 import torch
+from dataclasses import dataclass
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from src.datamodules.RGB.datasets.cropped_dataset import CroppedDatasetRGB
-from src.datamodules.RGB.utils.image_analytics import get_analytics
-from src.datamodules.RGB.utils.misc import validate_path_for_segmentation
-from src.datamodules.RGB.utils.twin_transforms import TwinRandomCrop, OneHotEncoding, OneHotToPixelLabelling, \
-    IntegerEncoding
-from src.datamodules.RGB.utils.wrapper_transforms import OnlyImage, OnlyTarget
+from src.datamodules.RolfFormat.datasets.dataset import DatasetRolfFormat
+from src.datamodules.RolfFormat.utils.image_analytics import get_analytics_data, get_analytics_gt
+from src.datamodules.RolfFormat.utils.twin_transforms import IntegerEncoding
+from src.datamodules.RolfFormat.utils.wrapper_transforms import OnlyImage, OnlyTarget
 from src.datamodules.base_datamodule import AbstractDatamodule
 from src.utils import utils
 
 log = utils.get_logger(__name__)
 
+@dataclass
+class DatasetSpecs:
+    data_root: str
+    doc_dir: str
+    doc_names: str
+    gt_dir: str
+    gt_names: str
+    range_from: int
+    range_to: int
 
-class DataModuleCroppedRGB(AbstractDatamodule):
-    def __init__(self, data_dir: str, data_folder_name: str, gt_folder_name: str,
-                 selection_train: Optional[Union[int, List[str]]] = None,
-                 selection_val: Optional[Union[int, List[str]]] = None,
-                 selection_test: Optional[Union[int, List[str]]] = None,
-                 crop_size: int = 256, num_workers: int = 4, batch_size: int = 8,
+
+class DataModuleRolfFormat(AbstractDatamodule):
+    def __init__(self, data_root: str,
+                 train_specs=None, val_specs=None, test_specs=None,
+                 image_analytics=None, classes=None, image_dims=None,
+                 num_workers: int = 4, batch_size: int = 8,
                  shuffle: bool = True, drop_last: bool = True):
         super().__init__()
 
-        self.data_folder_name = data_folder_name
-        self.gt_folder_name = gt_folder_name
+        train_dataset_specs = [DatasetSpecs(data_root=data_root, **v) for k, v in train_specs.items()]
+        val_dataset_specs = [DatasetSpecs(data_root=data_root, **v) for k, v in val_specs.items()]
+        test_dataset_specs = [DatasetSpecs(data_root=data_root, **v) for k, v in test_specs.items()]
 
-        analytics_data, analytics_gt = get_analytics(input_path=Path(data_dir),
-                                                     data_folder_name=self.data_folder_name,
-                                                     gt_folder_name=self.gt_folder_name,
-                                                     get_gt_data_paths_func=CroppedDatasetRGB.get_gt_data_paths)
+        analytics_data = get_analytics_data()
+        analytics_gt = get_analytics_gt()
 
         self.mean = analytics_data['mean']
         self.std = analytics_data['std']
@@ -41,7 +48,7 @@ class DataModuleCroppedRGB(AbstractDatamodule):
         self.num_classes = len(self.class_encodings)
         self.class_weights = analytics_gt['class_weights']
 
-        self.twin_transform = TwinRandomCrop(crop_size=crop_size)
+        self.twin_transform = None
         self.image_transform = OnlyImage(transforms.Compose([transforms.ToTensor(),
                                                              transforms.Normalize(mean=self.mean, std=self.std)]))
         self.target_transform = OnlyTarget(IntegerEncoding(class_encodings=self.class_encodings_tensor))
@@ -52,20 +59,13 @@ class DataModuleCroppedRGB(AbstractDatamodule):
         self.shuffle = shuffle
         self.drop_last = drop_last
 
-        self.data_dir = validate_path_for_segmentation(data_dir=data_dir, data_folder_name=self.data_folder_name,
-                                                       gt_folder_name=self.gt_folder_name)
-
-        self.selection_train = selection_train
-        self.selection_val = selection_val
-        self.selection_test = selection_test
-
-        self.dims = (3, crop_size, crop_size)
+        self.dims = (3, image_dims['width'], image_dims['height'])
 
     def setup(self, stage: Optional[str] = None):
         super().setup()
         if stage == 'fit' or stage is None:
-            self.train = CroppedDatasetRGB(**self._create_dataset_parameters('train'), selection=self.selection_train)
-            self.val = CroppedDatasetRGB(**self._create_dataset_parameters('val'), selection=self.selection_val)
+            self.train = DatasetRolfFormat(**self._create_dataset_parameters('train'), selection=self.selection_train)
+            self.val = DatasetRolfFormat(**self._create_dataset_parameters('val'), selection=self.selection_val)
 
             self._check_min_num_samples(num_samples=len(self.train), data_split='train',
                                         drop_last=self.drop_last)
@@ -73,7 +73,7 @@ class DataModuleCroppedRGB(AbstractDatamodule):
                                         drop_last=self.drop_last)
 
         if stage == 'test' or stage is not None:
-            self.test = CroppedDatasetRGB(**self._create_dataset_parameters('test'), selection=self.selection_test)
+            self.test = DatasetRolfFormat(**self._create_dataset_parameters('test'), selection=self.selection_test)
             # self._check_min_num_samples(num_samples=len(self.test), data_split='test',
             #                             drop_last=False)
 

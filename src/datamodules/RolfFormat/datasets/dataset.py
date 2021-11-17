@@ -20,7 +20,7 @@ IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.gif']
 log = utils.get_logger(__name__)
 
 
-class CroppedDatasetRGB(data.Dataset):
+class DatasetRolfFormat(data.Dataset):
     """A generic data loader where the images are arranged in this way: ::
 
         root/gt/xxx.png
