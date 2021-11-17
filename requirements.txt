@@ -1,9 +1,9 @@
 # --------- pytorch --------- #
 torch==1.8.1
-torchvision>=0.9.1
-pytorch-lightning>=1.4.4
-lightning-bolts>=0.3.2
-torchmetrics>=0.5.0
+torchvision==0.9.1
+pytorch-lightning==1.4.8
+lightning-bolts==0.4.0
+torchmetrics==0.5.1
 
 # --------- hydra --------- #
 hydra-core==1.1.0
@@ -11,14 +11,13 @@ hydra-colorlog==1.1.0
 hydra-optuna-sweeper==1.1.0
 
 # --------- loggers --------- #
-wandb>=0.10.31
+wandb==0.12.6
 
 # --------- others --------- #
-rich
-python-dotenv
-pre-commit
-scikit-learn>=0.23.2
-pandas
-matplotlib
-seaborn
-pytest
+rich==10.1.0
+python-dotenv==0.17.0
+scikit-learn==0.24.1
+pandas==1.2.4
+matplotlib==3.4.1
+seaborn==0.11.1
+pytest==6.2.3

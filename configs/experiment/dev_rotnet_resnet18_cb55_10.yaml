@@ -9,7 +9,7 @@ defaults:
     - /loss: crossentropyloss.yaml
     - /metric: accuracy.yaml
     - /model/backbone: resnet18.yaml
-    - /model/header: null
+    - /model/header: resnet_classification.yaml
     - /optimizer: adam.yaml
     - /callbacks:
           - check_compatibility.yaml
@@ -55,21 +55,18 @@ datamodule:
 
 model:
     header:
-        _target_: src.models.headers.fully_connected.SingleLinear
-
-        num_classes: ${datamodule:num_classes}
         # needs to be calculated from the output of the last layer of the backbone (do not forget to flatten!)
-        input_size: 2048
+        in_channels: 32768
 
 callbacks:
     model_checkpoint:
-        filename: ${checkpoint_folder_name}dev-rotnet-basic-cnn-cb55-10
+        filename: ${checkpoint_folder_name}dev-rotnet-resnet18-cb55-10
     watch_model:
         log_freq: 1
 
 logger:
     wandb:
-        name: 'dev-rotnet-basic-cnn-cb55-10'
+        name: 'dev-rotnet-resnet18-cb55-10'
         tags: [ "best_model", "USL" ]
         group: 'dev-runs'
         notes: "Testing"
