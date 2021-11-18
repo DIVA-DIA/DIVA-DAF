@@ -31,19 +31,19 @@ trainer:
     gpus: -1
     accelerator: 'ddp'
     min_epochs: 1
-    max_epochs: 2000
+    max_epochs: 200
     weights_summary: full
     precision: 16
 
 task:
-    confusion_matrix_log_every_n_epoch: 100
+    confusion_matrix_log_every_n_epoch: 50
     confusion_matrix_val: True
     confusion_matrix_test: True
 
 datamodule:
     _target_: src.datamodules.RGB.datamodule_cropped.DataModuleCroppedRGB
 
-    data_dir: /netscratch/datasets/semantic_segmentation/synthetic_cropped/SetA1_sizeM/layoutD/split
+    data_dir: /netscratch/datasets/semantic_segmentation/synthetic_cropped/SetA1_sizeM/layoutR/split
     crop_size: 256
     num_workers: 4
     batch_size: 16
@@ -58,10 +58,10 @@ callbacks:
         mode: "max"
         filename: ${checkpoint_folder_name}dev-baby-unet-rgb-data
     watch_model:
-        log_freq: 100
+        log_freq: 50
 
 logger:
     wandb:
-        name: 'synthetic-baby-unet-rolf-layoutD-gtD'
-        tags: [ "best_model", "synthetic", "layoutD", "gtD", "Rolf" ]
+        name: 'synthetic-baby-unet-layoutR-gtD'
+        tags: [ "best_model", "synthetic", "layoutR", "gtD", "Rolf" ]
         group: 'synthetic'

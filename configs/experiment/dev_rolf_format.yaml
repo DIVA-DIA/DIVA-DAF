@@ -4,13 +4,14 @@
 # python run.py +experiment=exp_example_full
 
 defaults:
-    - /plugins: default.yaml
-    - /task: semantic_segmentation_RGB_full_page.yaml
-    - /loss: crossentropyloss.yaml
-    - /metric: iou.yaml
-    - /model/backbone: baby_unet_model.yaml
-    - /model/header: identity.yaml
-    - /optimizer: adam.yaml
+    - /plugins:         default.yaml
+    - /task:            semantic_segmentation_RGB_full_page.yaml
+    - /datamodule:      rolf_format_dev.yaml
+    - /loss:            crossentropyloss.yaml
+    - /metric:          iou.yaml
+    - /model/backbone:  baby_unet_model.yaml
+    - /model/header:    identity.yaml
+    - /optimizer:       adam.yaml
     - /callbacks:
           - check_compatibility.yaml
           - model_checkpoint.yaml
@@ -31,25 +32,14 @@ trainer:
     gpus: -1
     accelerator: 'ddp'
     min_epochs: 1
-    max_epochs: 2000
+    max_epochs: 2
     weights_summary: full
     precision: 16
 
 task:
-    confusion_matrix_log_every_n_epoch: 100
+    confusion_matrix_log_every_n_epoch: 1
     confusion_matrix_val: True
     confusion_matrix_test: True
-
-datamodule:
-    _target_: src.datamodules.RGB.datamodule_full_page.DataModuleRGB
-
-    data_dir: /netscratch/datasets/semantic_segmentation/synthetic/SetA1_sizeM/layoutD/split
-    num_workers: 4
-    batch_size: 2
-    shuffle: True
-    drop_last: True
-    data_folder_name: data
-    gt_folder_name: gtD
 
 callbacks:
     model_checkpoint:
@@ -57,10 +47,11 @@ callbacks:
         mode: "max"
         filename: ${checkpoint_folder_name}dev-baby-unet-rgb-data
     watch_model:
-        log_freq: 100
+        log_freq: 1
 
 logger:
     wandb:
-        name: 'synthetic-baby-unet-rolf-layoutD-gtD-full-page'
-        tags: [ "best_model", "synthetic", "layoutD", "gtD", "Rolf", "full_page" ]
-        group: 'synthetic'
+        name: 'dev-rolf-format'
+        tags: [ "best_model", "synthetic", "rolf_format" ]
+        group: 'dev-runs'
+        notes: "Testing"

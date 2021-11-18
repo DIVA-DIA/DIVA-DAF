@@ -31,6 +31,10 @@ class DataModuleRolfFormat(AbstractDatamodule):
         if image_analytics is None or classes is None or image_dims is None:
             train_paths_data_gt = DatasetRolfFormat.get_gt_data_paths(list_specs=self.train_dataset_specs)
 
+        if image_dims is None:
+            image_dims = get_image_dims(data_gt_path_list=train_paths_data_gt)
+            self._print_image_dims(image_dims=image_dims)
+
         if image_analytics is None:
             analytics_data = get_analytics_data(data_gt_path_list=train_paths_data_gt)
             self._print_analytics_data(analytics_data=analytics_data)
@@ -53,10 +57,6 @@ class DataModuleRolfFormat(AbstractDatamodule):
                                                         class_specs['color']['G'],
                                                         class_specs['color']['B']])
                 analytics_gt['class_weights'].append(class_specs['weight'])
-
-        if image_dims is None:
-            image_dims = get_image_dims(data_gt_path_list=train_paths_data_gt)
-            self._print_image_dims(image_dims=image_dims)
 
         self.dims = (3, image_dims['width'], image_dims['height'])
 
@@ -162,7 +162,7 @@ class DataModuleRolfFormat(AbstractDatamodule):
                 log.warning(
                     f'#samples ({num_samples}) in "{data_split}" smaller than '
                     f'#processes ({num_processes}) times batch size ({batch_size}). '
-                    f'This works due to drop_last=False, however samples will occur multiple times. '
+                    f'This works due to drop_last=False, however samples might occur multiple times. '
                     f'Check if this behavior is intended!')
 
     def train_dataloader(self, *args, **kwargs) -> DataLoader:

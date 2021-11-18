@@ -5,8 +5,8 @@
 
 defaults:
     - /plugins:         default.yaml
-    - /task:            semantic_segmentation_RGB.yaml
-    - /datamodule:      rolf_format_dev.yaml
+    - /task:            semantic_segmentation_RGB_full_page.yaml
+    - /datamodule:      rolf_format_layoutD_gtD.yaml
     - /loss:            crossentropyloss.yaml
     - /metric:          iou.yaml
     - /model/backbone:  baby_unet_model.yaml
@@ -32,12 +32,12 @@ trainer:
     gpus: -1
     accelerator: 'ddp'
     min_epochs: 1
-    max_epochs: 2000
+    max_epochs: 200
     weights_summary: full
     precision: 16
 
 task:
-    confusion_matrix_log_every_n_epoch: 100
+    confusion_matrix_log_every_n_epoch: 50
     confusion_matrix_val: True
     confusion_matrix_test: True
 
@@ -47,10 +47,10 @@ callbacks:
         mode: "max"
         filename: ${checkpoint_folder_name}dev-baby-unet-rgb-data
     watch_model:
-        log_freq: 100
+        log_freq: 50
 
 logger:
     wandb:
-        name: 'synthetic-baby-unet-rolf-format'
+        name: 'synthetic-baby-unet-layoutD-gtD-rolf-format'
         tags: [ "best_model", "synthetic", "RolfFormat" ]
         group: 'synthetic'

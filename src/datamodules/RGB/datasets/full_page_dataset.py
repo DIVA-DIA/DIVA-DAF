@@ -227,6 +227,6 @@ class DatasetRGB(data.Dataset):
             assert path_data_file.stem == path_gt_file.stem, \
                 'get_gt_data_paths(): mismatch between data filename and gt filename'
             # TODO check if we need x/y
-            paths.append((path_data_file, path_gt_file))
+            paths.append((path_data_file, path_gt_file, path_data_file.stem))
 
         return paths
