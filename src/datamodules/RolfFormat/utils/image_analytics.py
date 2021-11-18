@@ -17,7 +17,9 @@ from PIL import Image
 from src.datamodules.RGB.utils.misc import pil_loader
 
 
-def get_analytics_data(file_names_data, **kwargs):
+def get_analytics_data(data_gt_path_list, **kwargs):
+    file_names_data = np.asarray([str(item[0]) for item in data_gt_path_list])
+
     mean, std = compute_mean_std(file_names=file_names_data, **kwargs)
     analytics_data = {'mean': mean.tolist(),
                       'std': std.tolist()}
@@ -25,7 +27,9 @@ def get_analytics_data(file_names_data, **kwargs):
     return analytics_data
 
 
-def get_analytics_gt(file_names_gt, **kwargs):
+def get_analytics_gt(data_gt_path_list, **kwargs):
+    file_names_gt = np.asarray([str(item[1]) for item in data_gt_path_list])
+
     # Measure weights for class balancing
     logging.info(f'Measuring class weights')
     # create a list with all gt file paths
@@ -35,6 +39,15 @@ def get_analytics_gt(file_names_gt, **kwargs):
                     'class_encodings': class_encodings}
 
     return analytics_gt
+
+
+def get_image_dims(data_gt_path_list, **kwargs):
+    img = Image.open(data_gt_path_list[0][0]).convert('RGB')
+
+    image_dims = {'width': img.width,
+                  'height': img.height}
+
+    return image_dims
 
 
 def compute_mean_std(file_names: List[Path], inmem=False, workers=4, **kwargs):

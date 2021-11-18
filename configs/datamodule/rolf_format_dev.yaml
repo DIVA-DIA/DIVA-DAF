@@ -14,14 +14,14 @@ train_specs:
         gt_dir:     "SetA1_sizeM_Rolf/layoutD/gtruth"
         gt_names:   "A1-MD-truthD-####.gif"
         range_from: 1000
-        range_to:   1029
+        range_to:   1059
     append2:
         doc_dir:    "SetA1_sizeM_Rolf/layoutR/data"
         doc_names:  "A1-MR-page-####.jpg"
         gt_dir:     "SetA1_sizeM_Rolf/layoutR/gtruth"
         gt_names:   "A1-MR-truthD-####.gif"
-        range_from: 1600
-        range_to:   1609
+        range_from: 1000
+        range_to:   1059
 
 val_specs:
     append1:
@@ -29,15 +29,15 @@ val_specs:
         doc_names:  "A1-MD-page-####.jpg"
         gt_dir:     "SetA1_sizeM_Rolf/layoutD/gtruth"
         gt_names:   "A1-MD-truthD-####.gif"
-        range_from: 1000
-        range_to:   1029
+        range_from: 1060
+        range_to:   1079
     append2:
         doc_dir:    "SetA1_sizeM_Rolf/layoutR/data"
         doc_names:  "A1-MR-page-####.jpg"
         gt_dir:     "SetA1_sizeM_Rolf/layoutR/gtruth"
         gt_names:   "A1-MR-truthD-####.gif"
-        range_from: 1600
-        range_to:   1609
+        range_from: 1060
+        range_to:   1079
 
 test_specs:
     append1:
@@ -45,126 +45,114 @@ test_specs:
         doc_names:  "A1-MD-page-####.jpg"
         gt_dir:     "SetA1_sizeM_Rolf/layoutD/gtruth"
         gt_names:   "A1-MD-truthD-####.gif"
-        range_from: 1800
-        range_to:   1809
+        range_from: 1080
+        range_to:   1099
     append2:
         doc_dir:    "SetA1_sizeM_Rolf/layoutR/data"
         doc_names:  "A1-MR-page-####.jpg"
         gt_dir:     "SetA1_sizeM_Rolf/layoutR/gtruth"
         gt_names:   "A1-MR-truthD-####.gif"
-        range_from: 1800
-        range_to:   1809
-
-image_analytics:
-    mean:
-        R: 0.8705590692084239
-        G: 0.7458294488380534
-        B: 0.6311273887799564
-    std:
-        R: 0.18879972204374673
-        G: 0.18806443944992593
-        B: 0.17460372273808386
+        range_from: 1080
+        range_to:   1099
 
 image_dims:
     width:  640
     height: 896
 
-classes:
-    background:
-        color:
-            R:  0
-            G:  0
-            B:  0
-        weight: 0.0007976091978914681
+image_analytics:
+    mean:
+        R: 0.8664800196201524
+        G: 0.7408864118075618
+        B: 0.6299955083595935
+    std:
+        R: 0.2156624188591712
+        G: 0.20890185198454636
+        B: 0.1870731300038113
 
+classes:
+    class0:
+        color:
+            R: 0
+            G: 0
+            B: 0
+        weight: 0.0016602289391364547
     class1:
         color:
-            R:  0
-            G:  102
-            B:  0
-        weight: 0.2913455129929105
-
+            R: 0
+            G: 102
+            B: 0
+        weight: 0.22360020547468618
     class2:
         color:
-            R:  0
-            G:  102
-            B:  102
-        weight: 0.005224675677940002
-
+            R: 0
+            G: 102
+            B: 102
+        weight: 0.014794833923108578
     class3:
         color:
-            R:  0
-            G:  153
-            B:  153
-        weight: 0.018517698236153693
-
+            R: 0
+            G: 153
+            B: 153
+        weight: 0.05384506923533185
     class4:
         color:
-            R:  0
-            G:  255
-            B:  0
-        weight: 0.14592118584029914
-
+            R: 0
+            G: 255
+            B: 0
+        weight: 0.1115978481679602
     class5:
         color:
-            R:  0
-            G:  255
-            B:  255
-        weight: 0.01313123697869497
-
+            R: 0
+            G: 255
+            B: 255
+        weight: 0.037436533973406926
     class6:
         color:
-            R:  102
-            G:  0
-            B:  0
-        weight: 0.09552945122836413
-
+            R: 102
+            G: 0
+            B: 0
+        weight: 0.12569866772812885
     class7:
         color:
-            R:  102
-            G:  0
-            B:  102
-        weight: 0.04887260934092041
-
+            R: 102
+            G: 0
+            B: 102
+        weight: 0.03591164457353043
     class8:
         color:
-            R:  102
-            G:  102
-            B:  0
-        weight: 0.00172073445612366
-
+            R: 102
+            G: 102
+            B: 0
+        weight: 0.01062086078798502
     class9:
         color:
-            R:  153
-            G:  0
-            B:  153
-        weight: 0.19027731073074847
-
+            R: 153
+            G: 0
+            B: 153
+        weight: 0.1491578366712268
     class10:
         color:
-            R:  153
-            G:  153
-            B:  0
-        weight: 0.006524524841233285
-
+            R: 153
+            G: 153
+            B: 0
+        weight: 0.0414074692141804
     class11:
         color:
-            R:  255
-            G:  0
-            B:  0
-        weight: 0.06603666735259975
-
+            R: 255
+            G: 0
+            B: 0
+        weight: 0.08600602291055298
     class12:
         color:
-            R:  255
-            G:  0
-            B:  255
-        weight: 0.11209021851644496
-
+            R: 255
+            G: 0
+            B: 255
+        weight: 0.08349157426652898
     class13:
         color:
-            R:  255
-            G:  255
-            B:  0
-        weight: 0.004010564609675552
+            R: 255
+            G: 255
+            B: 0
+        weight: 0.024771204134236315
+
 

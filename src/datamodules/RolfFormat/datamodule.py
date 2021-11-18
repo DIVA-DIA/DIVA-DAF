@@ -6,24 +6,14 @@ from dataclasses import dataclass
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from src.datamodules.RolfFormat.datasets.dataset import DatasetRolfFormat
-from src.datamodules.RolfFormat.utils.image_analytics import get_analytics_data, get_analytics_gt
+from src.datamodules.RolfFormat.datasets.dataset import DatasetRolfFormat, DatasetSpecs
+from src.datamodules.RolfFormat.utils.image_analytics import get_analytics_data, get_analytics_gt, get_image_dims
 from src.datamodules.RolfFormat.utils.twin_transforms import IntegerEncoding
 from src.datamodules.RolfFormat.utils.wrapper_transforms import OnlyImage, OnlyTarget
 from src.datamodules.base_datamodule import AbstractDatamodule
 from src.utils import utils
 
 log = utils.get_logger(__name__)
-
-@dataclass
-class DatasetSpecs:
-    data_root: str
-    doc_dir: str
-    doc_names: str
-    gt_dir: str
-    gt_names: str
-    range_from: int
-    range_to: int
 
 
 class DataModuleRolfFormat(AbstractDatamodule):
@@ -34,12 +24,41 @@ class DataModuleRolfFormat(AbstractDatamodule):
                  shuffle: bool = True, drop_last: bool = True):
         super().__init__()
 
-        train_dataset_specs = [DatasetSpecs(data_root=data_root, **v) for k, v in train_specs.items()]
-        val_dataset_specs = [DatasetSpecs(data_root=data_root, **v) for k, v in val_specs.items()]
-        test_dataset_specs = [DatasetSpecs(data_root=data_root, **v) for k, v in test_specs.items()]
+        self.train_dataset_specs = [DatasetSpecs(data_root=data_root, **v) for k, v in train_specs.items()]
+        self.val_dataset_specs = [DatasetSpecs(data_root=data_root, **v) for k, v in val_specs.items()]
+        self.test_dataset_specs = [DatasetSpecs(data_root=data_root, **v) for k, v in test_specs.items()]
 
-        analytics_data = get_analytics_data()
-        analytics_gt = get_analytics_gt()
+        if image_analytics is None or classes is None or image_dims is None:
+            train_paths_data_gt = DatasetRolfFormat.get_gt_data_paths(list_specs=self.train_dataset_specs)
+
+        if image_analytics is None:
+            analytics_data = get_analytics_data(data_gt_path_list=train_paths_data_gt)
+            self._print_analytics_data(analytics_data=analytics_data)
+        else:
+            analytics_data = {'mean': [image_analytics['mean']['R'],
+                                       image_analytics['mean']['G'],
+                                       image_analytics['mean']['B']],
+                              'std': [image_analytics['std']['R'],
+                                      image_analytics['std']['G'],
+                                      image_analytics['std']['B']]}
+
+        if classes is None:
+            analytics_gt = get_analytics_gt(data_gt_path_list=train_paths_data_gt)
+            self._print_analytics_gt(analytics_gt=analytics_gt)
+        else:
+            analytics_gt = {'class_encodings': [],
+                            'class_weights': []}
+            for _, class_specs in classes.items():
+                analytics_gt['class_encodings'].append([class_specs['color']['R'],
+                                                        class_specs['color']['G'],
+                                                        class_specs['color']['B']])
+                analytics_gt['class_weights'].append(class_specs['weight'])
+
+        if image_dims is None:
+            image_dims = get_image_dims(data_gt_path_list=train_paths_data_gt)
+            self._print_image_dims(image_dims=image_dims)
+
+        self.dims = (3, image_dims['width'], image_dims['height'])
 
         self.mean = analytics_data['mean']
         self.std = analytics_data['std']
@@ -59,23 +78,74 @@ class DataModuleRolfFormat(AbstractDatamodule):
         self.shuffle = shuffle
         self.drop_last = drop_last
 
-        self.dims = (3, image_dims['width'], image_dims['height'])
+    def _print_analytics_data(self, analytics_data):
+        indent = 4 * ' '
+        lines = ['']
+        lines.append(f'image_analytics:')
+        lines.append(f'{indent}mean:')
+        lines.append(f'{indent}{indent}R: {analytics_data["mean"][0]}')
+        lines.append(f'{indent}{indent}G: {analytics_data["mean"][1]}')
+        lines.append(f'{indent}{indent}B: {analytics_data["mean"][2]}')
+        lines.append(f'{indent}std:')
+        lines.append(f'{indent}{indent}R: {analytics_data["std"][0]}')
+        lines.append(f'{indent}{indent}G: {analytics_data["std"][1]}')
+        lines.append(f'{indent}{indent}B: {analytics_data["std"][2]}')
+
+        print_string = '\n'.join(lines)
+        log.info(print_string)
+
+    def _print_analytics_gt(self, analytics_gt):
+        indent = 4 * ' '
+        lines = ['']
+        lines.append(f'classes:')
+        for i, class_specs in enumerate(zip(analytics_gt['class_encodings'], analytics_gt['class_weights'])):
+            lines.append(f'{indent}class{i}:')
+            lines.append(f'{indent}{indent}color:')
+            lines.append(f'{indent}{indent}{indent}R: {class_specs[0][0]}')
+            lines.append(f'{indent}{indent}{indent}G: {class_specs[0][1]}')
+            lines.append(f'{indent}{indent}{indent}B: {class_specs[0][2]}')
+            lines.append(f'{indent}{indent}weight: {class_specs[1]}')
+
+        print_string = '\n'.join(lines)
+        log.info(print_string)
+
+    def _print_image_dims(self, image_dims):
+        indent = 4 * ' '
+        lines = ['']
+        lines.append(f'image_dims:')
+        lines.append(f'{indent}width:  {image_dims["width"]}')
+        lines.append(f'{indent}height: {image_dims["height"]}')
+
+        print_string = '\n'.join(lines)
+        log.info(print_string)
 
     def setup(self, stage: Optional[str] = None):
         super().setup()
         if stage == 'fit' or stage is None:
-            self.train = DatasetRolfFormat(**self._create_dataset_parameters('train'), selection=self.selection_train)
-            self.val = DatasetRolfFormat(**self._create_dataset_parameters('val'), selection=self.selection_val)
+            self.train = DatasetRolfFormat(dataset_specs=self.train_dataset_specs,
+                                           is_test=False,
+                                           classes=self.class_encodings,
+                                           image_transform=self.image_transform,
+                                           target_transform=self.target_transform,
+                                           twin_transform=self.twin_transform)
+            self.val = DatasetRolfFormat(dataset_specs=self.val_dataset_specs,
+                                         is_test=False,
+                                         classes=self.class_encodings,
+                                         image_transform=self.image_transform,
+                                         target_transform=self.target_transform,
+                                         twin_transform=self.twin_transform)
 
-            self._check_min_num_samples(num_samples=len(self.train), data_split='train',
-                                        drop_last=self.drop_last)
-            self._check_min_num_samples(num_samples=len(self.val), data_split='val',
-                                        drop_last=self.drop_last)
+            self._check_min_num_samples(num_samples=len(self.train), data_split='train', drop_last=self.drop_last)
+            self._check_min_num_samples(num_samples=len(self.val), data_split='val', drop_last=self.drop_last)
 
         if stage == 'test' or stage is not None:
-            self.test = DatasetRolfFormat(**self._create_dataset_parameters('test'), selection=self.selection_test)
-            # self._check_min_num_samples(num_samples=len(self.test), data_split='test',
-            #                             drop_last=False)
+            self.test = DatasetRolfFormat(dataset_specs=self.test_dataset_specs,
+                                          is_test=True,
+                                          classes=self.class_encodings,
+                                          image_transform=self.image_transform,
+                                          target_transform=self.target_transform,
+                                          twin_transform=self.twin_transform)
+            # self._check_min_num_samples(num_samples=len(self.test), data_split='test', drop_last=False)
 
     def _check_min_num_samples(self, num_samples: int, data_split: str, drop_last: bool):
         num_processes = self.trainer.num_processes
@@ -119,20 +189,9 @@ class DataModuleRolfFormat(AbstractDatamodule):
                           drop_last=False,
                           pin_memory=True)
 
-    def _create_dataset_parameters(self, dataset_type: str = 'train'):
-        is_test = dataset_type == 'test'
-        return {'path': self.data_dir / dataset_type,
-                'data_folder_name': self.data_folder_name,
-                'gt_folder_name': self.gt_folder_name,
-                'image_transform': self.image_transform,
-                'target_transform': self.target_transform,
-                'twin_transform': self.twin_transform,
-                'classes': self.class_encodings,
-                'is_test': is_test}
-
-    def get_img_name_coordinates(self, index):
+    def get_img_name(self, index):
         """
-        Returns the original filename of the crop and its coordinate based on the index.
+        Returns the original filename of the doc image.
         You can just use this during testing!
         :param index:
         :return:
