@@ -26,7 +26,7 @@ def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, 
     Returns
     -------
     """
-    expected_keys_data = ['mean', 'std']
+    expected_keys_data = ['mean', 'std', 'width', 'height']
     expected_keys_gt = ['class_weights', 'class_encodings']
 
     analytics_path_data = input_path / f'analytics.data.{data_folder_name}.json'
@@ -61,8 +61,12 @@ def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, 
 
         if missing_analytics_data:
             mean, std = compute_mean_std(file_names=file_names_data, **kwargs)
+            img = Image.open(file_names_data[0]).convert('RGB')
+
             analytics_data = {'mean': mean.tolist(),
-                              'std': std.tolist()}
+                              'std': std.tolist(),
+                              'width': img.width,
+                              'height': img.height}
             # save json
             try:
                 with analytics_path_data.open(mode='w') as f:
