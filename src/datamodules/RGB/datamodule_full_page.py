@@ -5,11 +5,10 @@ import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from src.datamodules.RGB.datasets.full_page_dataset import DatasetRGB
+from src.datamodules.RGB.datasets.full_page_dataset import DatasetRGB, ImageDimensions
 from src.datamodules.RGB.utils.image_analytics import get_analytics
 from src.datamodules.RGB.utils.misc import validate_path_for_segmentation
-from src.datamodules.RGB.utils.twin_transforms import TwinRandomCrop, OneHotEncoding, OneHotToPixelLabelling, \
-    IntegerEncoding
+from src.datamodules.RGB.utils.twin_transforms import IntegerEncoding
 from src.datamodules.RGB.utils.wrapper_transforms import OnlyImage, OnlyTarget
 from src.datamodules.base_datamodule import AbstractDatamodule
 from src.utils import utils
@@ -34,7 +33,8 @@ class DataModuleRGB(AbstractDatamodule):
                                                      gt_folder_name=self.gt_folder_name,
                                                      get_gt_data_paths_func=DatasetRGB.get_gt_data_paths)
 
-        self.dims = (3, analytics_data['width'], analytics_data['height'])
+        self.image_dims = ImageDimensions(width=analytics_data['width'], height=analytics_data['height'])
+        self.dims = (3, self.image_dims.width, self.image_dims.height)
 
         self.mean = analytics_data['mean']
         self.std = analytics_data['std']
@@ -124,6 +124,7 @@ class DataModuleRGB(AbstractDatamodule):
         return {'path': self.data_dir / dataset_type,
                 'data_folder_name': self.data_folder_name,
                 'gt_folder_name': self.gt_folder_name,
+                'image_dims': self.image_dims,
                 'image_transform': self.image_transform,
                 'target_transform': self.target_transform,
                 'twin_transform': self.twin_transform,

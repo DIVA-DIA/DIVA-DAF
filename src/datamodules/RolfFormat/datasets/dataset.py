@@ -30,6 +30,10 @@ class DatasetSpecs:
     range_from: int
     range_to: int
 
+@dataclass
+class ImageDimensions:
+    width: int
+    height: int
 
 class DatasetRolfFormat(data.Dataset):
     """A generic data loader where the images are arranged in this way: ::
@@ -43,7 +47,7 @@ class DatasetRolfFormat(data.Dataset):
         root/data/xxz.png
     """
 
-    def __init__(self, dataset_specs: List[DatasetSpecs],
+    def __init__(self, dataset_specs: List[DatasetSpecs], image_dims: ImageDimensions,
                  is_test=False, image_transform=None, target_transform=None, twin_transform=None,
                  classes=None, **kwargs):
         """
@@ -65,6 +69,8 @@ class DatasetRolfFormat(data.Dataset):
         """
 
         self.dataset_specs = dataset_specs
+
+        self.image_dims = image_dims
 
         # Init list
         self.classes = classes
@@ -110,6 +116,9 @@ class DatasetRolfFormat(data.Dataset):
     def _load_data_and_gt(self, index):
         data_img = pil_loader(self.img_paths_per_page[index][0])
         gt_img = pil_loader(self.img_paths_per_page[index][1])
+
+        assert data_img.height == self.image_dims.height and data_img.width == self.image_dims.width
+        assert gt_img.height == self.image_dims.height and gt_img.width == self.image_dims.width
 
         return data_img, gt_img
 

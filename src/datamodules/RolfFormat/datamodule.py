@@ -1,12 +1,10 @@
-from pathlib import Path
 from typing import Union, List, Optional
 
 import torch
-from dataclasses import dataclass
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from src.datamodules.RolfFormat.datasets.dataset import DatasetRolfFormat, DatasetSpecs
+from src.datamodules.RolfFormat.datasets.dataset import DatasetRolfFormat, DatasetSpecs, ImageDimensions
 from src.datamodules.RolfFormat.utils.image_analytics import get_analytics_data, get_analytics_gt, get_image_dims
 from src.datamodules.RolfFormat.utils.twin_transforms import IntegerEncoding
 from src.datamodules.RolfFormat.utils.wrapper_transforms import OnlyImage, OnlyTarget
@@ -58,7 +56,8 @@ class DataModuleRolfFormat(AbstractDatamodule):
                                                         class_specs['color']['B']])
                 analytics_gt['class_weights'].append(class_specs['weight'])
 
-        self.dims = (3, image_dims['width'], image_dims['height'])
+        self.image_dims = image_dims
+        self.dims = (3, self.image_dims.width, self.image_dims.height)
 
         self.mean = analytics_data['mean']
         self.std = analytics_data['std']
@@ -109,31 +108,32 @@ class DataModuleRolfFormat(AbstractDatamodule):
         print_string = '\n'.join(lines)
         log.info(print_string)
 
-    def _print_image_dims(self, image_dims):
+    def _print_image_dims(self, image_dims: ImageDimensions):
         indent = 4 * ' '
         lines = ['']
         lines.append(f'image_dims:')
-        lines.append(f'{indent}width:  {image_dims["width"]}')
-        lines.append(f'{indent}height: {image_dims["height"]}')
+        lines.append(f'{indent}width:  {image_dims.width}')
+        lines.append(f'{indent}height: {image_dims.height}')
 
         print_string = '\n'.join(lines)
         log.info(print_string)
 
     def setup(self, stage: Optional[str] = None):
         super().setup()
+
+        common_kwargs = {'classes': self.class_encodings,
+                         'image_dims': self.image_dims,
+                         'image_transform': self.image_transform,
+                         'target_transform': self.target_transform,
+                         'twin_transform': self.twin_transform}
+
         if stage == 'fit' or stage is None:
             self.train = DatasetRolfFormat(dataset_specs=self.train_dataset_specs,
                                            is_test=False,
-                                           classes=self.class_encodings,
-                                           image_transform=self.image_transform,
-                                           target_transform=self.target_transform,
-                                           twin_transform=self.twin_transform)
+                                           **common_kwargs)
             self.val = DatasetRolfFormat(dataset_specs=self.val_dataset_specs,
                                          is_test=False,
-                                         classes=self.class_encodings,
-                                         image_transform=self.image_transform,
-                                         target_transform=self.target_transform,
-                                         twin_transform=self.twin_transform)
+                                         **common_kwargs)
 
             self._check_min_num_samples(num_samples=len(self.train), data_split='train', drop_last=self.drop_last)
             self._check_min_num_samples(num_samples=len(self.val), data_split='val', drop_last=self.drop_last)
@@ -141,10 +141,7 @@ class DataModuleRolfFormat(AbstractDatamodule):
         if stage == 'test' or stage is not None:
             self.test = DatasetRolfFormat(dataset_specs=self.test_dataset_specs,
                                           is_test=True,
-                                          classes=self.class_encodings,
-                                          image_transform=self.image_transform,
-                                          target_transform=self.target_transform,
-                                          twin_transform=self.twin_transform)
+                                          **common_kwargs)
             # self._check_min_num_samples(num_samples=len(self.test), data_split='test', drop_last=False)
 
     def _check_min_num_samples(self, num_samples: int, data_split: str, drop_last: bool):

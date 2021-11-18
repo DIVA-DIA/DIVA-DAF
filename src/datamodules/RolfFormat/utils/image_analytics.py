@@ -15,6 +15,7 @@ import torchvision.transforms as transforms
 from PIL import Image
 
 from src.datamodules.RGB.utils.misc import pil_loader
+from src.datamodules.RolfFormat.datasets.dataset import ImageDimensions
 
 
 def get_analytics_data(data_gt_path_list, **kwargs):
@@ -44,8 +45,7 @@ def get_analytics_gt(data_gt_path_list, **kwargs):
 def get_image_dims(data_gt_path_list, **kwargs):
     img = Image.open(data_gt_path_list[0][0]).convert('RGB')
 
-    image_dims = {'width': img.width,
-                  'height': img.height}
+    image_dims = ImageDimensions(width=img.width, height=img.height)
 
     return image_dims
 

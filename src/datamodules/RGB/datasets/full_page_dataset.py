@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import List, Tuple, Union, Optional, Any
 
 import torch.utils.data as data
+from dataclasses import dataclass
 from omegaconf import ListConfig
 from torch import is_tensor
 from torchvision.transforms import ToTensor
@@ -18,6 +19,12 @@ from src.utils import utils
 IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.gif']
 
 log = utils.get_logger(__name__)
+
+
+@dataclass
+class ImageDimensions:
+    width: int
+    height: int
 
 
 class DatasetRGB(data.Dataset):
@@ -33,6 +40,7 @@ class DatasetRGB(data.Dataset):
     """
 
     def __init__(self, path: Path, data_folder_name: str, gt_folder_name: str,
+                 image_dims: ImageDimensions,
                  selection: Optional[Union[int, List[str]]] = None,
                  is_test=False, image_transform=None, target_transform=None, twin_transform=None,
                  classes=None, **kwargs):
@@ -58,6 +66,8 @@ class DatasetRGB(data.Dataset):
         self.data_folder_name = data_folder_name
         self.gt_folder_name = gt_folder_name
         self.selection = selection
+
+        self.image_dims = image_dims
 
         # Init list
         self.classes = classes
@@ -103,11 +113,15 @@ class DatasetRGB(data.Dataset):
         data_img, gt_img = self._load_data_and_gt(index=index)
         img, gt = self._apply_transformation(data_img, gt_img)
         assert img.shape[-2:] == gt.shape[-2:]
+
         return img, gt, index
 
     def _load_data_and_gt(self, index):
         data_img = pil_loader(self.img_paths_per_page[index][0])
         gt_img = pil_loader(self.img_paths_per_page[index][1])
+
+        assert data_img.height == self.image_dims.height and data_img.width == self.image_dims.width
+        assert gt_img.height == self.image_dims.height and gt_img.width == self.image_dims.width
 
         return data_img, gt_img
 
