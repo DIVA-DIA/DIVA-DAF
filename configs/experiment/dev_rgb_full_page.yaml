@@ -23,6 +23,8 @@ defaults:
 # instead we define all modules and their paths directly in this config,
 # so everything is stored in one place for more readibility
 
+seed: 42
+
 train: True
 test: True
 
