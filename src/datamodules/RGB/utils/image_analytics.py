@@ -26,7 +26,7 @@ def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, 
     Returns
     -------
     """
-    expected_keys_data = ['mean', 'std']
+    expected_keys_data = ['mean', 'std', 'width', 'height']
     expected_keys_gt = ['class_weights', 'class_encodings']
 
     analytics_path_data = input_path / f'analytics.data.{data_folder_name}.json'
@@ -61,8 +61,12 @@ def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, 
 
         if missing_analytics_data:
             mean, std = compute_mean_std(file_names=file_names_data, **kwargs)
+            img = Image.open(file_names_data[0]).convert('RGB')
+
             analytics_data = {'mean': mean.tolist(),
-                              'std': std.tolist()}
+                              'std': std.tolist(),
+                              'width': img.width,
+                              'height': img.height}
             # save json
             try:
                 with analytics_path_data.open(mode='w') as f:
@@ -254,80 +258,6 @@ def get_class_weights(input_folder, workers=4, **kwargs):
     logging.info('Finished computing class frequencies weights ')
     logging.info(f'Class frequencies (rounded): {np.around(class_frequencies * 100, decimals=2)}')
     logging.info(f'Class weights (rounded): {np.around(class_weights * 100, decimals=2)}')
-
-    return class_weights
-
-
-def compute_mean_std_graphs(dataset, **kwargs):
-    """
-    Computes mean and std of all node and edge features present in the given ParsedGxlDataset (see gxl_parser.py).
-
-    Parameters
-    ----------
-    input_folder : ParsedGxlDataset
-        Dataset object (see above for details)
-
-    # TODO implement online version
-
-    Returns
-    -------
-    node_features : {"mean": list, "std": list}
-        Mean and std value of all node features in the input dataset
-    edge_features : {"mean": list, "std": list}
-        Mean and std value of all edge features in the input dataset
-    """
-    if dataset.data.x is not None:
-        logging.info('Begin computing the node feature mean and std')
-        nodes = _get_feature_mean_std(dataset.data.x)
-        logging.info('Finished computing the node feature mean and std')
-    else:
-        nodes = {}
-        logging.info('No node features present')
-
-    if dataset.data.edge_attr is not None:
-        logging.info('Begin computing the edge feature mean and std')
-        edges = _get_feature_mean_std(dataset.data.edge_attr)
-        logging.info('Finished computing the edge feature mean and std')
-    else:
-        edges = {}
-        logging.info('No edge features present')
-
-    return nodes, edges
-
-
-def _get_feature_mean_std(torch_array):
-    array = np.array(torch_array)
-    return {'mean': [np.mean(col) for col in array.T], 'std': [np.std(col) for col in array.T]}
-
-
-def get_class_weights_graphs(dataset, **kwargs):
-    """
-    Get the weights proportional to the inverse of their class frequencies.
-    The vector sums up to 1
-
-    Parameters
-    ----------
-    input_folder : ParsedGxlDataset
-        Dataset object (see above for details)
-
-    # TODO implement online version
-
-    Returns
-    -------
-    ndarray[double] of size (num_classes)
-        The weights vector as a 1D array normalized (sum up to 1)
-    """
-    logging.info('Begin computing class frequencies weights')
-
-    class_frequencies = np.array(dataset.config['class_freq'][1])
-    # Class weights are the inverse of the class frequencies
-    class_weights = 1 / class_frequencies
-    # Normalize vector to sum up to 1.0 (in case the Loss function does not do it)
-    class_weights /= class_weights.sum()
-
-    logging.info('Finished computing class frequencies weights ')
-    logging.info(f'Class frequencies (rounded): {np.around(class_frequencies * 100, decimals=2)}')
-    logging.info(f'Class weights (rounded): {np.around(class_weights)}')
 
     return class_weights
 

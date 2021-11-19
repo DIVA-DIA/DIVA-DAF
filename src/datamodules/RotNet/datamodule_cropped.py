@@ -83,7 +83,7 @@ class RotNetDivaHisDBDataModuleCropped(AbstractDatamodule):
                 log.warning(
                     f'#samples ({num_samples}) in "{data_split}" smaller than '
                     f'#processes ({num_processes}) times batch size ({batch_size}). '
-                    f'This works due to drop_last=False, however samples will occur multiple times. '
+                    f'This works due to drop_last=False, however samples might occur multiple times. '
                     f'Check if this behavior is intended!')
 
     def train_dataloader(self, *args, **kwargs) -> DataLoader:

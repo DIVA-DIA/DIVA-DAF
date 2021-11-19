@@ -6,15 +6,16 @@ import torch.nn as nn
 import torch.optim
 import torchmetrics
 
+from src.datamodules.RolfFormat.utils.output_tools import save_output_page_image
 from src.tasks.base_task import AbstractTask
-from src.datamodules.RGB.utils.output_tools import _get_argmax
+from src.datamodules.DivaHisDB.utils.output_tools import _get_argmax
 from src.utils import utils
 from src.tasks.utils.outputs import OutputKeys, reduce_dict
 
 log = utils.get_logger(__name__)
 
 
-class SemanticSegmentationRGB(AbstractTask):
+class SemanticSegmentationFullPageRGB(AbstractTask):
 
     def __init__(self,
                  model: nn.Module,
@@ -55,8 +56,8 @@ class SemanticSegmentationRGB(AbstractTask):
     def setup(self, stage: str) -> None:
         super().setup(stage)
 
-        if not hasattr(self.trainer.datamodule, 'get_img_name_coordinates'):
-            raise NotImplementedError('DataModule needs to implement get_img_name_coordinates function')
+        if not hasattr(self.trainer.datamodule, 'get_img_name'):
+            raise NotImplementedError('DataModule needs to implement get_img_name function')
 
         log.info("Setup done!")
 
@@ -92,30 +93,24 @@ class SemanticSegmentationRGB(AbstractTask):
         input_batch, target_batch, input_idx = batch
         output = super().test_step(batch=(input_batch, target_batch), batch_idx=batch_idx)
 
-        if not hasattr(self.trainer.datamodule, 'get_img_name_coordinates'):
+        if not hasattr(self.trainer.datamodule, 'get_img_name'):
             raise NotImplementedError('Datamodule does not provide detailed information of the crop')
 
-        for patch, idx in zip(output[OutputKeys.PREDICTION].detach().cpu().numpy(),
-                              input_idx.detach().cpu().numpy()):
-            patch_info = self.trainer.datamodule.get_img_name_coordinates(idx)
+        for pred_raw, idx in zip(output[OutputKeys.PREDICTION].detach().cpu().numpy(),
+                                 input_idx.detach().cpu().numpy()):
+            patch_info = self.trainer.datamodule.get_img_name(idx)
             img_name = patch_info[0]
-            patch_name = patch_info[1]
-            dest_folder = self.test_output_path / 'patches' / img_name
+            dest_folder = self.test_output_path / 'preds_raw'
             dest_folder.mkdir(parents=True, exist_ok=True)
-            dest_filename = dest_folder / f'{patch_name}.npy'
+            dest_filename = dest_folder / f'{img_name}.npy'
+            np.save(file=str(dest_filename), arr=pred_raw)
 
-            np.save(file=str(dest_filename), arr=patch)
+            dest_folder = self.test_output_path / 'preds'
+            dest_folder.mkdir(parents=True, exist_ok=True)
+            save_output_page_image(image_name=f'{img_name}.gif', output_image=pred_raw,
+                                   output_folder=dest_folder, class_encoding=self.trainer.datamodule.class_encodings)
 
         return reduce_dict(input_dict=output, key_list=[])
 
     def on_test_end(self) -> None:
-        datamodule_path = self.trainer.datamodule.data_dir
-        prediction_path = (self.test_output_path / 'patches').absolute()
-        output_path = (self.test_output_path / 'result').absolute()
-
-        data_folder_name = self.trainer.datamodule.data_folder_name
-        gt_folder_name = self.trainer.datamodule.gt_folder_name
-
-        log.info(f'To run the merging of patches:')
-        log.info(f'python tools/merge_cropped_output_RGB.py -d {datamodule_path} -p {prediction_path} -o {output_path} '
-                 f'-df {data_folder_name} -gf {gt_folder_name}')
+        pass

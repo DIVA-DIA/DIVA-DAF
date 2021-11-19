@@ -5,11 +5,10 @@ import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from src.datamodules.RGB.datasets.cropped_dataset import CroppedDatasetRGB
+from src.datamodules.RGB.datasets.full_page_dataset import DatasetRGB, ImageDimensions
 from src.datamodules.RGB.utils.image_analytics import get_analytics
 from src.datamodules.RGB.utils.misc import validate_path_for_segmentation
-from src.datamodules.RGB.utils.twin_transforms import TwinRandomCrop, OneHotEncoding, OneHotToPixelLabelling, \
-    IntegerEncoding
+from src.datamodules.RGB.utils.twin_transforms import IntegerEncoding
 from src.datamodules.RGB.utils.wrapper_transforms import OnlyImage, OnlyTarget
 from src.datamodules.base_datamodule import AbstractDatamodule
 from src.utils import utils
@@ -17,12 +16,12 @@ from src.utils import utils
 log = utils.get_logger(__name__)
 
 
-class DataModuleCroppedRGB(AbstractDatamodule):
+class DataModuleRGB(AbstractDatamodule):
     def __init__(self, data_dir: str, data_folder_name: str, gt_folder_name: str,
                  selection_train: Optional[Union[int, List[str]]] = None,
                  selection_val: Optional[Union[int, List[str]]] = None,
                  selection_test: Optional[Union[int, List[str]]] = None,
-                 crop_size: int = 256, num_workers: int = 4, batch_size: int = 8,
+                 num_workers: int = 4, batch_size: int = 8,
                  shuffle: bool = True, drop_last: bool = True):
         super().__init__()
 
@@ -32,7 +31,10 @@ class DataModuleCroppedRGB(AbstractDatamodule):
         analytics_data, analytics_gt = get_analytics(input_path=Path(data_dir),
                                                      data_folder_name=self.data_folder_name,
                                                      gt_folder_name=self.gt_folder_name,
-                                                     get_gt_data_paths_func=CroppedDatasetRGB.get_gt_data_paths)
+                                                     get_gt_data_paths_func=DatasetRGB.get_gt_data_paths)
+
+        self.image_dims = ImageDimensions(width=analytics_data['width'], height=analytics_data['height'])
+        self.dims = (3, self.image_dims.width, self.image_dims.height)
 
         self.mean = analytics_data['mean']
         self.std = analytics_data['std']
@@ -41,7 +43,7 @@ class DataModuleCroppedRGB(AbstractDatamodule):
         self.num_classes = len(self.class_encodings)
         self.class_weights = analytics_gt['class_weights']
 
-        self.twin_transform = TwinRandomCrop(crop_size=crop_size)
+        self.twin_transform = None
         self.image_transform = OnlyImage(transforms.Compose([transforms.ToTensor(),
                                                              transforms.Normalize(mean=self.mean, std=self.std)]))
         self.target_transform = OnlyTarget(IntegerEncoding(class_encodings=self.class_encodings_tensor))
@@ -59,13 +61,11 @@ class DataModuleCroppedRGB(AbstractDatamodule):
         self.selection_val = selection_val
         self.selection_test = selection_test
 
-        self.dims = (3, crop_size, crop_size)
-
     def setup(self, stage: Optional[str] = None):
         super().setup()
         if stage == 'fit' or stage is None:
-            self.train = CroppedDatasetRGB(**self._create_dataset_parameters('train'), selection=self.selection_train)
-            self.val = CroppedDatasetRGB(**self._create_dataset_parameters('val'), selection=self.selection_val)
+            self.train = DatasetRGB(**self._create_dataset_parameters('train'), selection=self.selection_train)
+            self.val = DatasetRGB(**self._create_dataset_parameters('val'), selection=self.selection_val)
 
             self._check_min_num_samples(num_samples=len(self.train), data_split='train',
                                         drop_last=self.drop_last)
@@ -73,7 +73,7 @@ class DataModuleCroppedRGB(AbstractDatamodule):
                                         drop_last=self.drop_last)
 
         if stage == 'test' or stage is not None:
-            self.test = CroppedDatasetRGB(**self._create_dataset_parameters('test'), selection=self.selection_test)
+            self.test = DatasetRGB(**self._create_dataset_parameters('test'), selection=self.selection_test)
             # self._check_min_num_samples(num_samples=len(self.test), data_split='test',
             #                             drop_last=False)
 
@@ -124,15 +124,16 @@ class DataModuleCroppedRGB(AbstractDatamodule):
         return {'path': self.data_dir / dataset_type,
                 'data_folder_name': self.data_folder_name,
                 'gt_folder_name': self.gt_folder_name,
+                'image_dims': self.image_dims,
                 'image_transform': self.image_transform,
                 'target_transform': self.target_transform,
                 'twin_transform': self.twin_transform,
                 'classes': self.class_encodings,
                 'is_test': is_test}
 
-    def get_img_name_coordinates(self, index):
+    def get_img_name(self, index):
         """
-        Returns the original filename of the crop and its coordinate based on the index.
+        Returns the original filename of the doc image.
         You can just use this during testing!
         :param index:
         :return:
