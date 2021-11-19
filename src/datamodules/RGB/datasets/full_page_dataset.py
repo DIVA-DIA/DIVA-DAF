@@ -163,7 +163,7 @@ class DatasetRGB(data.Dataset):
     @staticmethod
     def get_gt_data_paths(directory: Path, data_folder_name: str, gt_folder_name: str,
                           selection: Optional[Union[int, List[str]]] = None) \
-            -> List[Tuple[Union[Path, Any], Path]]:
+            -> List[Tuple[Path, Path, str]]:
         """
         Structure of the folder
 
