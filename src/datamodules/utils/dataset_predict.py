@@ -11,7 +11,7 @@ log = utils.get_logger(__name__)
 IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.gif']
 
 
-class PredictDataset(data.Dataset):
+class DatasetPredict(data.Dataset):
 
     def __init__(self, image_path_list: List[str],
                  image_transform=None, target_transform=None, twin_transform=None,
