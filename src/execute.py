@@ -112,9 +112,11 @@ def execute(config: DictConfig) -> Optional[float]:
         if trainer.is_global_zero:
             with open('config.yaml', mode='w') as fp:
                 OmegaConf.save(config=config, f=fp)
-            run_config_folder_path = Path(wandb.run.dir) / 'run_config'
-            run_config_folder_path.mkdir(exist_ok=True)
-            shutil.copyfile('config.yaml', str(run_config_folder_path / 'config.yaml'))
+            if config.get('logger') is not None and 'wandb' in config.get('logger'):
+                if '_target_' in config.logger.wandb:
+                    run_config_folder_path = Path(wandb.run.dir) / 'run_config'
+                    run_config_folder_path.mkdir(exist_ok=True)
+                    shutil.copyfile('config.yaml', str(run_config_folder_path / 'config.yaml'))
 
     if config.train:
         # Train the model
