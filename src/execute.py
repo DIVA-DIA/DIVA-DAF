@@ -129,6 +129,10 @@ def execute(config: DictConfig) -> Optional[float]:
         results = trainer.test(model=task, datamodule=datamodule)
         log.info(f'Test output: {results}')
 
+    if config.predict:
+        log.info("Starting prediction!")
+        trainer.predict(model=task, datamodule=datamodule)
+
     # Make sure everything closed properly
     log.info("Finalizing!")
     utils.finish(
@@ -180,6 +184,9 @@ def _load_model_part(config: DictConfig, part_name: str):
     else:
         if config.test and not config.train:
             log.warn(f"You are just testing without a trained {part_name} model! "
+                     "Use 'path_to_weights' in your model to load a trained model")
+        if config.predict and not config.train:
+            log.warn(f"You are just predicting without a trained {part_name} model! "
                      "Use 'path_to_weights' in your model to load a trained model")
         part: LightningModule = hydra.utils.instantiate(config.model.get(part_name))
 
