@@ -8,7 +8,7 @@ from torchvision import transforms
 from src.datamodules.RotNet.utils.image_analytics import get_analytics_data
 from src.datamodules.RotNet.datasets.cropped_dataset import CroppedRotNet, ROTATION_ANGLES
 from src.datamodules.RotNet.utils.misc import validate_path_for_self_supervised
-from src.datamodules.RotNet.utils.wrapper_transforms import OnlyImage
+from src.datamodules.utils.wrapper_transforms import OnlyImage
 from src.datamodules.base_datamodule import AbstractDatamodule
 from src.utils import utils
 

@@ -21,11 +21,11 @@ def test__load_data_and_gt(predict_dataset):
     img = predict_dataset._load_data_and_gt(index=0)
     assert img.size == (487, 649)
     assert img.mode == 'RGB'
-    assert torch.equal(ToTensor()(img),  predict_dataset[0])
+    assert torch.equal(ToTensor()(img),  predict_dataset[0][0])
 
 
 def test__apply_transformation(predict_dataset):
     img = predict_dataset._load_data_and_gt(index=0)
     img_tensor = predict_dataset._apply_transformation(img)
-    assert torch.equal(img_tensor, predict_dataset[0])
+    assert torch.equal(img_tensor, predict_dataset[0][0])
     assert img_tensor.shape == torch.Size((3, 649, 487))

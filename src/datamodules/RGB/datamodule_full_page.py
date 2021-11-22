@@ -9,8 +9,8 @@ from src.datamodules.RGB.datasets.full_page_dataset import DatasetRGB, ImageDime
 from src.datamodules.RGB.utils.image_analytics import get_analytics
 from src.datamodules.RGB.utils.misc import validate_path_for_segmentation
 from src.datamodules.RGB.utils.twin_transforms import IntegerEncoding
-from src.datamodules.RGB.utils.wrapper_transforms import OnlyImage, OnlyTarget
 from src.datamodules.base_datamodule import AbstractDatamodule
+from src.datamodules.utils.wrapper_transforms import OnlyImage, OnlyTarget
 from src.utils import utils
 
 log = utils.get_logger(__name__)

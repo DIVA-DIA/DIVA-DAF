@@ -13,8 +13,7 @@ import torch
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
 from PIL import Image
-
-from src.datamodules.RGB.utils.misc import pil_loader
+from torchvision.datasets.folder import pil_loader
 
 
 def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, get_gt_data_paths_func, **kwargs):

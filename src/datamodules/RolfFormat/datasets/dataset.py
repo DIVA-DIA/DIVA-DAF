@@ -4,19 +4,18 @@ Load a dataset of historic documents by specifying the folder where its located.
 
 # Utils
 import re
-from pathlib import Path
-from typing import List, Tuple, Union, Optional
 from dataclasses import asdict, dataclass
+from pathlib import Path
+from typing import List, Tuple
 
 import torch.utils.data as data
-from omegaconf import ListConfig
 from torch import is_tensor
+from torchvision.datasets.folder import pil_loader
 from torchvision.transforms import ToTensor
 
-from src.datamodules.RGB.utils.misc import has_extension, pil_loader
 from src.utils import utils
 
-IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.gif']
+IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.gif')
 
 log = utils.get_logger(__name__)
 

@@ -10,12 +10,12 @@ from typing import List, Tuple, Union, Optional
 import torch.utils.data as data
 from omegaconf import ListConfig
 from torch import is_tensor
+from torchvision.datasets.folder import pil_loader, has_file_allowed_extension
 from torchvision.transforms import ToTensor
 
-from src.datamodules.RGB.utils.misc import has_extension, pil_loader
 from src.utils import utils
 
-IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.gif']
+IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.gif')
 
 log = utils.get_logger(__name__)
 
@@ -150,7 +150,7 @@ class CroppedDatasetRGB(data.Dataset):
     @staticmethod
     def get_gt_data_paths(directory: Path, data_folder_name: str, gt_folder_name: str,
                           selection: Optional[Union[int, List[str]]] = None) \
-                    -> List[Tuple[Path, Path, str, str, Tuple[int, int]]]:
+            -> List[Tuple[Path, Path, str, str, Tuple[int, int]]]:
         """
         Structure of the folder
 
@@ -211,7 +211,7 @@ class CroppedDatasetRGB(data.Dataset):
 
         for path_data_subdir in subitems:
             if not path_data_subdir.is_dir():
-                if has_extension(path_data_subdir.name, IMG_EXTENSIONS):
+                if has_file_allowed_extension(path_data_subdir.name, IMG_EXTENSIONS):
                     log.warning("image file found in data root: " + str(path_data_subdir))
                 continue
 
@@ -231,12 +231,12 @@ class CroppedDatasetRGB(data.Dataset):
 
             for path_data_file, path_gt_file in zip(sorted(path_data_subdir.iterdir()),
                                                     sorted(path_gt_subdir.iterdir())):
-                assert has_extension(path_data_file.name, IMG_EXTENSIONS) == \
-                       has_extension(path_gt_file.name, IMG_EXTENSIONS), \
-                       'get_gt_data_paths(): image file aligned with non-image file'
+                assert has_file_allowed_extension(path_data_file.name, IMG_EXTENSIONS) == \
+                       has_file_allowed_extension(path_gt_file.name, IMG_EXTENSIONS), \
+                    'get_gt_data_paths(): image file aligned with non-image file'
 
-                if has_extension(path_data_file.name, IMG_EXTENSIONS) and has_extension(path_gt_file.name,
-                                                                                        IMG_EXTENSIONS):
+                if has_file_allowed_extension(path_data_file.name, IMG_EXTENSIONS) and \
+                        has_file_allowed_extension(path_gt_file.name, IMG_EXTENSIONS):
                     assert path_data_file.stem == path_gt_file.stem, \
                         'get_gt_data_paths(): mismatch between data filename and gt filename'
                     coordinates = re.compile(r'.+_x(\d+)_y(\d+)\.')

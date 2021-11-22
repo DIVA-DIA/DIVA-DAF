@@ -28,7 +28,5 @@ def test_dataset_rgb(dataset_train):
 def test__load_data_and_gt(dataset_train):
     data_img, gt_img = dataset_train._load_data_and_gt(index=0)
     assert data_img.size == gt_img.size
-    assert data_img.format == 'JPEG'
     assert data_img.mode == 'RGB'
-    assert gt_img.format == 'PNG'
     assert gt_img.mode == 'RGB'

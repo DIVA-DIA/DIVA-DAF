@@ -11,8 +11,8 @@ import torch
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
 from PIL import Image
+from torchvision.datasets.folder import pil_loader
 
-from src.datamodules.RGB.utils.misc import pil_loader
 from src.datamodules.RolfFormat.datasets.dataset import ImageDimensions
 
 

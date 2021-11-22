@@ -8,7 +8,6 @@ from torchvision.transforms import ToTensor
 from src.utils import utils
 
 log = utils.get_logger(__name__)
-IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.gif']
 
 
 class DatasetPredict(data.Dataset):

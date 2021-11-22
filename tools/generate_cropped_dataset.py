@@ -10,59 +10,12 @@ import math
 from datetime import datetime
 from pathlib import Path
 
-import numpy as np
-from PIL import Image
+from torchvision.datasets.folder import has_file_allowed_extension, pil_loader
 from torchvision.transforms import functional as F
-from torchvision.utils import save_image
 from tqdm import tqdm
 
-IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.gif']
-JPG_EXTENSIONS = ['.jpg', '.jpeg']
-
-def has_extension(filename, extensions):
-    """Checks if a file is an allowed extension.
-
-    Adapted from https://github.com/pytorch/vision/blob/master/torchvision/datasets/folder.py.
-
-    Parameters
-    ----------
-    filename : string
-        path to a file
-    extensions : list
-        extensions to match against
-    Returns
-    -------
-    bool
-        True if the filename ends with one of given extensions, false otherwise.
-    """
-    filename_lower = filename.lower()
-    return any(filename_lower.endswith(ext) for ext in extensions)
-
-
-def pil_loader(path, to_rgb=True):
-    pic = Image.open(path)
-    if to_rgb:
-        pic = convert_to_rgb(pic)
-    return pic
-
-
-def convert_to_rgb(pic):
-    if pic.mode == "RGB":
-        pass
-    elif pic.mode in ("CMYK", "RGBA", "P"):
-        pic = pic.convert('RGB')
-    elif pic.mode == "I":
-        img = (np.divide(np.array(pic, np.int32), 2 ** 16 - 1) * 255).astype(np.uint8)
-        pic = Image.fromarray(np.stack((img, img, img), axis=2))
-    elif pic.mode == "I;16":
-        img = (np.divide(np.array(pic, np.int16), 2 ** 8 - 1) * 255).astype(np.uint8)
-        pic = Image.fromarray(np.stack((img, img, img), axis=2))
-    elif pic.mode == "L":
-        img = np.array(pic).astype(np.uint8)
-        pic = Image.fromarray(np.stack((img, img, img), axis=2))
-    else:
-        raise TypeError(f"unsupported image type {pic.mode}")
-    return pic
+IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.gif')
+JPG_EXTENSIONS = ('.jpg', '.jpeg')
 
 
 def get_img_paths_uncropped(directory):
@@ -89,7 +42,7 @@ def get_img_paths_uncropped(directory):
             continue
 
         for img_name in sorted(subdir.iterdir()):
-            if has_extension(str(img_name), IMG_EXTENSIONS):
+            if has_file_allowed_extension(str(img_name), IMG_EXTENSIONS):
                 paths.append((subdir / img_name, str(subdir.stem)))
 
     return paths
@@ -254,7 +207,6 @@ class CropGenerator:
             else:
                 # save_image(img, dest_filename)
                 pil_img.save(dest_filename)
-
 
     def _load_image(self, img_index):
         """
