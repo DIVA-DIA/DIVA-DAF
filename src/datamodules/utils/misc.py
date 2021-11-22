@@ -1,14 +1,48 @@
-"""
-General purpose utility functions.
-
-"""
-
 from pathlib import Path
+from typing import Union
 
-from src.datamodules.utils.exceptions import PathMissingDirinSplitDir, PathNone, PathNotDir, PathMissingSplitDir
+import numpy as np
+import torch
+
+from src.datamodules.utils.exceptions import PathNone, PathNotDir, PathMissingSplitDir, PathMissingDirinSplitDir
+
+
+def _get_argmax(output: Union[torch.Tensor, np.ndarray], dim=1):
+    """
+    takes the biggest value from a pixel across all classes
+    :param output: (Batch_size x num_classes x W x H)
+        matrix with the given attributes
+    :return: (Batch_size x W x H)
+        matrix with the hisdb class number for each pixel
+    """
+    if isinstance(output, torch.Tensor):
+        return torch.argmax(output, dim=dim)
+    if isinstance(output, np.ndarray):
+        return np.argmax(output, axis=dim)
+    return output
 
 
 def validate_path_for_segmentation(data_dir, data_folder_name: str, gt_folder_name: str):
+    """
+    Checks if the data_dir folder has the following structure:
+
+    {data_dir}
+        - train
+            - {data_folder_name}
+            - {gt_folder_name}
+        - val
+            - {data_folder_name}
+            - {gt_folder_name}
+        - test
+            - {data_folder_name}
+            - {gt_folder_name}
+
+
+    :param data_dir:
+    :param data_folder_name:
+    :param gt_folder_name:
+    :return:
+    """
     if data_dir is None:
         raise PathNone("Please provide the path to root dir of the dataset "
                        "(folder containing the train/val/test folder)")

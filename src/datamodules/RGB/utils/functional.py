@@ -53,11 +53,3 @@ def gt_to_one_hot(matrix: torch.Tensor, class_encodings: torch.Tensor):
     onehot_encoded = onehot_encoded.swapaxes(1, 2).swapaxes(0, 1)  # changes axis from (0, 1, 2) to (2, 0, 1)
 
     return onehot_encoded
-
-
-def argmax_onehot(tensor: torch.Tensor):
-    """
-    # TODO
-    """
-    output = torch.LongTensor(torch.argmax(tensor, dim=0))
-    return output

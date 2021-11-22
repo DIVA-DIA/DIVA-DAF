@@ -14,7 +14,8 @@ from tqdm import tqdm
 
 from src.datamodules.DivaHisDB.datamodule_cropped import DivaHisDBDataModuleCropped
 from src.datamodules.DivaHisDB.datasets.cropped_dataset import CroppedHisDBDataset
-from src.datamodules.DivaHisDB.utils.output_tools import merge_patches, save_output_page_image
+from src.datamodules.DivaHisDB.utils.output_tools import save_output_page_image
+from src.datamodules.utils.output_tools import merge_patches
 from tools.generate_cropped_dataset import pil_loader
 from tools.viz import visualize
 

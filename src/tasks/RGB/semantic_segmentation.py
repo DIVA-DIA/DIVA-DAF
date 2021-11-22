@@ -6,8 +6,8 @@ import torch.nn as nn
 import torch.optim
 import torchmetrics
 
+from src.datamodules.utils.misc import _get_argmax
 from src.tasks.base_task import AbstractTask
-from src.datamodules.RGB.utils.output_tools import _get_argmax
 from src.utils import utils
 from src.tasks.utils.outputs import OutputKeys, reduce_dict
 

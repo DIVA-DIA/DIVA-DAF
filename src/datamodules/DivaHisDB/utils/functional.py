@@ -65,8 +65,3 @@ def gt_to_one_hot(matrix: torch.Tensor, class_encodings: List[int]):
     return torch.LongTensor(one_hot_matrix.transpose((2, 0, 1)))
 
 
-def argmax_onehot(tensor: torch.Tensor):
-    """
-    # TODO
-    """
-    return torch.LongTensor(torch.argmax(tensor, dim=0))

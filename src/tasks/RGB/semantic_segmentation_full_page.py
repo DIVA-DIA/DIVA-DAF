@@ -6,9 +6,9 @@ import torch.nn as nn
 import torch.optim
 import torchmetrics
 
-from src.datamodules.RolfFormat.utils.output_tools import save_output_page_image
+from src.datamodules.RGB.utils.output_tools import save_output_page_image
+from src.datamodules.utils.misc import _get_argmax
 from src.tasks.base_task import AbstractTask
-from src.datamodules.DivaHisDB.utils.output_tools import _get_argmax
 from src.utils import utils
 from src.tasks.utils.outputs import OutputKeys, reduce_dict
 

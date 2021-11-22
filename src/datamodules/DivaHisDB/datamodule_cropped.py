@@ -4,12 +4,12 @@ from typing import Union, List, Optional
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
+from src.datamodules.DivaHisDB.utils.single_transform import IntegerEncoding
 from src.datamodules.base_datamodule import AbstractDatamodule
 from src.datamodules.DivaHisDB.datasets.cropped_dataset import CroppedHisDBDataset
 from src.datamodules.DivaHisDB.utils.image_analytics import get_analytics
-from src.datamodules.DivaHisDB.utils.misc import validate_path_for_segmentation
+from src.datamodules.utils.misc import validate_path_for_segmentation
 from src.datamodules.utils.twin_transforms import TwinRandomCrop
-from src.datamodules.utils.single_transforms import IntegerEncoding
 from src.datamodules.utils.wrapper_transforms import OnlyImage, OnlyTarget
 from src.utils import utils
 

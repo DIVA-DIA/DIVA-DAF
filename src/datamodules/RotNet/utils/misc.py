@@ -3,11 +3,6 @@ from pathlib import Path
 from src.datamodules.utils.exceptions import PathMissingDirinSplitDir, PathNone, PathNotDir, PathMissingSplitDir
 
 
-def has_extension(filename, extensions):
-    filename_lower = filename.lower()
-    return any(filename_lower.endswith(ext) for ext in extensions)
-
-
 def validate_path_for_self_supervised(data_dir, data_folder_name: str):
     if data_dir is None:
         raise PathNone("Please provide the path to root dir of the dataset "

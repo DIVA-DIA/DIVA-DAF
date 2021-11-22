@@ -13,7 +13,6 @@ from torchvision.datasets.folder import has_file_allowed_extension, pil_loader
 from torchvision.transforms import ToTensor
 
 from src.datamodules.DivaHisDB.datasets.cropped_dataset import CroppedHisDBDataset
-from src.datamodules.RotNet.utils.misc import has_extension
 from src.utils import utils
 
 IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm')
@@ -175,7 +174,7 @@ class CroppedRotNet(CroppedHisDBDataset):
 
         for path_data_subdir in subitems:
             if not path_data_subdir.is_dir():
-                if has_extension(path_data_subdir.name, IMG_EXTENSIONS):
+                if has_file_allowed_extension(path_data_subdir.name, IMG_EXTENSIONS):
                     log.warning("image file found in data root: " + str(path_data_subdir))
                 continue
 
