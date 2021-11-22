@@ -100,12 +100,12 @@ class SemanticSegmentationFullPageRGB(AbstractTask):
                                  input_idx.detach().cpu().numpy()):
             patch_info = self.trainer.datamodule.get_img_name(idx)
             img_name = patch_info[0]
-            dest_folder = self.test_output_path / 'preds_raw'
+            dest_folder = self.test_output_path / 'pred_raw'
             dest_folder.mkdir(parents=True, exist_ok=True)
             dest_filename = dest_folder / f'{img_name}.npy'
             np.save(file=str(dest_filename), arr=pred_raw)
 
-            dest_folder = self.test_output_path / 'preds'
+            dest_folder = self.test_output_path / 'pred'
             dest_folder.mkdir(parents=True, exist_ok=True)
             save_output_page_image(image_name=f'{img_name}.gif', output_image=pred_raw,
                                    output_folder=dest_folder, class_encoding=self.trainer.datamodule.class_encodings)
@@ -129,12 +129,12 @@ class SemanticSegmentationFullPageRGB(AbstractTask):
         for pred_raw, idx in zip(output[OutputKeys.PREDICTION].detach().cpu().numpy(),
                                  input_idx.detach().cpu().numpy()):
             img_name = self.trainer.datamodule.get_img_name_prediction(idx)
-            dest_folder = self.test_output_path / 'prediction_raw'
+            dest_folder = self.predict_output_path / 'pred_raw'
             dest_folder.mkdir(parents=True, exist_ok=True)
             dest_filename = dest_folder / f'{img_name}.npy'
             np.save(file=str(dest_filename), arr=pred_raw)
 
-            dest_folder = self.test_output_path / 'prediction'
+            dest_folder = self.predict_output_path / 'pred'
             dest_folder.mkdir(parents=True, exist_ok=True)
             save_output_page_image(image_name=f'{img_name}.gif', output_image=pred_raw,
                                    output_folder=dest_folder, class_encoding=self.trainer.datamodule.class_encodings)

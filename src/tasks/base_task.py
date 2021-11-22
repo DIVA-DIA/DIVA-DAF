@@ -60,7 +60,9 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             confusion_matrix_test: Optional[bool] = False,
             confusion_matrix_log_every_n_epoch: Optional[int] = 1,
             lr: float = 1e-3,
-            test_output_path: Optional[Union[str, Path]] = 'predictions'
+            test_output_path: Optional[Union[str, Path]] = 'test_output',
+            predict_output_path: Optional[Union[str, Path]] = 'predict_output'
+
     ):
         super().__init__()
 
@@ -88,6 +90,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         self.confusion_matrix_log_every_n_epoch = confusion_matrix_log_every_n_epoch
         self.lr = lr
         self.test_output_path = Path(test_output_path)
+        self.predict_output_path = Path(predict_output_path)
         self.save_hyperparameters()
 
     def setup(self, stage: str):
