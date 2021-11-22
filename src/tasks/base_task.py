@@ -105,6 +105,9 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             elif stage == 'test':
                 num_samples = len(self.trainer.datamodule.test)
                 datasplit_name = 'test'
+            elif stage == 'predict':
+                num_samples = len(self.trainer.datamodule.predict)
+                datasplit_name = 'predict'
             else:
                 log.warn(f'Unknown stage ({stage}) during setup!')
                 num_samples = -1

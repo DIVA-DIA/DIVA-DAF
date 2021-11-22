@@ -25,7 +25,7 @@ class DatasetPredict(data.Dataset):
         twin_transform : callable
         """
 
-        self.image_path_list = image_path_list
+        self.image_path_list = list(image_path_list)
 
         # Init list
         self.classes = classes
@@ -51,7 +51,7 @@ class DatasetPredict(data.Dataset):
     def __getitem__(self, index):
         data_img = self._load_data_and_gt(index=index)
         data_tensor = self._apply_transformation(img=data_img)
-        return data_tensor
+        return data_tensor, index
 
     def _load_data_and_gt(self, index):
         data_img = pil_loader(self.image_path_list[index])

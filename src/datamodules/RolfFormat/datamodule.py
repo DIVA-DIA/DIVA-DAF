@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Union, List, Optional
 
 import torch
@@ -9,6 +10,7 @@ from src.datamodules.RolfFormat.utils.image_analytics import get_analytics_data,
 from src.datamodules.RolfFormat.utils.twin_transforms import IntegerEncoding
 from src.datamodules.RolfFormat.utils.wrapper_transforms import OnlyImage, OnlyTarget
 from src.datamodules.base_datamodule import AbstractDatamodule
+from src.datamodules.utils.dataset_predict import DatasetPredict
 from src.utils import utils
 
 log = utils.get_logger(__name__)
@@ -16,15 +18,20 @@ log = utils.get_logger(__name__)
 
 class DataModuleRolfFormat(AbstractDatamodule):
     def __init__(self, data_root: str,
-                 train_specs=None, val_specs=None, test_specs=None,
+                 train_specs=None, val_specs=None, test_specs=None, pred_file_path_list: List[str] = None,
                  image_analytics=None, classes=None, image_dims=None,
                  num_workers: int = 4, batch_size: int = 8,
                  shuffle: bool = True, drop_last: bool = True):
         super().__init__()
 
-        self.train_dataset_specs = [DatasetSpecs(data_root=data_root, **v) for k, v in train_specs.items()]
-        self.val_dataset_specs = [DatasetSpecs(data_root=data_root, **v) for k, v in val_specs.items()]
-        self.test_dataset_specs = [DatasetSpecs(data_root=data_root, **v) for k, v in test_specs.items()]
+        if train_specs is not None:
+            self.train_dataset_specs = [DatasetSpecs(data_root=data_root, **v) for k, v in train_specs.items()]
+        if val_specs is not None:
+            self.val_dataset_specs = [DatasetSpecs(data_root=data_root, **v) for k, v in val_specs.items()]
+        if test_specs is not None:
+            self.test_dataset_specs = [DatasetSpecs(data_root=data_root, **v) for k, v in test_specs.items()]
+        if pred_file_path_list is not None:
+            self.pred_file_path_list = pred_file_path_list
 
         if image_analytics is None or classes is None or image_dims is None:
             train_paths_data_gt = DatasetRolfFormat.get_gt_data_paths(list_specs=self.train_dataset_specs)
@@ -144,6 +151,10 @@ class DataModuleRolfFormat(AbstractDatamodule):
                                           **common_kwargs)
             # self._check_min_num_samples(num_samples=len(self.test), data_split='test', drop_last=False)
 
+        if stage == 'predict':
+            self.predict = DatasetPredict(image_path_list=self.pred_file_path_list,
+                                          **common_kwargs)
+
     def _check_min_num_samples(self, num_samples: int, data_split: str, drop_last: bool):
         num_processes = self.trainer.num_processes
         batch_size = self.batch_size
@@ -186,6 +197,14 @@ class DataModuleRolfFormat(AbstractDatamodule):
                           drop_last=False,
                           pin_memory=True)
 
+    def predict_dataloader(self) -> Union[DataLoader, List[DataLoader]]:
+        return DataLoader(self.predict,
+                          batch_size=self.batch_size,
+                          num_workers=self.num_workers,
+                          shuffle=False,
+                          drop_last=False,
+                          pin_memory=True)
+
     def get_img_name(self, index):
         """
         Returns the original filename of the doc image.
@@ -197,3 +216,15 @@ class DataModuleRolfFormat(AbstractDatamodule):
             raise Exception('This method can just be called during testing')
 
         return self.test.img_paths_per_page[index][2:]
+
+    def get_img_name_prediction(self, index):
+        """
+        Returns the original filename of the doc image.
+        You can just use this during testing!
+        :param index:
+        :return:
+        """
+        if not hasattr(self, 'predict'):
+            raise Exception('This method can just be called during prediction')
+
+        return Path(self.predict.image_path_list[index]).stem
