@@ -231,6 +231,10 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
 
         self.metric_conf_mat_test.reset()
 
+    def predict_step(self, batch: Any, batch_idx: int, dataloader_idx: Optional[int] = None) -> Any:
+        y_hat = self(batch)
+        return {OutputKeys.PREDICTION: y_hat}
+
     def configure_optimizers(self) -> Union[Optimizer, Tuple[List[Optimizer], List[_LRScheduler]]]:
         optimizer = self.optimizer
         if not isinstance(self.optimizer, Optimizer):

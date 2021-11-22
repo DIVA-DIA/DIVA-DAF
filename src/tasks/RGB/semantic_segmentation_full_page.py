@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Optional, Callable, Union
+from typing import Optional, Callable, Union, Any
 
 import numpy as np
 import torch.nn as nn
@@ -114,3 +114,30 @@ class SemanticSegmentationFullPageRGB(AbstractTask):
 
     def on_test_end(self) -> None:
         pass
+
+    #############################################################################################
+    ######################################### PREDICT ###########################################
+    #############################################################################################
+
+    def predict_step(self, batch: Any, batch_idx: int, dataloader_idx: Optional[int] = None) -> Any:
+        input_batch, input_idx = batch
+        output = super().predict_step(batch=input_batch, batch_idx=batch_idx, dataloader_idx=dataloader_idx)
+
+        if not hasattr(self.trainer.datamodule, 'get_img_name'):
+            raise NotImplementedError('Datamodule does not provide detailed information of the crop')
+
+        for pred_raw, idx in zip(output[OutputKeys.PREDICTION].detach().cpu().numpy(),
+                                 input_idx.detach().cpu().numpy()):
+            patch_info = self.trainer.datamodule.get_img_name(idx)
+            img_name = patch_info[0]
+            dest_folder = self.test_output_path / 'preds_raw'
+            dest_folder.mkdir(parents=True, exist_ok=True)
+            dest_filename = dest_folder / f'{img_name}.npy'
+            np.save(file=str(dest_filename), arr=pred_raw)
+
+            dest_folder = self.test_output_path / 'preds'
+            dest_folder.mkdir(parents=True, exist_ok=True)
+            save_output_page_image(image_name=f'{img_name}.gif', output_image=pred_raw,
+                                   output_folder=dest_folder, class_encoding=self.trainer.datamodule.class_encodings)
+
+        return reduce_dict(input_dict=output, key_list=[])
