@@ -148,7 +148,7 @@ class DataModuleRolfFormat(AbstractDatamodule):
             log.info(f'Initialized val dataset with {len(self.val)} samples.')
             self._check_min_num_samples(num_samples=len(self.val), data_split='val', drop_last=self.drop_last)
 
-        if stage == 'test' or stage is not None:
+        if stage == 'test':
             self.test = DatasetRolfFormat(dataset_specs=self.test_dataset_specs,
                                           is_test=True,
                                           **common_kwargs)
@@ -158,6 +158,8 @@ class DataModuleRolfFormat(AbstractDatamodule):
         if stage == 'predict':
             self.predict = DatasetPredict(image_path_list=self.pred_file_path_list,
                                           **common_kwargs)
+            log.info(f'Initialized predict dataset with {len(self.predict)} samples.')
+            # self._check_min_num_samples(num_samples=len(self.test), data_split='test', drop_last=False)
 
     def _check_min_num_samples(self, num_samples: int, data_split: str, drop_last: bool):
         num_processes = self.trainer.num_processes
