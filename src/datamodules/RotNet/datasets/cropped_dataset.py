@@ -6,18 +6,16 @@ Load a dataset of historic documents by specifying the folder where its located.
 from pathlib import Path
 from typing import List, Union, Optional
 
-import numpy as np
-import torch
 import torchvision.transforms.functional
 from omegaconf import ListConfig
 from torch import is_tensor
+from torchvision.datasets.folder import has_file_allowed_extension, pil_loader
 from torchvision.transforms import ToTensor
 
 from src.datamodules.DivaHisDB.datasets.cropped_dataset import CroppedHisDBDataset
-from src.datamodules.RotNet.utils.misc import has_extension, pil_loader
 from src.utils import utils
 
-IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm']
+IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm')
 ROTATION_ANGLES = [0, 90, 180, 270]
 
 log = utils.get_logger(__name__)
@@ -63,7 +61,7 @@ class CroppedRotNet(CroppedHisDBDataset):
                                             **kwargs)
 
     def __getitem__(self, index):
-        data_img = self._load_data_and_gt(index=int(index/len(ROTATION_ANGLES)))
+        data_img = self._load_data_and_gt(index=int(index / len(ROTATION_ANGLES)))
         img, gt = self._apply_transformation(data_img, index=index)
         return img, gt
 
@@ -176,7 +174,7 @@ class CroppedRotNet(CroppedHisDBDataset):
 
         for path_data_subdir in subitems:
             if not path_data_subdir.is_dir():
-                if has_extension(path_data_subdir.name, IMG_EXTENSIONS):
+                if has_file_allowed_extension(path_data_subdir.name, IMG_EXTENSIONS):
                     log.warning("image file found in data root: " + str(path_data_subdir))
                 continue
 
@@ -192,7 +190,7 @@ class CroppedRotNet(CroppedHisDBDataset):
                         continue
 
             for path_data_file in sorted(path_data_subdir.iterdir()):
-                if has_extension(path_data_file.name, IMG_EXTENSIONS):
+                if has_file_allowed_extension(path_data_file.name, IMG_EXTENSIONS):
                     paths.append(path_data_file)
 
         return paths

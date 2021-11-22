@@ -12,11 +12,11 @@ import numpy as np
 from PIL import Image
 from tqdm import tqdm
 
-from src.datamodules.RGB.datasets.cropped_dataset import CroppedDatasetRGB
-from src.datamodules.RGB.utils.output_tools import merge_patches, save_output_page_image
 from src.datamodules.RGB.datamodule_cropped import DataModuleCroppedRGB
+from src.datamodules.RGB.datasets.cropped_dataset import CroppedDatasetRGB
+from src.datamodules.RGB.utils.output_tools import save_output_page_image
+from src.datamodules.utils.output_tools import merge_patches
 from tools.generate_cropped_dataset import pil_loader
-from tools.viz import visualize
 
 
 @dataclass

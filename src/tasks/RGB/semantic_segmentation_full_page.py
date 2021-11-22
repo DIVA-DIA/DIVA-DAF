@@ -1,14 +1,14 @@
 from pathlib import Path
-from typing import Optional, Callable, Union
+from typing import Optional, Callable, Union, Any
 
 import numpy as np
 import torch.nn as nn
 import torch.optim
 import torchmetrics
 
-from src.datamodules.RolfFormat.utils.output_tools import save_output_page_image
+from src.datamodules.RGB.utils.output_tools import save_output_page_image
+from src.datamodules.utils.misc import _get_argmax
 from src.tasks.base_task import AbstractTask
-from src.datamodules.DivaHisDB.utils.output_tools import _get_argmax
 from src.utils import utils
 from src.tasks.utils.outputs import OutputKeys, reduce_dict
 
@@ -24,7 +24,8 @@ class SemanticSegmentationFullPageRGB(AbstractTask):
                  metric_train: Optional[torchmetrics.Metric] = None,
                  metric_val: Optional[torchmetrics.Metric] = None,
                  metric_test: Optional[torchmetrics.Metric] = None,
-                 test_output_path: Optional[Union[str, Path]] = 'predictions',
+                 test_output_path: Optional[Union[str, Path]] = 'test_output',
+                 predict_output_path: Optional[Union[str, Path]] = 'predict_output',
                  confusion_matrix_val: Optional[bool] = False,
                  confusion_matrix_test: Optional[bool] = False,
                  confusion_matrix_log_every_n_epoch: Optional[int] = 1,
@@ -46,6 +47,7 @@ class SemanticSegmentationFullPageRGB(AbstractTask):
             metric_val=metric_val,
             metric_test=metric_test,
             test_output_path=test_output_path,
+            predict_output_path=predict_output_path,
             lr=lr,
             confusion_matrix_val=confusion_matrix_val,
             confusion_matrix_test=confusion_matrix_test,
@@ -100,12 +102,12 @@ class SemanticSegmentationFullPageRGB(AbstractTask):
                                  input_idx.detach().cpu().numpy()):
             patch_info = self.trainer.datamodule.get_img_name(idx)
             img_name = patch_info[0]
-            dest_folder = self.test_output_path / 'preds_raw'
+            dest_folder = self.test_output_path / 'pred_raw'
             dest_folder.mkdir(parents=True, exist_ok=True)
             dest_filename = dest_folder / f'{img_name}.npy'
             np.save(file=str(dest_filename), arr=pred_raw)
 
-            dest_folder = self.test_output_path / 'preds'
+            dest_folder = self.test_output_path / 'pred'
             dest_folder.mkdir(parents=True, exist_ok=True)
             save_output_page_image(image_name=f'{img_name}.gif', output_image=pred_raw,
                                    output_folder=dest_folder, class_encoding=self.trainer.datamodule.class_encodings)
@@ -114,3 +116,29 @@ class SemanticSegmentationFullPageRGB(AbstractTask):
 
     def on_test_end(self) -> None:
         pass
+
+    #############################################################################################
+    ######################################### PREDICT ###########################################
+    #############################################################################################
+
+    def predict_step(self, batch: Any, batch_idx: int, dataloader_idx: Optional[int] = None) -> Any:
+        input_batch, input_idx = batch
+        output = super().predict_step(batch=input_batch, batch_idx=batch_idx, dataloader_idx=dataloader_idx)
+
+        if not hasattr(self.trainer.datamodule, 'get_img_name'):
+            raise NotImplementedError('Datamodule does not provide detailed information of the crop')
+
+        for pred_raw, idx in zip(output[OutputKeys.PREDICTION].detach().cpu().numpy(),
+                                 input_idx.detach().cpu().numpy()):
+            img_name = self.trainer.datamodule.get_img_name_prediction(idx)
+            dest_folder = self.predict_output_path / 'pred_raw'
+            dest_folder.mkdir(parents=True, exist_ok=True)
+            dest_filename = dest_folder / f'{img_name}.npy'
+            np.save(file=str(dest_filename), arr=pred_raw)
+
+            dest_folder = self.predict_output_path / 'pred'
+            dest_folder.mkdir(parents=True, exist_ok=True)
+            save_output_page_image(image_name=f'{img_name}.gif', output_image=pred_raw,
+                                   output_folder=dest_folder, class_encoding=self.trainer.datamodule.class_encodings)
+
+        return reduce_dict(input_dict=output, key_list=[])

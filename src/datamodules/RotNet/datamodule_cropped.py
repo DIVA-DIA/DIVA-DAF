@@ -8,7 +8,7 @@ from torchvision import transforms
 from src.datamodules.RotNet.utils.image_analytics import get_analytics_data
 from src.datamodules.RotNet.datasets.cropped_dataset import CroppedRotNet, ROTATION_ANGLES
 from src.datamodules.RotNet.utils.misc import validate_path_for_self_supervised
-from src.datamodules.RotNet.utils.wrapper_transforms import OnlyImage
+from src.datamodules.utils.wrapper_transforms import OnlyImage
 from src.datamodules.base_datamodule import AbstractDatamodule
 from src.utils import utils
 
@@ -56,15 +56,18 @@ class RotNetDivaHisDBDataModuleCropped(AbstractDatamodule):
         super().setup()
         if stage == 'fit' or stage is None:
             self.train = CroppedRotNet(**self._create_dataset_parameters('train'), selection=self.selection_train)
-            self.val = CroppedRotNet(**self._create_dataset_parameters('val'), selection=self.selection_val)
-
+            log.info(f'Initialized train dataset with {len(self.train)} samples.')
             self._check_min_num_samples(num_samples=len(self.train), data_split='train',
                                         drop_last=self.drop_last)
+
+            self.val = CroppedRotNet(**self._create_dataset_parameters('val'), selection=self.selection_val)
+            log.info(f'Initialized val dataset with {len(self.val)} samples.')
             self._check_min_num_samples(num_samples=len(self.val), data_split='val',
                                         drop_last=self.drop_last)
 
         if stage == 'test' or stage is not None:
             self.test = CroppedRotNet(**self._create_dataset_parameters('test'), selection=self.selection_test)
+            log.info(f'Initialized test dataset with {len(self.test)} samples.')
             # self._check_min_num_samples(num_samples=len(self.test), data_split='test',
             #                             drop_last=False)
 

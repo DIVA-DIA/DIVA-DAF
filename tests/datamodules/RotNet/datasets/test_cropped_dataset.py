@@ -23,7 +23,6 @@ def dataset_train(data_dir_cropped):
 def test__load_data_and_gt(dataset_train):
     img = dataset_train._load_data_and_gt(0)
     assert img.size == (300, 300)
-    assert img.format == 'PNG'
     assert np.array_equal(np.array(img)[150][150], np.array([97, 72, 32]))
 
 

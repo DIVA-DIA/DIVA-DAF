@@ -4,13 +4,13 @@ from typing import Union, List, Optional
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
+from src.datamodules.DivaHisDB.utils.single_transform import IntegerEncoding
 from src.datamodules.base_datamodule import AbstractDatamodule
 from src.datamodules.DivaHisDB.datasets.cropped_dataset import CroppedHisDBDataset
 from src.datamodules.DivaHisDB.utils.image_analytics import get_analytics
-from src.datamodules.DivaHisDB.utils.misc import validate_path_for_segmentation
-from src.datamodules.DivaHisDB.utils.twin_transforms import TwinRandomCrop, OneHotEncoding, OneHotToPixelLabelling, \
-    IntegerEncoding
-from src.datamodules.DivaHisDB.utils.wrapper_transforms import OnlyImage, OnlyTarget
+from src.datamodules.utils.misc import validate_path_for_segmentation
+from src.datamodules.utils.twin_transforms import TwinRandomCrop
+from src.datamodules.utils.wrapper_transforms import OnlyImage, OnlyTarget
 from src.utils import utils
 
 log = utils.get_logger(__name__)
@@ -65,15 +65,18 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
         super().setup()
         if stage == 'fit' or stage is None:
             self.train = CroppedHisDBDataset(**self._create_dataset_parameters('train'), selection=self.selection_train)
-            self.val = CroppedHisDBDataset(**self._create_dataset_parameters('val'), selection=self.selection_val)
-
+            log.info(f'Initialized train dataset with {len(self.train)} samples.')
             self._check_min_num_samples(num_samples=len(self.train), data_split='train',
                                         drop_last=self.drop_last)
+
+            self.val = CroppedHisDBDataset(**self._create_dataset_parameters('val'), selection=self.selection_val)
+            log.info(f'Initialized val dataset with {len(self.val)} samples.')
             self._check_min_num_samples(num_samples=len(self.val), data_split='val',
                                         drop_last=self.drop_last)
 
         if stage == 'test' or stage is not None:
             self.test = CroppedHisDBDataset(**self._create_dataset_parameters('test'), selection=self.selection_test)
+            log.info(f'Initialized test dataset with {len(self.test)} samples.')
             # self._check_min_num_samples(num_samples=len(self.test), data_split='test',
             #                             drop_last=False)
 

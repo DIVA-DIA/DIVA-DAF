@@ -1,7 +1,7 @@
 import pytest
 
 from src.datamodules.utils.exceptions import PathNone, PathNotDir, PathMissingSplitDir, PathMissingDirinSplitDir
-from src.datamodules.DivaHisDB.utils.misc import validate_path_for_segmentation
+from src.datamodules.utils.misc import validate_path_for_segmentation
 
 
 @pytest.fixture

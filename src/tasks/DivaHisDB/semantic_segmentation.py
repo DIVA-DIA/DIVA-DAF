@@ -6,8 +6,8 @@ import torch.nn as nn
 import torch.optim
 import torchmetrics
 
+from src.datamodules.utils.misc import _get_argmax
 from src.tasks.base_task import AbstractTask
-from src.datamodules.DivaHisDB.utils.output_tools import _get_argmax
 from src.utils import utils
 from src.tasks.utils.outputs import OutputKeys, reduce_dict
 
@@ -23,7 +23,8 @@ class SemanticSegmentationHisDB(AbstractTask):
                  metric_train: Optional[torchmetrics.Metric] = None,
                  metric_val: Optional[torchmetrics.Metric] = None,
                  metric_test: Optional[torchmetrics.Metric] = None,
-                 test_output_path: Optional[Union[str, Path]] = 'predictions',
+                 test_output_path: Optional[Union[str, Path]] = 'test_output',
+                 predict_output_path: Optional[Union[str, Path]] = 'predict_output',
                  confusion_matrix_val: Optional[bool] = False,
                  confusion_matrix_test: Optional[bool] = False,
                  confusion_matrix_log_every_n_epoch: Optional[int] = 1,
@@ -45,6 +46,7 @@ class SemanticSegmentationHisDB(AbstractTask):
             metric_val=metric_val,
             metric_test=metric_test,
             test_output_path=test_output_path,
+            predict_output_path=predict_output_path,
             lr=lr,
             confusion_matrix_val=confusion_matrix_val,
             confusion_matrix_test=confusion_matrix_test,

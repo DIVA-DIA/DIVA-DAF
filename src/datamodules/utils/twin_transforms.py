@@ -2,8 +2,6 @@ import random
 
 from torchvision.transforms import functional as F
 
-from src.datamodules.RGB.utils import functional as F_custom
-
 
 class TwinCompose(object):
     def __init__(self, transforms):
@@ -80,36 +78,3 @@ class ToTensorSlidingWindowCrop(object):
 
         return F.to_tensor(F.crop(img, x_position, y_position, self.crop_size, self.crop_size)), \
                F.to_tensor(F.crop(gt, x_position, y_position, self.crop_size, self.crop_size))
-
-
-class OneHotToPixelLabelling(object):
-    def __call__(self, tensor):
-        return F_custom.argmax_onehot(tensor)
-
-
-class OneHotEncoding(object):
-    def __init__(self, class_encodings):
-        self.class_encodings = class_encodings
-
-    def __call__(self, gt):
-        """
-        Args:
-
-        Returns:
-
-        """
-        return F_custom.gt_to_one_hot(gt, self.class_encodings)
-
-
-class IntegerEncoding(object):
-    def __init__(self, class_encodings):
-        self.class_encodings = class_encodings
-
-    def __call__(self, gt):
-        """
-        Args:
-
-        Returns:
-
-        """
-        return F_custom.gt_to_int_encoding(gt, self.class_encodings)

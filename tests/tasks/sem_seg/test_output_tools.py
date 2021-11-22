@@ -2,10 +2,12 @@ import numpy as np
 from PIL import Image
 from torch import tensor, equal
 
-from src.datamodules.DivaHisDB.utils.output_tools import _get_argmax, merge_patches, output_to_class_encodings, \
+from src.datamodules.DivaHisDB.utils.output_tools import output_to_class_encodings, \
     save_output_page_image
-
+from src.datamodules.utils.output_tools import merge_patches
 # batchsize (2) x classes (4) x W (2) x H (2)
+from src.datamodules.utils.misc import _get_argmax
+
 BATCH = tensor([[[[0., 0.3], [4., 2.]],
                  [[1., 4.1], [-0.2, 1.9]],
                  [[1.1, -0.8], [4.9, 1.3]],

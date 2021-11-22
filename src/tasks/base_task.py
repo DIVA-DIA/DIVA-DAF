@@ -60,7 +60,9 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             confusion_matrix_test: Optional[bool] = False,
             confusion_matrix_log_every_n_epoch: Optional[int] = 1,
             lr: float = 1e-3,
-            test_output_path: Optional[Union[str, Path]] = 'predictions'
+            test_output_path: Optional[Union[str, Path]] = 'test_output',
+            predict_output_path: Optional[Union[str, Path]] = 'predict_output'
+
     ):
         super().__init__()
 
@@ -88,6 +90,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         self.confusion_matrix_log_every_n_epoch = confusion_matrix_log_every_n_epoch
         self.lr = lr
         self.test_output_path = Path(test_output_path)
+        self.predict_output_path = Path(predict_output_path)
         self.save_hyperparameters()
 
     def setup(self, stage: str):
@@ -105,6 +108,9 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             elif stage == 'test':
                 num_samples = len(self.trainer.datamodule.test)
                 datasplit_name = 'test'
+            elif stage == 'predict':
+                num_samples = len(self.trainer.datamodule.predict)
+                datasplit_name = 'predict'
             else:
                 log.warn(f'Unknown stage ({stage}) during setup!')
                 num_samples = -1
@@ -230,6 +236,10 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         self._create_conf_mat(matrix=hist, stage='test')
 
         self.metric_conf_mat_test.reset()
+
+    def predict_step(self, batch: Any, batch_idx: int, dataloader_idx: Optional[int] = None) -> Any:
+        y_hat = self(batch)
+        return {OutputKeys.PREDICTION: y_hat}
 
     def configure_optimizers(self) -> Union[Optimizer, Tuple[List[Optimizer], List[_LRScheduler]]]:
         optimizer = self.optimizer

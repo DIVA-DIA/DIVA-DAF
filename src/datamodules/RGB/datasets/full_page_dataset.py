@@ -2,29 +2,23 @@
 Load a dataset of historic documents by specifying the folder where its located.
 """
 
+from dataclasses import dataclass
 # Utils
-import re
 from pathlib import Path
-from typing import List, Tuple, Union, Optional, Any
+from typing import List, Tuple, Union, Optional
 
 import torch.utils.data as data
-from dataclasses import dataclass
 from omegaconf import ListConfig
 from torch import is_tensor
+from torchvision.datasets.folder import pil_loader, has_file_allowed_extension
 from torchvision.transforms import ToTensor
 
-from src.datamodules.RGB.utils.misc import has_extension, pil_loader
+from src.datamodules.utils.misc import ImageDimensions
 from src.utils import utils
 
-IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.gif']
+IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.gif')
 
 log = utils.get_logger(__name__)
-
-
-@dataclass
-class ImageDimensions:
-    width: int
-    height: int
 
 
 class DatasetRGB(data.Dataset):
@@ -234,8 +228,8 @@ class DatasetRGB(data.Dataset):
                     if path_data_file.name not in selection:
                         continue
 
-            assert has_extension(path_data_file.name, IMG_EXTENSIONS) == \
-                   has_extension(path_gt_file.name, IMG_EXTENSIONS), \
+            assert has_file_allowed_extension(path_data_file.name, IMG_EXTENSIONS) == \
+                   has_file_allowed_extension(path_gt_file.name, IMG_EXTENSIONS), \
                 'get_gt_data_paths(): image file aligned with non-image file'
 
             assert path_data_file.stem == path_gt_file.stem, \

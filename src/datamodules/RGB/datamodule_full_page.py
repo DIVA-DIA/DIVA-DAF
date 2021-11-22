@@ -7,10 +7,10 @@ from torchvision import transforms
 
 from src.datamodules.RGB.datasets.full_page_dataset import DatasetRGB, ImageDimensions
 from src.datamodules.RGB.utils.image_analytics import get_analytics
-from src.datamodules.RGB.utils.misc import validate_path_for_segmentation
-from src.datamodules.RGB.utils.twin_transforms import IntegerEncoding
-from src.datamodules.RGB.utils.wrapper_transforms import OnlyImage, OnlyTarget
+from src.datamodules.RGB.utils.single_transform import IntegerEncoding
 from src.datamodules.base_datamodule import AbstractDatamodule
+from src.datamodules.utils.misc import validate_path_for_segmentation
+from src.datamodules.utils.wrapper_transforms import OnlyImage, OnlyTarget
 from src.utils import utils
 
 log = utils.get_logger(__name__)
@@ -65,15 +65,18 @@ class DataModuleRGB(AbstractDatamodule):
         super().setup()
         if stage == 'fit' or stage is None:
             self.train = DatasetRGB(**self._create_dataset_parameters('train'), selection=self.selection_train)
-            self.val = DatasetRGB(**self._create_dataset_parameters('val'), selection=self.selection_val)
-
+            log.info(f'Initialized train dataset with {len(self.train)} samples.')
             self._check_min_num_samples(num_samples=len(self.train), data_split='train',
                                         drop_last=self.drop_last)
+
+            self.val = DatasetRGB(**self._create_dataset_parameters('val'), selection=self.selection_val)
+            log.info(f'Initialized val dataset with {len(self.val)} samples.')
             self._check_min_num_samples(num_samples=len(self.val), data_split='val',
                                         drop_last=self.drop_last)
 
         if stage == 'test' or stage is not None:
             self.test = DatasetRGB(**self._create_dataset_parameters('test'), selection=self.selection_test)
+            log.info(f'Initialized test dataset with {len(self.test)} samples.')
             # self._check_min_num_samples(num_samples=len(self.test), data_split='test',
             #                             drop_last=False)
 

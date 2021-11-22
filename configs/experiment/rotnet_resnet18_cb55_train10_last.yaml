@@ -25,6 +25,7 @@ defaults:
 
 train: True
 test: False
+predict: False
 
 trainer:
     _target_: pytorch_lightning.Trainer

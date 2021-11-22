@@ -5,6 +5,8 @@ import torch
 from PIL import Image
 from torchvision.transforms import Pad
 
+import src.datamodules.utils.functional
+
 
 class ResizePad(object):
     """
@@ -142,3 +144,11 @@ class ResizePad(object):
     def __call__(self, img):
         img = self.resize_with_padding(img, self.target_size)
         return img
+
+
+class OneHotToPixelLabelling(object):
+    def __call__(self, tensor):
+        return src.datamodules.utils.functional.argmax_onehot(tensor)
+
+
+
