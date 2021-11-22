@@ -8,8 +8,8 @@ from torchvision import transforms
 from src.datamodules.RGB.datasets.full_page_dataset import DatasetRGB, ImageDimensions
 from src.datamodules.RGB.utils.image_analytics import get_analytics
 from src.datamodules.RGB.utils.misc import validate_path_for_segmentation
-from src.datamodules.RGB.utils.twin_transforms import IntegerEncoding
 from src.datamodules.base_datamodule import AbstractDatamodule
+from src.datamodules.utils.single_transforms import IntegerEncoding
 from src.datamodules.utils.wrapper_transforms import OnlyImage, OnlyTarget
 from src.utils import utils
 

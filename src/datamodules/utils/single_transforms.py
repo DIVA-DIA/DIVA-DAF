@@ -5,6 +5,8 @@ import torch
 from PIL import Image
 from torchvision.transforms import Pad
 
+from src.datamodules.DivaHisDB.utils import functional as F_custom
+
 
 class ResizePad(object):
     """
@@ -142,3 +144,36 @@ class ResizePad(object):
     def __call__(self, img):
         img = self.resize_with_padding(img, self.target_size)
         return img
+
+
+class OneHotToPixelLabelling(object):
+    def __call__(self, tensor):
+        return F_custom.argmax_onehot(tensor)
+
+
+class OneHotEncoding(object):
+    def __init__(self, class_encodings):
+        self.class_encodings = class_encodings
+
+    def __call__(self, gt):
+        """
+        Args:
+
+        Returns:
+
+        """
+        return F_custom.gt_to_one_hot(gt, self.class_encodings)
+
+
+class IntegerEncoding(object):
+    def __init__(self, class_encodings):
+        self.class_encodings = class_encodings
+
+    def __call__(self, gt):
+        """
+        Args:
+
+        Returns:
+
+        """
+        return F_custom.gt_to_int_encoding(gt, self.class_encodings)
