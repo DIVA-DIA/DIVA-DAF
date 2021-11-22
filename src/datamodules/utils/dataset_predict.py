@@ -5,6 +5,7 @@ from torch import is_tensor
 from torchvision.datasets.folder import pil_loader
 from torchvision.transforms import ToTensor
 
+from src.datamodules.utils.misc import ImageDimensions
 from src.utils import utils
 
 log = utils.get_logger(__name__)
@@ -12,7 +13,7 @@ log = utils.get_logger(__name__)
 
 class DatasetPredict(data.Dataset):
 
-    def __init__(self, image_path_list: List[str],
+    def __init__(self, image_path_list: List[str], image_dims: ImageDimensions,
                  image_transform=None, target_transform=None, twin_transform=None,
                  classes=None, **kwargs):
         """
@@ -25,6 +26,8 @@ class DatasetPredict(data.Dataset):
         """
 
         self.image_path_list = list(image_path_list)
+
+        self.image_dims = image_dims
 
         # Init list
         self.classes = classes
@@ -54,6 +57,9 @@ class DatasetPredict(data.Dataset):
 
     def _load_data_and_gt(self, index):
         data_img = pil_loader(self.image_path_list[index])
+
+        assert data_img.height == self.image_dims.height and data_img.width == self.image_dims.width
+
         return data_img
 
     def _apply_transformation(self, img):

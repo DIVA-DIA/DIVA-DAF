@@ -13,17 +13,12 @@ from torch import is_tensor
 from torchvision.datasets.folder import pil_loader, has_file_allowed_extension
 from torchvision.transforms import ToTensor
 
+from src.datamodules.utils.misc import ImageDimensions
 from src.utils import utils
 
 IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.gif')
 
 log = utils.get_logger(__name__)
-
-
-@dataclass
-class ImageDimensions:
-    width: int
-    height: int
 
 
 class DatasetRGB(data.Dataset):

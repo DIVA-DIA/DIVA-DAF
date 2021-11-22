@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Union
 
@@ -67,3 +68,9 @@ def validate_path_for_segmentation(data_dir, data_folder_name: str, gt_folder_na
                 raise PathMissingDirinSplitDir(f'Folder {split.name} does not contain a {data_folder_name} '
                                                f'and {gt_folder_name} folder')
     return Path(data_dir)
+
+
+@dataclass
+class ImageDimensions:
+    width: int
+    height: int

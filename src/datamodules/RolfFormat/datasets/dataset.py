@@ -13,11 +13,13 @@ from torch import is_tensor
 from torchvision.datasets.folder import pil_loader
 from torchvision.transforms import ToTensor
 
+from src.datamodules.utils.misc import ImageDimensions
 from src.utils import utils
 
 IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.gif')
 
 log = utils.get_logger(__name__)
+
 
 @dataclass
 class DatasetSpecs:
@@ -29,10 +31,6 @@ class DatasetSpecs:
     range_from: int
     range_to: int
 
-@dataclass
-class ImageDimensions:
-    width: int
-    height: int
 
 class DatasetRolfFormat(data.Dataset):
     """A generic data loader where the images are arranged in this way: ::
