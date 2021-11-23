@@ -333,4 +333,5 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             experiment.log({f"confusion_matrix_{stage}_img/ep_{self.trainer.current_epoch}": wandb.Image(plt)},
                            commit=False)
         except ValueError as e:
-            return
+            log.warn('No wandb logger found. Confusion matrix images are not saved.')
+
