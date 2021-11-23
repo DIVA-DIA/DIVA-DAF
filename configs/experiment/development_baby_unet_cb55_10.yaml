@@ -27,7 +27,7 @@ seed: 42
 
 train: True
 test: True
-predict: True
+predict: False
 
 trainer:
     _target_: pytorch_lightning.Trainer
