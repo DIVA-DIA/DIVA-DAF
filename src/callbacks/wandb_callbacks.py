@@ -12,7 +12,7 @@ def get_wandb_logger(trainer: Trainer) -> WandbLogger:
             if isinstance(logger, WandbLogger):
                 return logger
 
-    raise Exception(
+    raise ValueError(
         "You are using wandb related callback, but WandbLogger was not found for some reason..."
     )
 

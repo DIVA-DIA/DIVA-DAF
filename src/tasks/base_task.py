@@ -303,8 +303,6 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
 
         # print(f'With all_gather: {str(len(outputs[0][OutputKeys.PREDICTION][0]))}')
         conf_mat_name = f'CM_epoch_{self.trainer.current_epoch}'
-        logger = get_wandb_logger(self.trainer)
-        experiment = logger.experiment
 
         # set figure size
         plt.figure(figsize=(14, 8))
@@ -325,8 +323,14 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         # save as csv or tsv to disc
         if self.trainer.is_global_zero:
             df.to_csv(path_or_buf=conf_mat_file_path, sep='\t')
-        # save tsv to wandb
-        experiment.save(glob_str=str(conf_mat_file_path), base_path=os.getcwd())
-        # names should be uniqe or else charts from different experiments in wandb will overlap
-        experiment.log({f"confusion_matrix_{stage}_img/ep_{self.trainer.current_epoch}": wandb.Image(plt)},
-                       commit=False)
+
+        try:
+            # save tsv to wandb
+            logger = get_wandb_logger(self.trainer)
+            experiment = logger.experiment
+            experiment.save(glob_str=str(conf_mat_file_path), base_path=os.getcwd())
+            # names should be uniqe or else charts from different experiments in wandb will overlap
+            experiment.log({f"confusion_matrix_{stage}_img/ep_{self.trainer.current_epoch}": wandb.Image(plt)},
+                           commit=False)
+        except ValueError as e:
+            return

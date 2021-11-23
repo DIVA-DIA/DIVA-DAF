@@ -29,7 +29,8 @@ def test_semantic_segmentation(data_dir_cropped, tmp_path):
     segmentation = SemanticSegmentationHisDB(model=model,
                                              optimizer=torch.optim.Adam(params=model.parameters()),
                                              loss_fn=torch.nn.CrossEntropyLoss(),
-                                             test_output_path=tmp_path
+                                             test_output_path=tmp_path,
+                                             confusion_matrix_val=True
                                              )
 
     # different paths needed later
