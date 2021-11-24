@@ -1,4 +1,3 @@
-from pathlib import Path
 from typing import Union, List, Optional
 
 import torch
@@ -7,10 +6,10 @@ from torchvision import transforms
 
 from src.datamodules.RGB.utils.single_transform import IntegerEncoding
 from src.datamodules.RolfFormat.datasets.dataset import DatasetRolfFormat, DatasetSpecs
-from src.datamodules.utils.misc import ImageDimensions
 from src.datamodules.RolfFormat.utils.image_analytics import get_analytics_data, get_analytics_gt, get_image_dims
 from src.datamodules.base_datamodule import AbstractDatamodule
 from src.datamodules.utils.dataset_predict import DatasetPredict
+from src.datamodules.utils.misc import ImageDimensions
 from src.datamodules.utils.wrapper_transforms import OnlyImage, OnlyTarget
 from src.utils import utils
 
@@ -62,7 +61,17 @@ class DataModuleRolfFormat(AbstractDatamodule):
                 analytics_gt['class_encodings'].append([class_specs['color']['R'],
                                                         class_specs['color']['G'],
                                                         class_specs['color']['B']])
-                analytics_gt['class_weights'].append(class_specs['weight'])
+                if 'weight' in class_specs:
+                    analytics_gt['class_weights'].append(class_specs['weight'])
+                else:
+                    analytics_gt['class_weights'].append(None)
+
+            if all(x is None for x in analytics_gt['class_weights']):
+                analytics_gt['class_weights'] = None
+            elif any(x is None for x in analytics_gt['class_weights']):
+                log.error('Some classes have a class weight and others do not. '
+                          'If you set class weights, you have to do this for all classes.')
+                raise ValueError
 
         self.image_dims = image_dims
         self.dims = (3, self.image_dims.width, self.image_dims.height)
@@ -72,7 +81,7 @@ class DataModuleRolfFormat(AbstractDatamodule):
         self.class_encodings = analytics_gt['class_encodings']
         self.class_encodings_tensor = torch.tensor(self.class_encodings) / 255
         self.num_classes = len(self.class_encodings)
-        self.class_weights = analytics_gt['class_weights']
+        self.class_weights = torch.as_tensor(analytics_gt['class_weights'])
 
         self.twin_transform = None
         self.image_transform = OnlyImage(transforms.Compose([transforms.ToTensor(),
@@ -84,6 +93,9 @@ class DataModuleRolfFormat(AbstractDatamodule):
 
         self.shuffle = shuffle
         self.drop_last = drop_last
+
+        # Check default attributes using base_datamodule function
+        self._check_attributes()
 
     def _print_analytics_data(self, analytics_data):
         indent = 4 * ' '

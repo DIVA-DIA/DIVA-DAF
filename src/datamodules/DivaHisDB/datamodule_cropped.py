@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Union, List, Optional
 
+import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
@@ -37,7 +38,7 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
         self.std = analytics_data['std']
         self.class_encodings = analytics_gt['class_encodings']
         self.num_classes = len(self.class_encodings)
-        self.class_weights = analytics_gt['class_weights']
+        self.class_weights = torch.as_tensor(analytics_gt['class_weights'])
 
         self.twin_transform = TwinRandomCrop(crop_size=crop_size)
         self.image_transform = OnlyImage(transforms.Compose([transforms.ToTensor(),
@@ -60,6 +61,9 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
         self.selection_test = selection_test
 
         self.dims = (3, crop_size, crop_size)
+
+        # Check default attributes using base_datamodule function
+        self._check_attributes()
 
     def setup(self, stage: Optional[str] = None):
         super().setup()

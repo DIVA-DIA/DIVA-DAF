@@ -39,7 +39,7 @@ class DataModuleCroppedRGB(AbstractDatamodule):
         self.class_encodings = analytics_gt['class_encodings']
         self.class_encodings_tensor = torch.tensor(self.class_encodings) / 255
         self.num_classes = len(self.class_encodings)
-        self.class_weights = analytics_gt['class_weights']
+        self.class_weights = torch.as_tensor(analytics_gt['class_weights'])
 
         self.twin_transform = TwinRandomCrop(crop_size=crop_size)
         self.image_transform = OnlyImage(transforms.Compose([transforms.ToTensor(),
@@ -60,6 +60,9 @@ class DataModuleCroppedRGB(AbstractDatamodule):
         self.selection_test = selection_test
 
         self.dims = (3, crop_size, crop_size)
+
+        # Check default attributes using base_datamodule function
+        self._check_attributes()
 
     def setup(self, stage: Optional[str] = None):
         super().setup()
