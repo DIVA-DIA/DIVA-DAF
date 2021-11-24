@@ -28,7 +28,7 @@ class DatasetPredict(data.Dataset):
         """
 
         self._raw_image_path_list = list(image_path_list)
-        self.image_path_list = self.expend_glob_path_list(glob_path_list=self.raw_image_path_list)
+        self.image_path_list = self.expend_glob_path_list(glob_path_list=self._raw_image_path_list)
 
         self.image_dims = image_dims
 
