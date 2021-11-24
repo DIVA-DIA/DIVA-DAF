@@ -10,7 +10,7 @@ from tests.test_data.dummy_data_hisdb.dummy_data import data_dir
 @pytest.fixture
 def file_path_list(data_dir):
     test_data_path = data_dir / 'test' / 'data'
-    return list(test_data_path.iterdir())
+    return [str(p) for p in test_data_path.iterdir()]
 
 
 @pytest.fixture
