@@ -14,7 +14,7 @@ from src.tasks.utils.outputs import OutputKeys, reduce_dict
 log = utils.get_logger(__name__)
 
 
-class SemanticSegmentationHisDB(AbstractTask):
+class SemanticSegmentationCroppedRGB(AbstractTask):
 
     def __init__(self,
                  model: nn.Module,
@@ -73,10 +73,8 @@ class SemanticSegmentationHisDB(AbstractTask):
     ########################################### TRAIN ###########################################
     #############################################################################################
     def training_step(self, batch, batch_idx, **kwargs):
-        input_batch, target_batch, mask_batch = batch
-        metric_kwargs = {'hisdbiou': {'mask': mask_batch}}
-        output = super().training_step(batch=(input_batch, target_batch), batch_idx=batch_idx,
-                                     metric_kwargs=metric_kwargs)
+        input_batch, target_batch = batch
+        output = super().training_step(batch=(input_batch, target_batch), batch_idx=batch_idx)
         return reduce_dict(input_dict=output, key_list=[OutputKeys.LOSS])
 
     #############################################################################################
@@ -84,10 +82,8 @@ class SemanticSegmentationHisDB(AbstractTask):
     #############################################################################################
 
     def validation_step(self, batch, batch_idx, **kwargs):
-        input_batch, target_batch, mask_batch = batch
-        metric_kwargs = {'hisdbiou': {'mask': mask_batch}}
-        output = super().validation_step(batch=(input_batch, target_batch), batch_idx=batch_idx,
-                                       metric_kwargs=metric_kwargs)
+        input_batch, target_batch = batch
+        output = super().validation_step(batch=(input_batch, target_batch), batch_idx=batch_idx)
         return reduce_dict(input_dict=output, key_list=[])
 
     #############################################################################################
@@ -95,9 +91,8 @@ class SemanticSegmentationHisDB(AbstractTask):
     #############################################################################################
 
     def test_step(self, batch, batch_idx, **kwargs):
-        input_batch, target_batch, mask_batch, input_idx = batch
-        metric_kwargs = {'hisdbiou': {'mask': mask_batch}}
-        output = super().test_step(batch=(input_batch, target_batch), batch_idx=batch_idx, metric_kwargs=metric_kwargs)
+        input_batch, target_batch, input_idx = batch
+        output = super().test_step(batch=(input_batch, target_batch), batch_idx=batch_idx)
 
         if not hasattr(self.trainer.datamodule, 'get_img_name_coordinates'):
             raise NotImplementedError('Datamodule does not provide detailed information of the crop')
@@ -124,5 +119,5 @@ class SemanticSegmentationHisDB(AbstractTask):
         gt_folder_name = self.trainer.datamodule.gt_folder_name
 
         log.info(f'To run the merging of patches:')
-        log.info(f'python tools/merge_cropped_output_HisDB.py -d {datamodule_path} -p {prediction_path} '
-                 f'-o {output_path} -df {data_folder_name} -gf {gt_folder_name}')
+        log.info(f'python tools/merge_cropped_output_RGB.py -d {datamodule_path} -p {prediction_path} -o {output_path} '
+                 f'-df {data_folder_name} -gf {gt_folder_name}')

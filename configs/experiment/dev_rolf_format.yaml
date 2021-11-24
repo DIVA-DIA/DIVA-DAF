@@ -5,7 +5,7 @@
 
 defaults:
     - /plugins:         default.yaml
-    - /task:            semantic_segmentation_RGB_full_page.yaml
+    - /task:            semantic_segmentation_RGB.yaml
     - /datamodule:      rolf_format_dev.yaml
     - /loss:            crossentropyloss.yaml
     - /metric:          iou.yaml

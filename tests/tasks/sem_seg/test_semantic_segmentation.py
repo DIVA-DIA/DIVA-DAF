@@ -8,7 +8,7 @@ from pl_bolts.models.vision import UNet
 from pytorch_lightning import seed_everything
 
 from src.datamodules.DivaHisDB.datamodule_cropped import DivaHisDBDataModuleCropped
-from src.tasks.DivaHisDB.semantic_segmentation import SemanticSegmentationHisDB
+from src.tasks.DivaHisDB.semantic_segmentation_cropped import SemanticSegmentationCroppedHisDB
 from tests.test_data.dummy_data_hisdb.dummy_data import data_dir_cropped
 
 
@@ -26,12 +26,12 @@ def test_semantic_segmentation(data_dir_cropped, tmp_path):
         return UNet(num_classes=len(data_module.class_encodings), num_layers=2, features_start=32)
 
     model = baby_unet()
-    segmentation = SemanticSegmentationHisDB(model=model,
-                                             optimizer=torch.optim.Adam(params=model.parameters()),
-                                             loss_fn=torch.nn.CrossEntropyLoss(),
-                                             test_output_path=tmp_path,
-                                             confusion_matrix_val=True
-                                             )
+    segmentation = SemanticSegmentationCroppedHisDB(model=model,
+                                                    optimizer=torch.optim.Adam(params=model.parameters()),
+                                                    loss_fn=torch.nn.CrossEntropyLoss(),
+                                                    test_output_path=tmp_path,
+                                                    confusion_matrix_val=True
+                                                    )
 
     # different paths needed later
     patches_path = segmentation.test_output_path / 'patches'
