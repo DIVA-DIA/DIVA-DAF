@@ -33,7 +33,7 @@ class RotNetDivaHisDBDataModuleCropped(AbstractDatamodule):
         self.std = analytics_data['std']
         self.class_encodings = np.array(ROTATION_ANGLES)
         self.num_classes = len(self.class_encodings)
-        self.class_weights = torch.cuda.FloatTensor([1 / self.num_classes for _ in range(self.num_classes)])
+        self.class_weights = torch.as_tensor([1 / self.num_classes for _ in range(self.num_classes)])
 
         self.image_transform = OnlyImage(transforms.Compose([transforms.ToTensor(),
                                                              transforms.Normalize(mean=self.mean, std=self.std),
