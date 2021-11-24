@@ -116,13 +116,16 @@ def print_config(
                 "optimizer",
                 "datamodule",
                 "callbacks",
+                "loss",
                 "metric",
                 "logger",
                 "seed",
                 "train",
-                "test"
+                "test",
+                "predict"
         ),
         resolve: bool = True,
+        add_missing_fields: bool = True,
 ) -> None:
     """Prints content of DictConfig using Rich library and its tree structure.
 
@@ -135,6 +138,12 @@ def print_config(
 
     style = "dim"
     tree = Tree(f":gear: CONFIG", style=style, guide_style=style)
+
+    if add_missing_fields:
+        fields = list(fields)
+        for key in sorted(config.keys()):
+            if key not in fields:
+                fields.append(key)
 
     for field in fields:
         branch = tree.add(field, style=style, guide_style=style)
