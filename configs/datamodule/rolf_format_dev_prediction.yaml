@@ -56,10 +56,10 @@ test_specs:
         range_to:   1099
 
 pred_file_path_list:
-    - "/netscratch/datasets/semantic_segmentation/rolf_format/SetA1_sizeM_Rolf/layoutR/data/A1-MR-page-1061.jpg"
-    - "/netscratch/datasets/semantic_segmentation/rolf_format/SetA1_sizeM_Rolf/layoutR/data/A1-MR-page-1062.jpg"
-    - "/netscratch/datasets/semantic_segmentation/rolf_format/SetA1_sizeM_Rolf/layoutR/data/A1-MR-page-1063.jpg"
-    - "/netscratch/datasets/semantic_segmentation/rolf_format/SetA1_sizeM_Rolf/layoutR/data/A1-MR-page-1064.jpg"
+    - "/netscratch/datasets/semantic_segmentation/rolf_format/SetA1_sizeM_Rolf/layoutR/data/A1-MR-page-106[0-2].jpg"
+    - "/netscratch/datasets/semantic_segmentation/rolf_format/SetA1_sizeM_Rolf/layoutR/data/A1-MR-page-106[7,9].jpg"
+    - "/netscratch/datasets/semantic_segmentation/rolf_format/SetA1_sizeM_Rolf/layoutR/data/A1-MR-page-107*.jpg"
+    - "/netscratch/datasets/semantic_segmentation/rolf_format/SetA1_sizeM_Rolf/layoutR/data/A1-MR-page-1085.jpg"
 
 image_dims:
     width:  640

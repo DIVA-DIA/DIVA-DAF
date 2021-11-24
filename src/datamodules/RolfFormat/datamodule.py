@@ -233,4 +233,4 @@ class DataModuleRolfFormat(AbstractDatamodule):
         if not hasattr(self, 'predict'):
             raise Exception('This method can just be called during prediction')
 
-        return Path(self.predict.image_path_list[index]).stem
+        return self.predict.image_path_list[index].stem

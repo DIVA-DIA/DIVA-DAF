@@ -1,3 +1,5 @@
+from glob import glob
+from pathlib import Path
 from typing import List
 
 import torch.utils.data as data
@@ -25,7 +27,8 @@ class DatasetPredict(data.Dataset):
         twin_transform : callable
         """
 
-        self.image_path_list = list(image_path_list)
+        self._raw_image_path_list = list(image_path_list)
+        self.image_path_list = self.expend_glob_path_list(glob_path_list=self.raw_image_path_list)
 
         self.image_dims = image_dims
 
@@ -84,3 +87,13 @@ class DatasetPredict(data.Dataset):
             img = ToTensor()(img)
 
         return img
+
+    @staticmethod
+    def expend_glob_path_list(glob_path_list: List[str]) -> List[Path]:
+        output_list = []
+        for glob_path in glob_path_list:
+            for s in sorted(glob(glob_path)):
+                path = Path(s)
+                if path not in output_list:
+                    output_list.append(Path(s))
+        return output_list
