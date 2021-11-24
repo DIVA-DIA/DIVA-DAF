@@ -43,6 +43,10 @@ task:
     confusion_matrix_val: False
     confusion_matrix_test: False
 
+model:
+    header:
+        in_channels: 109512
+
 datamodule:
     _target_: src.datamodules.RotNet.datamodule_cropped.RotNetDivaHisDBDataModuleCropped
 
