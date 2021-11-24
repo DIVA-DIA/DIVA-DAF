@@ -11,7 +11,7 @@ hydra-colorlog==1.1.0
 hydra-optuna-sweeper==1.1.0
 
 # --------- loggers --------- #
-wandb==0.12.6
+wandb>=0.12.6
 
 # --------- others --------- #
 rich==10.1.0
