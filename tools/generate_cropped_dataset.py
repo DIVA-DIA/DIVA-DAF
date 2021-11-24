@@ -322,7 +322,7 @@ if __name__ == '__main__':
     # -i
     # /dataset/DIVA-HisDB/segmentation/CB55
     # -o
-    # /netscratch/datasets/semantic_segmentation/datasets_cropped/temp-CB55
+    # /net/research-hisdoc/datasets/semantic_segmentation/datasets_cropped/temp-CB55
     # -tr
     # 300
     # -v
@@ -332,7 +332,7 @@ if __name__ == '__main__':
 
     # dataset_generator = CroppedDatasetGenerator(
     #     input_path=Path('/dataset/DIVA-HisDB/segmentation/CB55'),
-    #     output_path=Path('/netscratch/datasets/semantic_segmentation/datasets_cropped/CB55'),
+    #     output_path=Path('/net/research-hisdoc/datasets/semantic_segmentation/datasets_cropped/CB55'),
     #     crop_size_train=300,
     #     crop_size_val=300,
     #     crop_size_test=256,

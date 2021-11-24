@@ -5,7 +5,7 @@ batch_size: 8
 shuffle: True
 drop_last: False
 
-data_root: /netscratch/datasets/semantic_segmentation/rolf_format
+data_root: /net/research-hisdoc/datasets/semantic_segmentation/rolf_format
 
 train_specs:
     append1:
