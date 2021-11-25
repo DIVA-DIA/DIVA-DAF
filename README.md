@@ -112,3 +112,18 @@ e.g.
 trainer:
     resume_from_checkpoint: /path/to/.ckpt/file
 ```
+
+### Freezing model parts
+You can freeze both parts of the model (backbone or header) with the `freeze` flag in the config. 
+E.g. you want to freeze the backbone:
+In the command line:
+```
+python run.py +model.backbone.freeze=True
+```
+In the config (e.g. model/backbone/baby_unet_model.yaml):
+```
+...
+freeze: True
+...
+```
+CARE: You can not train a model when you do not have trainable parameters (e.g. freezing backbone and header).
