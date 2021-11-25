@@ -39,7 +39,7 @@ def execute(config: DictConfig) -> Optional[float]:
     header: LightningModule = _load_model_part(config=config, part_name='header')
 
     # container model
-    model: LightningModule = BackboneHeaderModel(backbone=backbone, header=header)
+    model: BackboneHeaderModel = BackboneHeaderModel(backbone=backbone, header=header)
 
     # Init optimizer
     log.info(f"Instantiating optimizer <{config.optimizer._target_}>")
@@ -112,9 +112,11 @@ def execute(config: DictConfig) -> Optional[float]:
         if trainer.is_global_zero:
             with open('config.yaml', mode='w') as fp:
                 OmegaConf.save(config=config, f=fp)
-            run_config_folder_path = Path(wandb.run.dir) / 'run_config'
-            run_config_folder_path.mkdir(exist_ok=True)
-            shutil.copyfile('config.yaml', str(run_config_folder_path / 'config.yaml'))
+            if config.get('logger') is not None and 'wandb' in config.get('logger'):
+                if '_target_' in config.logger.wandb:
+                    run_config_folder_path = Path(wandb.run.dir) / 'run_config'
+                    run_config_folder_path.mkdir(exist_ok=True)
+                    shutil.copyfile('config.yaml', str(run_config_folder_path / 'config.yaml'))
 
     if config.train:
         # Train the model
@@ -124,7 +126,12 @@ def execute(config: DictConfig) -> Optional[float]:
     # Evaluate model on test set after training
     if config.test:
         log.info("Starting testing!")
-        trainer.test(model=task, datamodule=datamodule)
+        results = trainer.test(model=task, datamodule=datamodule)
+        log.info(f'Test output: {results}')
+
+    if config.predict:
+        log.info("Starting prediction!")
+        trainer.predict(model=task, datamodule=datamodule)
 
     # Make sure everything closed properly
     log.info("Finalizing!")
@@ -158,11 +165,17 @@ def _load_model_part(config: DictConfig, part_name: str):
         LightningModule: The loaded network
     """
 
+    freeze = False
     strict = True
     if 'strict' in config.model.get(part_name):
         log.info(f"The model part {part_name} will be loaded with strict={config.model.get(part_name).strict}")
         strict = config.model.get(part_name).strict
         del config.model.get(part_name).strict
+
+    if 'freeze' in config.model.get(part_name):
+        log.info(f"The model part {part_name} is frozen during all stages!")
+        freeze = True
+        del config.model.get(part_name).freeze
 
     if "path_to_weights" in config.model.get(part_name):
         log.info(f"Loading {part_name} weights from <{config.model.get(part_name).path_to_weights}>")
@@ -178,7 +191,16 @@ def _load_model_part(config: DictConfig, part_name: str):
         if config.test and not config.train:
             log.warn(f"You are just testing without a trained {part_name} model! "
                      "Use 'path_to_weights' in your model to load a trained model")
+        if config.predict and not config.train:
+            log.warn(f"You are just predicting without a trained {part_name} model! "
+                     "Use 'path_to_weights' in your model to load a trained model")
         part: LightningModule = hydra.utils.instantiate(config.model.get(part_name))
+
+    if freeze:
+        for param in part.parameters():
+            param.requires_grad = False
+
+        part.eval()
 
     return part
 

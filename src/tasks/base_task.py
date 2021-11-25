@@ -60,19 +60,23 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             confusion_matrix_test: Optional[bool] = False,
             confusion_matrix_log_every_n_epoch: Optional[int] = 1,
             lr: float = 1e-3,
-            test_output_path: Optional[Union[str, Path]] = 'predictions'
+            test_output_path: Optional[Union[str, Path]] = 'test_output',
+            predict_output_path: Optional[Union[str, Path]] = 'predict_output'
+
     ):
         super().__init__()
 
         resolver_name = 'task'
-        OmegaConf.register_new_resolver(
-            resolver_name,
-            lambda name: getattr(self, name),
-            use_cache=False
-        )
+        if not OmegaConf.has_resolver(resolver_name):
+            OmegaConf.register_new_resolver(
+                resolver_name,
+                lambda name: getattr(self, name),
+                use_cache=False
+            )
 
         if model is not None:
             self.model = model
+
         self.loss_fn = {} if loss_fn is None else get_callable_dict(loss_fn)
         self.optimizer = optimizer
         self.scheduler = scheduler
@@ -87,6 +91,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         self.confusion_matrix_log_every_n_epoch = confusion_matrix_log_every_n_epoch
         self.lr = lr
         self.test_output_path = Path(test_output_path)
+        self.predict_output_path = Path(predict_output_path)
         self.save_hyperparameters()
 
     def setup(self, stage: str):
@@ -104,6 +109,9 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             elif stage == 'test':
                 num_samples = len(self.trainer.datamodule.test)
                 datasplit_name = 'test'
+            elif stage == 'predict':
+                num_samples = len(self.trainer.datamodule.predict)
+                datasplit_name = 'predict'
             else:
                 log.warn(f'Unknown stage ({stage}) during setup!')
                 num_samples = -1
@@ -129,6 +137,11 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
                 look like this: {'B': {'x': 'value', 'y': 'value'}}
 
         """
+        for key in self.loss_fn:
+            if hasattr(self.loss_fn[key], 'weight') and self.loss_fn[key].weight is not None:
+                if torch.is_tensor(self.loss_fn[key].weight):
+                    self.loss_fn[key].weight = self.loss_fn[key].weight.cuda(device=self.device)
+
         if metric_kwargs is None:
             metric_kwargs = {}
         x, y = batch
@@ -230,6 +243,10 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
 
         self.metric_conf_mat_test.reset()
 
+    def predict_step(self, batch: Any, batch_idx: int, dataloader_idx: Optional[int] = None) -> Any:
+        y_hat = self(batch)
+        return {OutputKeys.PREDICTION: y_hat}
+
     def configure_optimizers(self) -> Union[Optimizer, Tuple[List[Optimizer], List[_LRScheduler]]]:
         optimizer = self.optimizer
         if not isinstance(self.optimizer, Optimizer):
@@ -292,8 +309,6 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
 
         # print(f'With all_gather: {str(len(outputs[0][OutputKeys.PREDICTION][0]))}')
         conf_mat_name = f'CM_epoch_{self.trainer.current_epoch}'
-        logger = get_wandb_logger(self.trainer)
-        experiment = logger.experiment
 
         # set figure size
         plt.figure(figsize=(14, 8))
@@ -314,8 +329,15 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         # save as csv or tsv to disc
         if self.trainer.is_global_zero:
             df.to_csv(path_or_buf=conf_mat_file_path, sep='\t')
-        # save tsv to wandb
-        experiment.save(glob_str=str(conf_mat_file_path), base_path=os.getcwd())
-        # names should be uniqe or else charts from different experiments in wandb will overlap
-        experiment.log({f"confusion_matrix_{stage}_img/ep_{self.trainer.current_epoch}": wandb.Image(plt)},
-                       commit=False)
+
+        try:
+            # save tsv to wandb
+            logger = get_wandb_logger(self.trainer)
+            experiment = logger.experiment
+            experiment.save(glob_str=str(conf_mat_file_path), base_path=os.getcwd())
+            # names should be uniqe or else charts from different experiments in wandb will overlap
+            experiment.log({f"confusion_matrix_{stage}_img/ep_{self.trainer.current_epoch}": wandb.Image(plt)},
+                           commit=False)
+        except ValueError as e:
+            log.warn('No wandb logger found. Confusion matrix images are not saved.')
+

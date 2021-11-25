@@ -10,96 +10,45 @@ import math
 from datetime import datetime
 from pathlib import Path
 
-import numpy as np
-from PIL import Image
+from torchvision.datasets.folder import has_file_allowed_extension, pil_loader
 from torchvision.transforms import functional as F
-from torchvision.utils import save_image
 from tqdm import tqdm
 
-IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm']
+IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.gif')
+JPG_EXTENSIONS = ('.jpg', '.jpeg')
 
 
-def has_extension(filename, extensions):
-    """Checks if a file is an allowed extension.
-
-    Adapted from https://github.com/pytorch/vision/blob/master/torchvision/datasets/folder.py.
-
-    Parameters
-    ----------
-    filename : string
-        path to a file
-    extensions : list
-        extensions to match against
-    Returns
-    -------
-    bool
-        True if the filename ends with one of given extensions, false otherwise.
-    """
-    filename_lower = filename.lower()
-    return any(filename_lower.endswith(ext) for ext in extensions)
-
-
-def pil_loader(path, to_rgb=True):
-    pic = Image.open(path)
-    if to_rgb:
-        pic = convert_to_rgb(pic)
-    return pic
-
-
-def convert_to_rgb(pic):
-    if pic.mode == "RGB":
-        pass
-    elif pic.mode in ("CMYK", "RGBA", "P"):
-        pic = pic.convert('RGB')
-    elif pic.mode == "I":
-        img = (np.divide(np.array(pic, np.int32), 2 ** 16 - 1) * 255).astype(np.uint8)
-        pic = Image.fromarray(np.stack((img, img, img), axis=2))
-    elif pic.mode == "I;16":
-        img = (np.divide(np.array(pic, np.int16), 2 ** 8 - 1) * 255).astype(np.uint8)
-        pic = Image.fromarray(np.stack((img, img, img), axis=2))
-    elif pic.mode == "L":
-        img = np.array(pic).astype(np.uint8)
-        pic = Image.fromarray(np.stack((img, img, img), axis=2))
-    else:
-        raise TypeError(f"unsupported image type {pic.mode}")
-    return pic
-
-
-def get_gt_data_paths_uncropped(directory):
+def get_img_paths_uncropped(directory):
     """
     Parameters
     ----------
     directory: string
-        parent directory with gt and data folder inside
+        parent directory with images inside
 
     Returns
     -------
-    paths: list of tuples
+    paths: list of paths
 
     """
 
     paths = []
     directory = Path(directory).expanduser()
 
-    path_imgs = Path(directory) / "data"
-    path_gts = Path(directory) / "gt"
+    if not directory.is_dir():
+        logging.error(f'Directory not found ({directory})')
 
-    if not (path_imgs.is_dir() or path_gts.is_dir()):
-        logging.error("folder data or gt not found in " + str(directory))
+    for subdir in sorted(directory.iterdir()):
+        if not subdir.is_dir():
+            continue
 
-    for img_name, gt_name in zip(sorted(path_imgs.iterdir()), sorted(path_gts.iterdir())):
-        assert has_extension(str(img_name), IMG_EXTENSIONS) == has_extension(str(gt_name), IMG_EXTENSIONS), \
-            'get_gt_data_paths_uncropped(): image file aligned with non-image file'
-
-        if has_extension(str(img_name), IMG_EXTENSIONS) and has_extension(str(gt_name), IMG_EXTENSIONS):
-            assert img_name.suffix[0] == gt_name.suffix[0], \
-                'get_gt_data_paths_uncropped(): mismatch between data filename and gt filename'
-            paths.append((path_imgs / img_name, path_gts / gt_name))
+        for img_name in sorted(subdir.iterdir()):
+            if has_file_allowed_extension(str(img_name), IMG_EXTENSIONS):
+                paths.append((subdir / img_name, str(subdir.stem)))
 
     return paths
 
 
-class ToTensorSlidingWindowCrop(object):
+class ImageCrop(object):
     """
     Crop the data and ground truth image at the specified coordinates to the specified size and convert
     them to a tensor.
@@ -108,7 +57,7 @@ class ToTensorSlidingWindowCrop(object):
     def __init__(self, crop_size):
         self.crop_size = crop_size
 
-    def __call__(self, img, gt, coordinates):
+    def __call__(self, img, coordinates):
         """
         Args:
             img (PIL Image): Data image to be cropped and converted to tensor.
@@ -123,10 +72,8 @@ class ToTensorSlidingWindowCrop(object):
 
         img_crop = F.to_tensor(
             F.crop(img=img, left=x_position, top=y_position, width=self.crop_size, height=self.crop_size))
-        gt_crop = F.to_tensor(
-            F.crop(img=gt, left=x_position, top=y_position, width=self.crop_size, height=self.crop_size))
 
-        return img_crop, gt_crop
+        return img_crop
 
 
 class CroppedDatasetGenerator:
@@ -167,6 +114,11 @@ class CroppedDatasetGenerator:
 
     def write_crops(self):
         info_list = ['Running CroppedDatasetGenerator.write_crops():',
+                     f'- full_command:',
+                     f'python tools/generate_cropped_dataset.py -i {self.input_path} -o {self.output_path} '
+                     f'-tr {self.crop_size_train} -v {self.crop_size_val} -te {self.crop_size_test} -ov {self.overlap} '
+                     f'-l {self.leading_zeros_length}',
+                     f'',
                      f'- start_time:       \t{datetime.now():%Y-%m-%d_%H-%M-%S}',
                      f'- input_path:       \t{self.input_path}',
                      f'- output_path:      \t{self.output_path}',
@@ -211,49 +163,52 @@ class CropGenerator:
         self.step_size = int(self.crop_size * (1 - self.overlap))
 
         # List of tuples that contain the path to the gt and image that belong together
-        self.img_paths = get_gt_data_paths_uncropped(input_path)
+        self.img_paths = get_img_paths_uncropped(input_path)
         self.num_imgs_in_set = len(self.img_paths)
         if self.num_imgs_in_set == 0:
             raise RuntimeError("Found 0 images in subfolders of: {} \n Supported image extensions are: {}".format(
                 input_path, ",".join(IMG_EXTENSIONS)))
 
+        self.current_split = ''
         self.current_img_index = -1
 
         self.img_names_sizes, self.num_horiz_crops, self.num_vert_crops = self._get_img_size_and_crop_numbers()
         self.crop_list = self._get_crop_list()
 
     def write_crops(self):
-        crop_function = ToTensorSlidingWindowCrop(self.crop_size)
+        crop_function = ImageCrop(self.crop_size)
 
         for img_index, x, y in tqdm(self.crop_list, desc=self.progress_title):
-            self._load_image_and_var(img_index=img_index)
+            self._load_image(img_index=img_index)
             coordinates = (x, y)
 
-            img_full_name = self.img_names_sizes[img_index][0]
+            split_name = self.img_names_sizes[img_index][0]
+            img_full_name = self.img_names_sizes[img_index][1]
             img_full_name = Path(img_full_name)
             img_name = img_full_name.stem
-            dest_folder_data = self.output_path / 'data' / img_name
-            dest_folder_gt = self.output_path / 'gt' / img_name
-            dest_folder_data.mkdir(parents=True, exist_ok=True)
-            dest_folder_gt.mkdir(parents=True, exist_ok=True)
+            dest_folder = self.output_path / split_name / img_name
+            dest_folder.mkdir(parents=True, exist_ok=True)
 
             extension = img_full_name.suffix
             filename = f'{img_name}_x{x:0{self.leading_zeros_length}d}_y{y:0{self.leading_zeros_length}d}{extension}'
 
-            dest_filename_data = dest_folder_data / filename
-            dest_filename_gt = dest_folder_gt / filename
+            dest_filename = dest_folder / filename
 
             if not self.override_existing:
-                if dest_filename_data.exists() and dest_filename_gt.exists():
+                if dest_filename.exists():
                     continue
 
-            img, gt = self.get_crops(self.current_data_img, self.current_gt_img,
-                                     coordinates=coordinates, crop_function=crop_function)
+            img = self.get_crop(self.current_img, coordinates=coordinates, crop_function=crop_function)
 
-            save_image(img, dest_filename_data)
-            save_image(gt, dest_filename_gt)
+            pil_img = F.to_pil_image(img, mode='RGB')
 
-    def _load_image_and_var(self, img_index):
+            if extension in JPG_EXTENSIONS:
+                pil_img.save(dest_filename, quality=95)
+            else:
+                # save_image(img, dest_filename)
+                pil_img.save(dest_filename)
+
+    def _load_image(self, img_index):
         """
         Inits the variables responsible of tracking which crop should be taken next, the current images and the like.
         This should be run every time a new page gets loaded for the test-set
@@ -263,28 +218,25 @@ class CropGenerator:
             return
 
         # Load image
-        self.current_data_img = pil_loader(self.img_paths[img_index][0])
-        self.current_gt_img = pil_loader(self.img_paths[img_index][1])
+        self.current_img = pil_loader(self.img_paths[img_index][0])
 
         # Update pointer to current image
         self.current_img_index = img_index
+        self.current_split = self.img_paths[img_index][1]
 
-    def get_crops(self, img, gt, coordinates, crop_function):
-        img, gt = crop_function(img, gt, coordinates)
-        return img, gt
+    def get_crop(self, img, coordinates, crop_function):
+        img = crop_function(img, coordinates)
+        return img
 
     def _get_img_size_and_crop_numbers(self):
         # TODO documentation
-        img_names_sizes = []  # list of tuples -> (gt_img_name, img_size (H, W))
+        img_names_sizes = []  # list of tuples -> (split_name, img_name, img_size (H, W))
         num_horiz_crops = []
         num_vert_crops = []
 
-        for img_path, gt_path in self.img_paths:
+        for img_path, split_name in self.img_paths:
             data_img = pil_loader(img_path)
-            gt_img = pil_loader(gt_path)
-            # Ensure that data and gt image are of the same size
-            assert gt_img.size == data_img.size
-            img_names_sizes.append((gt_path.name, data_img.size))
+            img_names_sizes.append((split_name, img_path.name, data_img.size))
             num_horiz_crops.append(math.ceil((data_img.size[0] - self.crop_size) / self.step_size + 1))
             num_vert_crops.append(math.ceil((data_img.size[1] - self.crop_size) / self.step_size + 1))
 
@@ -300,18 +252,18 @@ class CropGenerator:
         # X coordinate
         if hcrop_index == self.num_horiz_crops[img_index] - 1:
             # We are at the end of a line
-            x_position = self.img_names_sizes[img_index][1][0] - self.crop_size
+            x_position = self.img_names_sizes[img_index][2][0] - self.crop_size
         else:
             x_position = self.step_size * hcrop_index
-            assert x_position < self.img_names_sizes[img_index][1][0] - self.crop_size
+            assert x_position < self.img_names_sizes[img_index][2][0] - self.crop_size
 
         # Y coordinate
         if vcrop_index == self.num_vert_crops[img_index] - 1:
             # We are at the bottom end
-            y_position = self.img_names_sizes[img_index][1][1] - self.crop_size
+            y_position = self.img_names_sizes[img_index][2][1] - self.crop_size
         else:
             y_position = self.step_size * vcrop_index
-            assert y_position < self.img_names_sizes[img_index][1][1] - self.crop_size
+            assert y_position < self.img_names_sizes[img_index][2][1] - self.crop_size
 
         return img_index, x_position, y_position
 
@@ -370,7 +322,7 @@ if __name__ == '__main__':
     # -i
     # /dataset/DIVA-HisDB/segmentation/CB55
     # -o
-    # /netscratch/datasets/semantic_segmentation/datasets_cropped/temp-CB55
+    # /net/research-hisdoc/datasets/semantic_segmentation/datasets_cropped/temp-CB55
     # -tr
     # 300
     # -v
@@ -380,7 +332,7 @@ if __name__ == '__main__':
 
     # dataset_generator = CroppedDatasetGenerator(
     #     input_path=Path('/dataset/DIVA-HisDB/segmentation/CB55'),
-    #     output_path=Path('/netscratch/datasets/semantic_segmentation/datasets_cropped/CB55'),
+    #     output_path=Path('/net/research-hisdoc/datasets/semantic_segmentation/datasets_cropped/CB55'),
     #     crop_size_train=300,
     #     crop_size_val=300,
     #     crop_size_test=256,

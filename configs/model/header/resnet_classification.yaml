@@ -1,0 +1,5 @@
+_target_: src.models.headers.fully_connected.ResNetHeader
+
+num_classes: ${datamodule:num_classes}
+# needs to be calculated from the output of the last layer of the backbone (do not forget to flatten!)
+in_channels: 109512

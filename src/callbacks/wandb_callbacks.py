@@ -2,6 +2,8 @@ from pytorch_lightning import Callback, Trainer
 from pytorch_lightning.loggers import LoggerCollection, WandbLogger
 from pytorch_lightning.utilities import rank_zero_only
 
+from src.utils import utils
+
 
 def get_wandb_logger(trainer: Trainer) -> WandbLogger:
     if isinstance(trainer.logger, WandbLogger):
@@ -12,7 +14,7 @@ def get_wandb_logger(trainer: Trainer) -> WandbLogger:
             if isinstance(logger, WandbLogger):
                 return logger
 
-    raise Exception(
+    raise ValueError(
         "You are using wandb related callback, but WandbLogger was not found for some reason..."
     )
 
@@ -26,5 +28,9 @@ class WatchModelWithWandb(Callback):
 
     @rank_zero_only
     def on_train_start(self, trainer, pl_module):
-        logger = get_wandb_logger(trainer=trainer)
-        logger.watch(model=trainer.model, log=self.log, log_freq=self.log_freq)
+        try:
+            logger = get_wandb_logger(trainer=trainer)
+            logger.watch(model=pl_module.model, log=self.log, log_freq=self.log_freq)
+        except ValueError as e:
+            logger = utils.get_logger(__name__)
+            logger.error('No wandb logger found. WatchModelWithWandb callback will not do anything.')

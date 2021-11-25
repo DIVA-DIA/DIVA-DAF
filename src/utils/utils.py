@@ -93,6 +93,11 @@ def check_config(config: DictConfig) -> None:
         seed = random.randint(np.iinfo(np.uint32).min, np.iinfo(np.uint32).max)
         config['seed'] = seed
         log.info(f"No seed specified! Seed set to {seed}")
+
+    if 'freeze' in config.model.backbone and 'freeze' in config.model.header and config.train:
+        if config.model.backbone.freeze and config.model.header.freeze:
+            log.error(f"Cannot train with no trainable parameters! Both header and backbone are frozen!")
+
     # disable adding new keys to config
     OmegaConf.set_struct(config, True)
 
@@ -116,13 +121,16 @@ def print_config(
                 "optimizer",
                 "datamodule",
                 "callbacks",
+                "loss",
                 "metric",
                 "logger",
                 "seed",
                 "train",
-                "test"
+                "test",
+                "predict"
         ),
         resolve: bool = True,
+        add_missing_fields: bool = True,
 ) -> None:
     """Prints content of DictConfig using Rich library and its tree structure.
 
@@ -135,6 +143,12 @@ def print_config(
 
     style = "dim"
     tree = Tree(f":gear: CONFIG", style=style, guide_style=style)
+
+    if add_missing_fields:
+        fields = list(fields)
+        for key in sorted(config.keys()):
+            if key not in fields:
+                fields.append(key)
 
     for field in fields:
         branch = tree.add(field, style=style, guide_style=style)
@@ -208,3 +222,5 @@ def finish(
     for lg in logger:
         if isinstance(lg, WandbLogger):
             wandb.finish()
+    if isinstance(trainer.logger, WandbLogger):
+        trainer.logger.finish()

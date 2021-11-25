@@ -1,0 +1,142 @@
+_target_: src.datamodules.RolfFormat.datamodule.DataModuleRolfFormat
+
+num_workers: 4
+batch_size: 8
+shuffle: True
+drop_last: False
+
+data_root: /net/research-hisdoc/datasets/semantic_segmentation/rolf_format
+
+train_specs:
+    append1:
+        doc_dir:    "SetA1_sizeM_Rolf/layoutD/data"
+        doc_names:  "A1-MD-page-####.jpg"
+        gt_dir:     "SetA1_sizeM_Rolf/layoutD/gtruth"
+        gt_names:   "A1-MD-truthD-####.gif"
+        range_from: 1000
+        range_to:   1059
+    append2:
+        doc_dir:    "SetA1_sizeM_Rolf/layoutR/data"
+        doc_names:  "A1-MR-page-####.jpg"
+        gt_dir:     "SetA1_sizeM_Rolf/layoutR/gtruth"
+        gt_names:   "A1-MR-truthD-####.gif"
+        range_from: 1000
+        range_to:   1059
+
+val_specs:
+    append1:
+        doc_dir:    "SetA1_sizeM_Rolf/layoutD/data"
+        doc_names:  "A1-MD-page-####.jpg"
+        gt_dir:     "SetA1_sizeM_Rolf/layoutD/gtruth"
+        gt_names:   "A1-MD-truthD-####.gif"
+        range_from: 1060
+        range_to:   1079
+    append2:
+        doc_dir:    "SetA1_sizeM_Rolf/layoutR/data"
+        doc_names:  "A1-MR-page-####.jpg"
+        gt_dir:     "SetA1_sizeM_Rolf/layoutR/gtruth"
+        gt_names:   "A1-MR-truthD-####.gif"
+        range_from: 1060
+        range_to:   1079
+
+test_specs:
+    append1:
+        doc_dir:    "SetA1_sizeM_Rolf/layoutD/data"
+        doc_names:  "A1-MD-page-####.jpg"
+        gt_dir:     "SetA1_sizeM_Rolf/layoutD/gtruth"
+        gt_names:   "A1-MD-truthD-####.gif"
+        range_from: 1080
+        range_to:   1099
+    append2:
+        doc_dir:    "SetA1_sizeM_Rolf/layoutR/data"
+        doc_names:  "A1-MR-page-####.jpg"
+        gt_dir:     "SetA1_sizeM_Rolf/layoutR/gtruth"
+        gt_names:   "A1-MR-truthD-####.gif"
+        range_from: 1080
+        range_to:   1099
+
+image_dims:
+    width:  640
+    height: 896
+
+image_analytics:
+    mean:
+        R: 0.8664800196201524
+        G: 0.7408864118075618
+        B: 0.6299955083595935
+    std:
+        R: 0.2156624188591712
+        G: 0.20890185198454636
+        B: 0.1870731300038113
+
+classes:
+    class0:
+        color:
+            R: 0
+            G: 0
+            B: 0
+    class1:
+        color:
+            R: 0
+            G: 102
+            B: 0
+    class2:
+        color:
+            R: 0
+            G: 102
+            B: 102
+    class3:
+        color:
+            R: 0
+            G: 153
+            B: 153
+    class4:
+        color:
+            R: 0
+            G: 255
+            B: 0
+    class5:
+        color:
+            R: 0
+            G: 255
+            B: 255
+    class6:
+        color:
+            R: 102
+            G: 0
+            B: 0
+    class7:
+        color:
+            R: 102
+            G: 0
+            B: 102
+    class8:
+        color:
+            R: 102
+            G: 102
+            B: 0
+    class9:
+        color:
+            R: 153
+            G: 0
+            B: 153
+    class10:
+        color:
+            R: 153
+            G: 153
+            B: 0
+    class11:
+        color:
+            R: 255
+            G: 0
+            B: 0
+    class12:
+        color:
+            R: 255
+            G: 0
+            B: 255
+    class13:
+        color:
+            R: 255
+            G: 255
+            B: 0

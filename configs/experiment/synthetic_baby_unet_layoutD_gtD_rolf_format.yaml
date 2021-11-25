@@ -1,0 +1,57 @@
+# @package _global_
+
+# to execute this experiment run:
+# python run.py +experiment=exp_example_full
+
+defaults:
+    - /plugins:         default.yaml
+    - /task:            semantic_segmentation_RGB.yaml
+    - /datamodule:      rolf_format_layoutD_gtD.yaml
+    - /loss:            crossentropyloss.yaml
+    - /metric:          iou.yaml
+    - /model/backbone:  baby_unet_model.yaml
+    - /model/header:    identity.yaml
+    - /optimizer:       adam.yaml
+    - /callbacks:
+          - check_compatibility.yaml
+          - model_checkpoint.yaml
+          - watch_model_wandb.yaml
+    - /logger:
+          - wandb.yaml # set logger here or use command line (e.g. `python run.py logger=wandb`)
+          - csv.yaml
+
+# we override default configurations with nulls to prevent them from loading at all
+# instead we define all modules and their paths directly in this config,
+# so everything is stored in one place for more readibility
+
+train: True
+test: True
+predict: False
+
+trainer:
+    _target_: pytorch_lightning.Trainer
+    gpus: -1
+    accelerator: 'ddp'
+    min_epochs: 1
+    max_epochs: 200
+    weights_summary: full
+    precision: 16
+
+task:
+    confusion_matrix_log_every_n_epoch: 50
+    confusion_matrix_val: True
+    confusion_matrix_test: True
+
+callbacks:
+    model_checkpoint:
+        monitor: "val/iou"
+        mode: "max"
+        filename: ${checkpoint_folder_name}dev-baby-unet-rgb-data
+    watch_model:
+        log_freq: 50
+
+logger:
+    wandb:
+        name: 'synthetic-baby-unet-layoutD-gtD-rolf-format'
+        tags: [ "best_model", "synthetic", "RolfFormat" ]
+        group: 'synthetic'

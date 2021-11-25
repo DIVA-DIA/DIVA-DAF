@@ -6,6 +6,7 @@
 <a href="https://pytorchlightning.ai/"><img alt="Lightning" src="https://img.shields.io/badge/-Lightning-792ee5"></a>
 <a href="https://hydra.cc/"><img alt="Config: Hydra" src="https://img.shields.io/badge/Config-Hydra-89b8cd"></a>
 <a href="https://github.com/ashleve/lightning-hydra-template"><img alt="Template" src="https://img.shields.io/badge/-Lightning--Hydra--Template-017F2F?style=flat&logo=github&labelColor=gray"></a><br>
+![tests](https://github.com/DIVA-DIA/unsupervised_learning/actions/workflows/ci-testing.yml/badge.svg)
 
 [comment]: <> ([![Paper]&#40;http://img.shields.io/badge/paper-arxiv.1001.2234-B31B1B.svg&#41;]&#40;https://www.nature.com/articles/nature14539&#41;)
 
@@ -94,3 +95,35 @@ python run.py trainer.max_epochs=20 datamodule.batch_size=64
 11. Go to the root folder of the framework and activate the environment (source .autoenv OR conda activate unsupervised_learning)
 12. Log into wandb. Execute `wandb login` and follow the instructions
 13. Now you should be able to run the basic experiment from PyCharm
+
+
+### Loading models
+You can load the different model parts `backbone` or `header` as well as the whole task.
+To load the `backbone` or the `header` you need to add to your experiment config the field `path_to_weights`.
+e.g.
+```
+model:
+    header:
+        path_to_weights: /my/path/to/the/pth/file
+```
+To load the whole task you need to provide the path to the whole task to the trainer. This is with the field `resume_from_checkpoint`.
+e.g.
+```
+trainer:
+    resume_from_checkpoint: /path/to/.ckpt/file
+```
+
+### Freezing model parts
+You can freeze both parts of the model (backbone or header) with the `freeze` flag in the config. 
+E.g. you want to freeze the backbone:
+In the command line:
+```
+python run.py +model.backbone.freeze=True
+```
+In the config (e.g. model/backbone/baby_unet_model.yaml):
+```
+...
+freeze: True
+...
+```
+CARE: You can not train a model when you do not have trainable parameters (e.g. freezing backbone and header).

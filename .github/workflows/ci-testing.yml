@@ -63,13 +63,13 @@ jobs:
     - name: Statistics
       if: success()
       run: |
-        coverage report -m
+        coverage report -m --omit="*/test*"
 
     - name: Produce statistics html
       if: success()
       run: |
-        coverage html
-        coverage xml
+        coverage html --omit="*/test*"
+        coverage xml --omit="*/test*"
 
     - name: Code coverage results upload
       if: success()
