@@ -9,6 +9,7 @@ from src.datamodules.RGB.datasets.full_page_dataset import DatasetRGB, ImageDime
 from src.datamodules.RGB.utils.image_analytics import get_analytics
 from src.datamodules.RGB.utils.single_transform import IntegerEncoding
 from src.datamodules.base_datamodule import AbstractDatamodule
+from src.datamodules.utils.dataset_predict import DatasetPredict
 from src.datamodules.utils.misc import validate_path_for_segmentation
 from src.datamodules.utils.wrapper_transforms import OnlyImage, OnlyTarget
 from src.utils import utils
@@ -18,6 +19,7 @@ log = utils.get_logger(__name__)
 
 class DataModuleRGB(AbstractDatamodule):
     def __init__(self, data_dir: str, data_folder_name: str, gt_folder_name: str,
+                 pred_file_path_list: List[str] = None,
                  selection_train: Optional[Union[int, List[str]]] = None,
                  selection_val: Optional[Union[int, List[str]]] = None,
                  selection_test: Optional[Union[int, List[str]]] = None,
@@ -27,6 +29,9 @@ class DataModuleRGB(AbstractDatamodule):
 
         self.data_folder_name = data_folder_name
         self.gt_folder_name = gt_folder_name
+
+        if pred_file_path_list is not None:
+            self.pred_file_path_list = pred_file_path_list
 
         analytics_data, analytics_gt = get_analytics(input_path=Path(data_dir),
                                                      data_folder_name=self.data_folder_name,
@@ -66,22 +71,48 @@ class DataModuleRGB(AbstractDatamodule):
 
     def setup(self, stage: Optional[str] = None):
         super().setup()
+
+        common_kwargs = {'classes': self.class_encodings,
+                         'image_dims': self.image_dims,
+                         'image_transform': self.image_transform,
+                         'target_transform': self.target_transform,
+                         'twin_transform': self.twin_transform}
+
+        dataset_kwargs = {'data_folder_name': self.data_folder_name,
+                          'gt_folder_name': self.gt_folder_name}
+
         if stage == 'fit' or stage is None:
-            self.train = DatasetRGB(**self._create_dataset_parameters('train'), selection=self.selection_train)
+            self.train = DatasetRGB(path=self.data_dir / 'train',
+                                    selection=self.selection_train,
+                                    is_test=False,
+                                    **dataset_kwargs,
+                                    **common_kwargs)
             log.info(f'Initialized train dataset with {len(self.train)} samples.')
             self._check_min_num_samples(num_samples=len(self.train), data_split='train',
                                         drop_last=self.drop_last)
 
-            self.val = DatasetRGB(**self._create_dataset_parameters('val'), selection=self.selection_val)
+            self.val = DatasetRGB(path=self.data_dir / 'val',
+                                  selection=self.selection_val,
+                                  is_test=False,
+                                  **dataset_kwargs,
+                                  **common_kwargs)
             log.info(f'Initialized val dataset with {len(self.val)} samples.')
             self._check_min_num_samples(num_samples=len(self.val), data_split='val',
                                         drop_last=self.drop_last)
 
         if stage == 'test':
-            self.test = DatasetRGB(**self._create_dataset_parameters('test'), selection=self.selection_test)
+            self.test = DatasetRGB(path=self.data_dir / 'test',
+                                   selection=self.selection_test,
+                                   is_test=True,
+                                   **dataset_kwargs,
+                                   **common_kwargs)
             log.info(f'Initialized test dataset with {len(self.test)} samples.')
-            # self._check_min_num_samples(num_samples=len(self.test), data_split='test',
-            #                             drop_last=False)
+
+        if stage == 'predict':
+            self.predict = DatasetPredict(image_path_list=self.pred_file_path_list,
+                                          is_test=False,
+                                          **common_kwargs)
+            log.info(f'Initialized predict dataset with {len(self.predict)} samples.')
 
     def _check_min_num_samples(self, num_samples: int, data_split: str, drop_last: bool):
         num_processes = self.trainer.num_processes
@@ -125,17 +156,13 @@ class DataModuleRGB(AbstractDatamodule):
                           drop_last=False,
                           pin_memory=True)
 
-    def _create_dataset_parameters(self, dataset_type: str = 'train'):
-        is_test = dataset_type == 'test'
-        return {'path': self.data_dir / dataset_type,
-                'data_folder_name': self.data_folder_name,
-                'gt_folder_name': self.gt_folder_name,
-                'image_dims': self.image_dims,
-                'image_transform': self.image_transform,
-                'target_transform': self.target_transform,
-                'twin_transform': self.twin_transform,
-                'classes': self.class_encodings,
-                'is_test': is_test}
+    def predict_dataloader(self) -> Union[DataLoader, List[DataLoader]]:
+        return DataLoader(self.predict,
+                          batch_size=self.batch_size,
+                          num_workers=self.num_workers,
+                          shuffle=False,
+                          drop_last=False,
+                          pin_memory=True)
 
     def get_output_filename_test(self, index):
         """
@@ -148,3 +175,15 @@ class DataModuleRGB(AbstractDatamodule):
             raise Exception('This method can just be called during testing')
 
         return self.test.output_file_list[index]
+
+    def get_output_filename_predict(self, index):
+        """
+        Returns the original filename of the doc image.
+        You can just use this during testing!
+        :param index:
+        :return:
+        """
+        if not hasattr(self, 'predict'):
+            raise Exception('This method can just be called during prediction')
+
+        return self.predict.output_file_list[index]
