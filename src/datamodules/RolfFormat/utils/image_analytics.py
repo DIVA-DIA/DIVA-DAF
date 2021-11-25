@@ -6,8 +6,8 @@ import numpy as np
 from PIL import Image
 
 from src.datamodules.RGB.utils.image_analytics import _get_class_frequencies_weights_segmentation
-from src.datamodules.utils.misc import ImageDimensions
 from src.datamodules.utils.image_analytics import compute_mean_std
+from src.datamodules.utils.misc import ImageDimensions
 
 
 def get_analytics_data(data_gt_path_list, **kwargs):

@@ -5,7 +5,7 @@
 
 defaults:
     - /plugins:         default.yaml
-    - /task:            semantic_segmentation_RGB_full_page.yaml
+    - /task:            semantic_segmentation_RGB.yaml
     - /datamodule:      rolf_format_dev_prediction.yaml
     - /loss:            crossentropyloss.yaml
     - /metric:          iou.yaml
@@ -32,7 +32,7 @@ predict: True
 
 model:
     backbone:
-        path_to_weights: /netscratch/experiments_lars_paul/lars/2021-11-22/11-52-43/checkpoints/epoch=1/backbone.pth
+        path_to_weights: /net/research-hisdoc/experiments_lars_paul/paul/2021-11-24/09-12-01/checkpoints/epoch=1/backbone.pth
 
 trainer:
     _target_: pytorch_lightning.Trainer

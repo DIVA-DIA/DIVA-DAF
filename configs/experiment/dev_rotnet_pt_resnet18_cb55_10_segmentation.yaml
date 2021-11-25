@@ -5,7 +5,7 @@
 
 defaults:
     - /plugins: default.yaml
-    - /task: semantic_segmentation_HisDB.yaml
+    - /task: semantic_segmentation_HisDB_cropped.yaml
     - /loss: crossentropyloss.yaml
     - /metric: hisdbiou.yaml
     - /model/backbone: resnet18.yaml
@@ -46,7 +46,7 @@ task:
 datamodule:
     _target_: src.datamodules.DivaHisDB.datamodule_cropped.DivaHisDBDataModuleCropped
 
-    data_dir: /netscratch/datasets/semantic_segmentation/datasets_cropped/CB55-10-segmentation
+    data_dir: /net/research-hisdoc/datasets/semantic_segmentation/datasets_cropped/CB55-10-segmentation
     crop_size: 256
     num_workers: 4
     batch_size: 16
@@ -57,7 +57,7 @@ datamodule:
 
 model:
     backbone:
-        path_to_weights: /netscratch/experiments_lars_paul/lars/2021-11-15/16-08-51/checkpoints/epoch=1/backbone.pth
+        path_to_weights: /net/research-hisdoc/experiments_lars_paul/lars/2021-11-15/16-08-51/checkpoints/epoch=1/backbone.pth
     header:
         in_channels: 512
 

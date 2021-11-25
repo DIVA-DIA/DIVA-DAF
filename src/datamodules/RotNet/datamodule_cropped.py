@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Union, List, Optional
 
 import numpy as np
+import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
@@ -32,7 +33,7 @@ class RotNetDivaHisDBDataModuleCropped(AbstractDatamodule):
         self.std = analytics_data['std']
         self.class_encodings = np.array(ROTATION_ANGLES)
         self.num_classes = len(self.class_encodings)
-        self.class_weights = np.array([1 / self.num_classes for _ in range(self.num_classes)])
+        self.class_weights = torch.as_tensor([1 / self.num_classes for _ in range(self.num_classes)])
 
         self.image_transform = OnlyImage(transforms.Compose([transforms.ToTensor(),
                                                              transforms.Normalize(mean=self.mean, std=self.std),
@@ -51,6 +52,9 @@ class RotNetDivaHisDBDataModuleCropped(AbstractDatamodule):
         self.selection_test = selection_test
 
         self.dims = (3, crop_size, crop_size)
+
+        # Check default attributes using base_datamodule function
+        self._check_attributes()
 
     def setup(self, stage: Optional[str] = None):
         super().setup()

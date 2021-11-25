@@ -76,6 +76,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
 
         if model is not None:
             self.model = model
+
         self.loss_fn = {} if loss_fn is None else get_callable_dict(loss_fn)
         self.optimizer = optimizer
         self.scheduler = scheduler
@@ -136,6 +137,11 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
                 look like this: {'B': {'x': 'value', 'y': 'value'}}
 
         """
+        for key in self.loss_fn:
+            if hasattr(self.loss_fn[key], 'weight') and self.loss_fn[key].weight is not None:
+                if torch.is_tensor(self.loss_fn[key].weight):
+                    self.loss_fn[key].weight = self.loss_fn[key].weight.cuda(device=self.device)
+
         if metric_kwargs is None:
             metric_kwargs = {}
         x, y = batch

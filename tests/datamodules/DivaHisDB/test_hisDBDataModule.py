@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+import torch
 from numpy import uint8
 from omegaconf import OmegaConf
 
@@ -24,7 +25,9 @@ def test_init_datamodule(data_module_cropped):
     assert data_module_cropped.dims == (3, 256, 256)
     assert data_module_cropped.num_classes == 4
     assert data_module_cropped.class_encodings == [1, 2, 4, 8]
-    assert data_module_cropped.class_weights == [0.004952207651647859, 0.07424270397485577, 0.8964025044572563, 0.02440258391624002]
+    assert torch.equal(data_module_cropped.class_weights,
+                       torch.tensor(
+                           [0.004952207651647859, 0.07424270397485577, 0.8964025044572563, 0.02440258391624002]))
     assert data_module_cropped.mean == [0.7050454974582426, 0.6503181590413943, 0.5567698583877997]
     assert data_module_cropped.std == [0.3104060859619883, 0.3053311838884032, 0.28919611393432726]
     with pytest.raises(AttributeError):

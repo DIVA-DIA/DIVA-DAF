@@ -36,7 +36,7 @@ def get_dict():
                     'min_epochs': 1, 'max_epochs': 3, 'weights_summary': 'full', 'precision': 16},
         'datamodule': {
             '_target_': 'src.datamodules.hisDBDataModule.DIVAHisDBDataModule.DIVAHisDBDataModuleCropped',
-            'data_dir': '/netscratch/datasets/semantic_segmentation/datasets_cropped/CB55-10-segmentation',
+            'data_dir': '/net/research-hisdoc/datasets/semantic_segmentation/datasets_cropped/CB55-10-segmentation',
             'crop_size': 256, 'num_workers': 4, 'batch_size': 16, 'shuffle': True, 'drop_last': True},
         'save_config': True, 'checkpoint_folder_name': '{epoch}/', 'work_dir': '${hydra:runtime.cwd}',
         'debug': False, 'print_config': True, 'disable_warnings': True})

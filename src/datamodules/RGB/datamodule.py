@@ -41,7 +41,7 @@ class DataModuleRGB(AbstractDatamodule):
         self.class_encodings = analytics_gt['class_encodings']
         self.class_encodings_tensor = torch.tensor(self.class_encodings) / 255
         self.num_classes = len(self.class_encodings)
-        self.class_weights = analytics_gt['class_weights']
+        self.class_weights = torch.as_tensor(analytics_gt['class_weights'])
 
         self.twin_transform = None
         self.image_transform = OnlyImage(transforms.Compose([transforms.ToTensor(),
@@ -60,6 +60,9 @@ class DataModuleRGB(AbstractDatamodule):
         self.selection_train = selection_train
         self.selection_val = selection_val
         self.selection_test = selection_test
+
+        # Check default attributes using base_datamodule function
+        self._check_attributes()
 
     def setup(self, stage: Optional[str] = None):
         super().setup()

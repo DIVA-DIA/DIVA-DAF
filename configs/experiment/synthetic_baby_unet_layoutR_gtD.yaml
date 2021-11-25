@@ -5,7 +5,7 @@
 
 defaults:
     - /plugins: default.yaml
-    - /task: semantic_segmentation_RGB.yaml
+    - /task: semantic_segmentation_RGB_cropped.yaml
     - /loss: crossentropyloss.yaml
     - /metric: iou.yaml
     - /model/backbone: baby_unet_model.yaml
@@ -44,7 +44,7 @@ task:
 datamodule:
     _target_: src.datamodules.RGB.datamodule_cropped.DataModuleCroppedRGB
 
-    data_dir: /netscratch/datasets/semantic_segmentation/synthetic_cropped/SetA1_sizeM/layoutR/split
+    data_dir: /net/research-hisdoc/datasets/semantic_segmentation/synthetic_cropped/SetA1_sizeM/layoutR/split
     crop_size: 256
     num_workers: 4
     batch_size: 16

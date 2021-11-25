@@ -5,7 +5,7 @@
 
 defaults:
     - /plugins: default.yaml
-    - /task: semantic_segmentation_RGB_full_page.yaml
+    - /task: semantic_segmentation_RGB.yaml
     - /loss: crossentropyloss.yaml
     - /metric: iou.yaml
     - /model/backbone: baby_unet_model.yaml
@@ -46,7 +46,7 @@ task:
 datamodule:
     _target_: src.datamodules.RGB.datamodule_full_page.DataModuleRGB
 
-    data_dir: /netscratch/datasets/semantic_segmentation/synthetic/SetA1_sizeM/layoutD/split
+    data_dir: /net/research-hisdoc/datasets/semantic_segmentation/synthetic/SetA1_sizeM/layoutD/split
     num_workers: 4
     batch_size: 2
     shuffle: True

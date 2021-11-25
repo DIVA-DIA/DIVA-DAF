@@ -1,12 +1,11 @@
 from pathlib import Path
-from typing import Optional, Callable, Union, Any
+from typing import Optional, Callable, Union
 
 import numpy as np
 import torch.nn as nn
 import torch.optim
 import torchmetrics
 
-from src.datamodules.RGB.utils.output_tools import save_output_page_image
 from src.datamodules.utils.misc import _get_argmax
 from src.tasks.base_task import AbstractTask
 from src.utils import utils
@@ -15,7 +14,7 @@ from src.tasks.utils.outputs import OutputKeys, reduce_dict
 log = utils.get_logger(__name__)
 
 
-class SemanticSegmentationFullPageRGB(AbstractTask):
+class SemanticSegmentationCroppedHisDB(AbstractTask):
 
     def __init__(self,
                  model: nn.Module,
@@ -58,8 +57,8 @@ class SemanticSegmentationFullPageRGB(AbstractTask):
     def setup(self, stage: str) -> None:
         super().setup(stage)
 
-        if not hasattr(self.trainer.datamodule, 'get_img_name'):
-            raise NotImplementedError('DataModule needs to implement get_img_name function')
+        if not hasattr(self.trainer.datamodule, 'get_img_name_coordinates'):
+            raise NotImplementedError('DataModule needs to implement get_img_name_coordinates function')
 
         log.info("Setup done!")
 
@@ -74,8 +73,10 @@ class SemanticSegmentationFullPageRGB(AbstractTask):
     ########################################### TRAIN ###########################################
     #############################################################################################
     def training_step(self, batch, batch_idx, **kwargs):
-        input_batch, target_batch = batch
-        output = super().training_step(batch=(input_batch, target_batch), batch_idx=batch_idx)
+        input_batch, target_batch, mask_batch = batch
+        metric_kwargs = {'hisdbiou': {'mask': mask_batch}}
+        output = super().training_step(batch=(input_batch, target_batch), batch_idx=batch_idx,
+                                     metric_kwargs=metric_kwargs)
         return reduce_dict(input_dict=output, key_list=[OutputKeys.LOSS])
 
     #############################################################################################
@@ -83,8 +84,10 @@ class SemanticSegmentationFullPageRGB(AbstractTask):
     #############################################################################################
 
     def validation_step(self, batch, batch_idx, **kwargs):
-        input_batch, target_batch = batch
-        output = super().validation_step(batch=(input_batch, target_batch), batch_idx=batch_idx)
+        input_batch, target_batch, mask_batch = batch
+        metric_kwargs = {'hisdbiou': {'mask': mask_batch}}
+        output = super().validation_step(batch=(input_batch, target_batch), batch_idx=batch_idx,
+                                       metric_kwargs=metric_kwargs)
         return reduce_dict(input_dict=output, key_list=[])
 
     #############################################################################################
@@ -92,53 +95,34 @@ class SemanticSegmentationFullPageRGB(AbstractTask):
     #############################################################################################
 
     def test_step(self, batch, batch_idx, **kwargs):
-        input_batch, target_batch, input_idx = batch
-        output = super().test_step(batch=(input_batch, target_batch), batch_idx=batch_idx)
+        input_batch, target_batch, mask_batch, input_idx = batch
+        metric_kwargs = {'hisdbiou': {'mask': mask_batch}}
+        output = super().test_step(batch=(input_batch, target_batch), batch_idx=batch_idx, metric_kwargs=metric_kwargs)
 
-        if not hasattr(self.trainer.datamodule, 'get_img_name'):
+        if not hasattr(self.trainer.datamodule, 'get_img_name_coordinates'):
             raise NotImplementedError('Datamodule does not provide detailed information of the crop')
 
-        for pred_raw, idx in zip(output[OutputKeys.PREDICTION].detach().cpu().numpy(),
-                                 input_idx.detach().cpu().numpy()):
-            patch_info = self.trainer.datamodule.get_img_name(idx)
+        for patch, idx in zip(output[OutputKeys.PREDICTION].detach().cpu().numpy(),
+                              input_idx.detach().cpu().numpy()):
+            patch_info = self.trainer.datamodule.get_img_name_coordinates(idx)
             img_name = patch_info[0]
-            dest_folder = self.test_output_path / 'pred_raw'
+            patch_name = patch_info[1]
+            dest_folder = self.test_output_path / 'patches' / img_name
             dest_folder.mkdir(parents=True, exist_ok=True)
-            dest_filename = dest_folder / f'{img_name}.npy'
-            np.save(file=str(dest_filename), arr=pred_raw)
+            dest_filename = dest_folder / f'{patch_name}.npy'
 
-            dest_folder = self.test_output_path / 'pred'
-            dest_folder.mkdir(parents=True, exist_ok=True)
-            save_output_page_image(image_name=f'{img_name}.gif', output_image=pred_raw,
-                                   output_folder=dest_folder, class_encoding=self.trainer.datamodule.class_encodings)
+            np.save(file=str(dest_filename), arr=patch)
 
         return reduce_dict(input_dict=output, key_list=[])
 
     def on_test_end(self) -> None:
-        pass
+        datamodule_path = self.trainer.datamodule.data_dir
+        prediction_path = (self.test_output_path / 'patches').absolute()
+        output_path = (self.test_output_path / 'result').absolute()
 
-    #############################################################################################
-    ######################################### PREDICT ###########################################
-    #############################################################################################
+        data_folder_name = self.trainer.datamodule.data_folder_name
+        gt_folder_name = self.trainer.datamodule.gt_folder_name
 
-    def predict_step(self, batch: Any, batch_idx: int, dataloader_idx: Optional[int] = None) -> Any:
-        input_batch, input_idx = batch
-        output = super().predict_step(batch=input_batch, batch_idx=batch_idx, dataloader_idx=dataloader_idx)
-
-        if not hasattr(self.trainer.datamodule, 'get_img_name'):
-            raise NotImplementedError('Datamodule does not provide detailed information of the crop')
-
-        for pred_raw, idx in zip(output[OutputKeys.PREDICTION].detach().cpu().numpy(),
-                                 input_idx.detach().cpu().numpy()):
-            img_name = self.trainer.datamodule.get_img_name_prediction(idx)
-            dest_folder = self.predict_output_path / 'pred_raw'
-            dest_folder.mkdir(parents=True, exist_ok=True)
-            dest_filename = dest_folder / f'{img_name}.npy'
-            np.save(file=str(dest_filename), arr=pred_raw)
-
-            dest_folder = self.predict_output_path / 'pred'
-            dest_folder.mkdir(parents=True, exist_ok=True)
-            save_output_page_image(image_name=f'{img_name}.gif', output_image=pred_raw,
-                                   output_folder=dest_folder, class_encoding=self.trainer.datamodule.class_encodings)
-
-        return reduce_dict(input_dict=output, key_list=[])
+        log.info(f'To run the merging of patches:')
+        log.info(f'python tools/merge_cropped_output_HisDB.py -d {datamodule_path} -p {prediction_path} '
+                 f'-o {output_path} -df {data_folder_name} -gf {gt_folder_name}')
