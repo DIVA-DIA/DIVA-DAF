@@ -1,10 +1,11 @@
 from pathlib import Path
-from typing import Optional, Callable, Union, Any
+from typing import Optional, Callable, Union, Any, List
 
 import numpy as np
 import torch.nn as nn
 import torch.optim
 import torchmetrics
+from pytorch_lightning.utilities import rank_zero_only
 
 from src.datamodules.RGB.utils.output_tools import save_output_page_image
 from src.datamodules.utils.misc import _get_argmax
@@ -58,8 +59,8 @@ class SemanticSegmentationRGB(AbstractTask):
     def setup(self, stage: str) -> None:
         super().setup(stage)
 
-        if not hasattr(self.trainer.datamodule, 'get_img_name'):
-            raise NotImplementedError('DataModule needs to implement get_img_name function')
+        if not hasattr(self.trainer.datamodule, 'get_output_filename_test'):
+            raise NotImplementedError('DataModule needs to implement get_output_filename_test function')
 
         log.info("Setup done!")
 
@@ -91,17 +92,28 @@ class SemanticSegmentationRGB(AbstractTask):
     ########################################### TEST ############################################
     #############################################################################################
 
+    @rank_zero_only
+    def on_test_start(self) -> None:
+        # print output file list
+        dataset = self.trainer.datamodule.test
+        output_path = self.test_output_path
+        info_filename = 'info_file_mapping.txt'
+
+        self.write_file_mapping(output_file_list=dataset.output_file_list,
+                                image_path_list=dataset.image_path_list,
+                                output_path=output_path,
+                                info_filename=info_filename)
+
     def test_step(self, batch, batch_idx, **kwargs):
         input_batch, target_batch, input_idx = batch
         output = super().test_step(batch=(input_batch, target_batch), batch_idx=batch_idx)
 
-        if not hasattr(self.trainer.datamodule, 'get_img_name'):
-            raise NotImplementedError('Datamodule does not provide detailed information of the crop')
+        if not hasattr(self.trainer.datamodule, 'get_output_filename_test'):
+            raise NotImplementedError('Datamodule does not provide output info for test')
 
         for pred_raw, idx in zip(output[OutputKeys.PREDICTION].detach().cpu().numpy(),
                                  input_idx.detach().cpu().numpy()):
-            patch_info = self.trainer.datamodule.get_img_name(idx)
-            img_name = patch_info[0]
+            img_name = self.trainer.datamodule.get_output_filename_test(idx)
             dest_folder = self.test_output_path / 'pred_raw'
             dest_folder.mkdir(parents=True, exist_ok=True)
             dest_filename = dest_folder / f'{img_name}.npy'
@@ -121,16 +133,28 @@ class SemanticSegmentationRGB(AbstractTask):
     ######################################### PREDICT ###########################################
     #############################################################################################
 
+    @rank_zero_only
+    def on_predict_start(self) -> None:
+        # print output file list
+        dataset = self.trainer.datamodule.predict
+        output_path = self.predict_output_path
+        info_filename = 'info_file_mapping.txt'
+
+        self.write_file_mapping(output_file_list=dataset.output_file_list,
+                                image_path_list=dataset.image_path_list,
+                                output_path=output_path,
+                                info_filename=info_filename)
+
     def predict_step(self, batch: Any, batch_idx: int, dataloader_idx: Optional[int] = None) -> Any:
         input_batch, input_idx = batch
         output = super().predict_step(batch=input_batch, batch_idx=batch_idx, dataloader_idx=dataloader_idx)
 
-        if not hasattr(self.trainer.datamodule, 'get_img_name'):
-            raise NotImplementedError('Datamodule does not provide detailed information of the crop')
+        if not hasattr(self.trainer.datamodule, 'get_output_filename_predict'):
+            raise NotImplementedError('Datamodule does not provide output info for predict')
 
         for pred_raw, idx in zip(output[OutputKeys.PREDICTION].detach().cpu().numpy(),
                                  input_idx.detach().cpu().numpy()):
-            img_name = self.trainer.datamodule.get_img_name_prediction(idx)
+            img_name = self.trainer.datamodule.get_output_filename_predict(idx)
             dest_folder = self.predict_output_path / 'pred_raw'
             dest_folder.mkdir(parents=True, exist_ok=True)
             dest_filename = dest_folder / f'{img_name}.npy'
@@ -142,3 +166,13 @@ class SemanticSegmentationRGB(AbstractTask):
                                    output_folder=dest_folder, class_encoding=self.trainer.datamodule.class_encodings)
 
         return reduce_dict(input_dict=output, key_list=[])
+
+    @staticmethod
+    def write_file_mapping(output_file_list: List[str], image_path_list: List[Path],
+                           output_path: Path, info_filename: str):
+        assert len(output_file_list) == len(image_path_list)
+        output_path.mkdir(parents=True, exist_ok=True)
+        output_info_file = output_path / info_filename
+        with output_info_file.open('w') as f:
+            for output_filename, image_path in zip(output_file_list, image_path_list):
+                f.write(f'{output_filename}\t{image_path}\n')

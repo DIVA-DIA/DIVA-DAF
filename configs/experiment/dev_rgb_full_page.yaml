@@ -44,7 +44,7 @@ task:
     confusion_matrix_test: True
 
 datamodule:
-    _target_: src.datamodules.RGB.datamodule_full_page.DataModuleRGB
+    _target_: src.datamodules.RGB.datamodule.DataModuleRGB
 
     data_dir: /net/research-hisdoc/datasets/semantic_segmentation/synthetic/SetA1_sizeM/layoutD/split
     num_workers: 4

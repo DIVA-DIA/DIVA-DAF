@@ -78,7 +78,7 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
             self._check_min_num_samples(num_samples=len(self.val), data_split='val',
                                         drop_last=self.drop_last)
 
-        if stage == 'test' or stage is not None:
+        if stage == 'test':
             self.test = CroppedHisDBDataset(**self._create_dataset_parameters('test'), selection=self.selection_test)
             log.info(f'Initialized test dataset with {len(self.test)} samples.')
             # self._check_min_num_samples(num_samples=len(self.test), data_split='test',

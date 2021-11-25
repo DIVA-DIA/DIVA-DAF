@@ -31,7 +31,7 @@ class DataModuleRGB(AbstractDatamodule):
         analytics_data, analytics_gt = get_analytics(input_path=Path(data_dir),
                                                      data_folder_name=self.data_folder_name,
                                                      gt_folder_name=self.gt_folder_name,
-                                                     get_gt_data_paths_func=DatasetRGB.get_gt_data_paths)
+                                                     get_img_gt_path_list_func=DatasetRGB.get_img_gt_path_list)
 
         self.image_dims = ImageDimensions(width=analytics_data['width'], height=analytics_data['height'])
         self.dims = (3, self.image_dims.width, self.image_dims.height)
@@ -77,7 +77,7 @@ class DataModuleRGB(AbstractDatamodule):
             self._check_min_num_samples(num_samples=len(self.val), data_split='val',
                                         drop_last=self.drop_last)
 
-        if stage == 'test' or stage is not None:
+        if stage == 'test':
             self.test = DatasetRGB(**self._create_dataset_parameters('test'), selection=self.selection_test)
             log.info(f'Initialized test dataset with {len(self.test)} samples.')
             # self._check_min_num_samples(num_samples=len(self.test), data_split='test',
@@ -137,7 +137,7 @@ class DataModuleRGB(AbstractDatamodule):
                 'classes': self.class_encodings,
                 'is_test': is_test}
 
-    def get_img_name(self, index):
+    def get_output_filename_test(self, index):
         """
         Returns the original filename of the doc image.
         You can just use this during testing!
@@ -147,4 +147,4 @@ class DataModuleRGB(AbstractDatamodule):
         if not hasattr(self, 'test'):
             raise Exception('This method can just be called during testing')
 
-        return self.test.img_paths_per_page[index][2:]
+        return self.test.output_file_list[index]

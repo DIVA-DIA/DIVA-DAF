@@ -16,7 +16,7 @@ from torchvision.datasets.folder import pil_loader
 from src.datamodules.utils.image_analytics import compute_mean_std
 
 
-def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, get_gt_data_paths_func, **kwargs):
+def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, get_img_gt_path_list_func, **kwargs):
     """
     Parameters
     ----------
@@ -53,10 +53,10 @@ def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, 
 
     if missing_analytics_data or missing_analytics_gt:
         train_path = input_path / 'train'
-        gt_data_path_list = get_gt_data_paths_func(train_path, data_folder_name=data_folder_name,
-                                                   gt_folder_name=gt_folder_name)
-        file_names_data = np.asarray([str(item[0]) for item in gt_data_path_list])
-        file_names_gt = np.asarray([str(item[1]) for item in gt_data_path_list])
+        img_gt_path_list = get_img_gt_path_list_func(train_path, data_folder_name=data_folder_name,
+                                                     gt_folder_name=gt_folder_name)
+        file_names_data = np.asarray([str(item[0]) for item in img_gt_path_list])
+        file_names_gt = np.asarray([str(item[1]) for item in img_gt_path_list])
 
         if missing_analytics_data:
             mean, std = compute_mean_std(file_names=file_names_data, **kwargs)

@@ -32,7 +32,7 @@ class DataModuleCroppedRGB(AbstractDatamodule):
         analytics_data, analytics_gt = get_analytics(input_path=Path(data_dir),
                                                      data_folder_name=self.data_folder_name,
                                                      gt_folder_name=self.gt_folder_name,
-                                                     get_gt_data_paths_func=CroppedDatasetRGB.get_gt_data_paths)
+                                                     get_img_gt_path_list_func=CroppedDatasetRGB.get_gt_data_paths)
 
         self.mean = analytics_data['mean']
         self.std = analytics_data['std']
@@ -77,7 +77,7 @@ class DataModuleCroppedRGB(AbstractDatamodule):
             self._check_min_num_samples(num_samples=len(self.val), data_split='val',
                                         drop_last=self.drop_last)
 
-        if stage == 'test' or stage is not None:
+        if stage == 'test':
             self.test = CroppedDatasetRGB(**self._create_dataset_parameters('test'), selection=self.selection_test)
             log.info(f'Initialized test dataset with {len(self.test)} samples.')
             # self._check_min_num_samples(num_samples=len(self.test), data_split='test',

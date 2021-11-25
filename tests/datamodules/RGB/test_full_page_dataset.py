@@ -11,7 +11,7 @@ def dataset_train(data_dir):
 
 
 def test_get_gt_data_paths(data_dir):
-    file_list = DatasetRGB.get_gt_data_paths(directory=data_dir / 'train', data_folder_name='data', gt_folder_name='gt')
+    file_list = DatasetRGB.get_img_gt_path_list(directory=data_dir / 'train', data_folder_name='data', gt_folder_name='gt')
     assert len(file_list) == 1
     assert file_list[0] == (data_dir / 'train' / 'data' / 'e-codices_fmb-cb-0055_0098v_max.jpg',
                             data_dir / 'train' / 'gt' / 'e-codices_fmb-cb-0055_0098v_max.png',

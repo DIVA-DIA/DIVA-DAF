@@ -61,6 +61,11 @@ pred_file_path_list:
     - "/net/research-hisdoc/datasets/semantic_segmentation/rolf_format/SetA1_sizeM_Rolf/layoutR/data/A1-MR-page-107*.jpg"
     - "/net/research-hisdoc/datasets/semantic_segmentation/rolf_format/SetA1_sizeM_Rolf/layoutR/data/A1-MR-page-1085.jpg"
 
+    - "/net/research-hisdoc/datasets/semantic_segmentation/synthetic/SetA1_sizeM/layoutR/split/*/data/A1-MR-page-106[0-2].jpg"
+    - "/net/research-hisdoc/datasets/semantic_segmentation/synthetic/SetA1_sizeM/layoutR/split/*/data/A1-MR-page-106[7,9].jpg"
+    - "/net/research-hisdoc/datasets/semantic_segmentation/synthetic/SetA1_sizeM/layoutR/split/*/data/A1-MR-page-107*.jpg"
+    - "/net/research-hisdoc/datasets/semantic_segmentation/synthetic/SetA1_sizeM/layoutR/split/*/data/A1-MR-page-1085.jpg"
+
 image_dims:
     width:  640
     height: 896
