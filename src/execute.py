@@ -39,7 +39,7 @@ def execute(config: DictConfig) -> Optional[float]:
     header: LightningModule = _load_model_part(config=config, part_name='header')
 
     # container model
-    model: LightningModule = BackboneHeaderModel(backbone=backbone, header=header)
+    model: BackboneHeaderModel = BackboneHeaderModel(backbone=backbone, header=header)
 
     # Init optimizer
     log.info(f"Instantiating optimizer <{config.optimizer._target_}>")
@@ -165,11 +165,17 @@ def _load_model_part(config: DictConfig, part_name: str):
         LightningModule: The loaded network
     """
 
+    freeze = False
     strict = True
     if 'strict' in config.model.get(part_name):
         log.info(f"The model part {part_name} will be loaded with strict={config.model.get(part_name).strict}")
         strict = config.model.get(part_name).strict
         del config.model.get(part_name).strict
+
+    if 'freeze' in config.model.get(part_name):
+        log.info(f"The model part {part_name} is frozen during all stages!")
+        freeze = True
+        del config.model.get(part_name).freeze
 
     if "path_to_weights" in config.model.get(part_name):
         log.info(f"Loading {part_name} weights from <{config.model.get(part_name).path_to_weights}>")
@@ -189,6 +195,12 @@ def _load_model_part(config: DictConfig, part_name: str):
             log.warn(f"You are just predicting without a trained {part_name} model! "
                      "Use 'path_to_weights' in your model to load a trained model")
         part: LightningModule = hydra.utils.instantiate(config.model.get(part_name))
+
+    if freeze:
+        for param in part.parameters():
+            param.requires_grad = False
+
+        part.eval()
 
     return part
 

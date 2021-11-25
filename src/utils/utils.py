@@ -93,6 +93,11 @@ def check_config(config: DictConfig) -> None:
         seed = random.randint(np.iinfo(np.uint32).min, np.iinfo(np.uint32).max)
         config['seed'] = seed
         log.info(f"No seed specified! Seed set to {seed}")
+
+    if 'freeze' in config.model.backbone and 'freeze' in config.model.header and config.train:
+        if config.model.backbone.freeze and config.model.header.freeze:
+            log.error(f"Cannot train with no trainable parameters! Both header and backbone are frozen!")
+
     # disable adding new keys to config
     OmegaConf.set_struct(config, True)
 
