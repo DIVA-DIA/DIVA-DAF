@@ -13,7 +13,7 @@ from torch import is_tensor
 from torchvision.datasets.folder import pil_loader
 from torchvision.transforms import ToTensor
 
-from src.datamodules.utils.misc import ImageDimensions
+from src.datamodules.utils.misc import ImageDimensions, get_output_file_list
 from src.utils import utils
 
 IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.gif')
@@ -80,9 +80,13 @@ class DatasetRolfFormat(data.Dataset):
         self.is_test = is_test
 
         # List of tuples that contain the path to the gt and image that belong together
-        self.img_paths_per_page = self.get_gt_data_paths(list_specs=self.dataset_specs)
+        self.img_gt_path_list = self.get_img_gt_path_list(list_specs=self.dataset_specs)
 
-        self.num_samples = len(self.img_paths_per_page)
+        if is_test:
+            self.image_path_list = [img_gt_path[0] for img_gt_path in self.img_gt_path_list]
+            self.output_file_list = get_output_file_list(image_path_list=self.image_path_list)
+
+        self.num_samples = len(self.img_gt_path_list)
 
         assert self.num_samples > 0
 
@@ -111,8 +115,8 @@ class DatasetRolfFormat(data.Dataset):
         return img, gt, index
 
     def _load_data_and_gt(self, index):
-        data_img = pil_loader(self.img_paths_per_page[index][0])
-        gt_img = pil_loader(self.img_paths_per_page[index][1])
+        data_img = pil_loader(str(self.img_gt_path_list[index][0]))
+        gt_img = pil_loader(str(self.img_gt_path_list[index][1]))
 
         assert data_img.height == self.image_dims.height and data_img.width == self.image_dims.width
         assert gt_img.height == self.image_dims.height and gt_img.width == self.image_dims.width
@@ -158,7 +162,7 @@ class DatasetRolfFormat(data.Dataset):
     def _get_paths_from_specs(data_root: str,
                               doc_dir: str, doc_names: str,
                               gt_dir: str, gt_names: str,
-                              range_from: int, range_to: int):
+                              range_from: int, range_to: int) -> List[Tuple[Path, Path]]:
 
         path_root = Path(data_root)
         path_doc_dir = path_root / doc_dir
@@ -197,14 +201,14 @@ class DatasetRolfFormat(data.Dataset):
             assert path_doc_file.exists() == path_gt_file.exists()
 
             if path_doc_file.exists() and path_gt_file.exists():
-                paths.append((path_doc_file, path_gt_file, path_doc_file.stem))
+                paths.append((path_doc_file, path_gt_file))
 
         assert len(paths) > 0
 
         return paths
 
     @staticmethod
-    def get_gt_data_paths(list_specs: List[DatasetSpecs]) -> List[Tuple[Path, Path, str]]:
+    def get_img_gt_path_list(list_specs: List[DatasetSpecs]) -> List[Tuple[Path, Path]]:
         paths = []
 
         for specs in list_specs:

@@ -13,7 +13,7 @@ from torch import is_tensor
 from torchvision.datasets.folder import pil_loader, has_file_allowed_extension
 from torchvision.transforms import ToTensor
 
-from src.datamodules.utils.misc import ImageDimensions
+from src.datamodules.utils.misc import ImageDimensions, get_output_file_list
 from src.utils import utils
 
 IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.gif')
@@ -75,10 +75,14 @@ class DatasetRGB(data.Dataset):
         self.is_test = is_test
 
         # List of tuples that contain the path to the gt and image that belong together
-        self.img_paths_per_page = self.get_gt_data_paths(path, data_folder_name=self.data_folder_name,
-                                                         gt_folder_name=self.gt_folder_name, selection=self.selection)
+        self.img_gt_path_list = self.get_img_gt_path_list(path, data_folder_name=self.data_folder_name,
+                                                          gt_folder_name=self.gt_folder_name, selection=self.selection)
 
-        self.num_samples = len(self.img_paths_per_page)
+        if is_test:
+            self.image_path_list = [img_gt_path[0] for img_gt_path in self.img_gt_path_list]
+            self.output_file_list = get_output_file_list(image_path_list=self.image_path_list)
+
+        self.num_samples = len(self.img_gt_path_list)
         if self.num_samples == 0:
             raise RuntimeError("Found 0 images in: {} \n Supported image extensions are: {}".format(
                 path, ",".join(IMG_EXTENSIONS)))
@@ -111,8 +115,8 @@ class DatasetRGB(data.Dataset):
         return img, gt, index
 
     def _load_data_and_gt(self, index):
-        data_img = pil_loader(self.img_paths_per_page[index][0])
-        gt_img = pil_loader(self.img_paths_per_page[index][1])
+        data_img = pil_loader(self.img_gt_path_list[index][0])
+        gt_img = pil_loader(self.img_gt_path_list[index][1])
 
         assert data_img.height == self.image_dims.height and data_img.width == self.image_dims.width
         assert gt_img.height == self.image_dims.height and gt_img.width == self.image_dims.width
@@ -155,8 +159,8 @@ class DatasetRGB(data.Dataset):
         return img, gt
 
     @staticmethod
-    def get_gt_data_paths(directory: Path, data_folder_name: str, gt_folder_name: str,
-                          selection: Optional[Union[int, List[str]]] = None) \
+    def get_img_gt_path_list(directory: Path, data_folder_name: str, gt_folder_name: str,
+                             selection: Optional[Union[int, List[str]]] = None) \
             -> List[Tuple[Path, Path, str]]:
         """
         Structure of the folder
@@ -230,10 +234,10 @@ class DatasetRGB(data.Dataset):
 
             assert has_file_allowed_extension(path_data_file.name, IMG_EXTENSIONS) == \
                    has_file_allowed_extension(path_gt_file.name, IMG_EXTENSIONS), \
-                'get_gt_data_paths(): image file aligned with non-image file'
+                'get_img_gt_path_list(): image file aligned with non-image file'
 
             assert path_data_file.stem == path_gt_file.stem, \
-                'get_gt_data_paths(): mismatch between data filename and gt filename'
+                'get_img_gt_path_list(): mismatch between data filename and gt filename'
             # TODO check if we need x/y
             paths.append((path_data_file, path_gt_file, path_data_file.stem))
 

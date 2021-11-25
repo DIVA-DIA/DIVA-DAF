@@ -34,14 +34,14 @@ class DataModuleRolfFormat(AbstractDatamodule):
             self.pred_file_path_list = pred_file_path_list
 
         if image_analytics is None or classes is None or image_dims is None:
-            train_paths_data_gt = DatasetRolfFormat.get_gt_data_paths(list_specs=self.train_dataset_specs)
+            train_paths_data_gt = DatasetRolfFormat.get_img_gt_path_list(list_specs=self.train_dataset_specs)
 
         if image_dims is None:
             image_dims = get_image_dims(data_gt_path_list=train_paths_data_gt)
             self._print_image_dims(image_dims=image_dims)
 
         if image_analytics is None:
-            analytics_data = get_analytics_data(data_gt_path_list=train_paths_data_gt)
+            analytics_data = get_analytics_data(img_gt_path_list=train_paths_data_gt)
             self._print_analytics_data(analytics_data=analytics_data)
         else:
             analytics_data = {'mean': [image_analytics['mean']['R'],
@@ -52,7 +52,7 @@ class DataModuleRolfFormat(AbstractDatamodule):
                                       image_analytics['std']['B']]}
 
         if classes is None:
-            analytics_gt = get_analytics_gt(data_gt_path_list=train_paths_data_gt)
+            analytics_gt = get_analytics_gt(img_gt_path_list=train_paths_data_gt)
             self._print_analytics_gt(analytics_gt=analytics_gt)
         else:
             analytics_gt = {'class_encodings': [],
@@ -223,7 +223,7 @@ class DataModuleRolfFormat(AbstractDatamodule):
                           drop_last=False,
                           pin_memory=True)
 
-    def get_img_name(self, index):
+    def get_output_filename_test(self, index):
         """
         Returns the original filename of the doc image.
         You can just use this during testing!
@@ -233,9 +233,9 @@ class DataModuleRolfFormat(AbstractDatamodule):
         if not hasattr(self, 'test'):
             raise Exception('This method can just be called during testing')
 
-        return self.test.img_paths_per_page[index][2:]
+        return self.test.output_file_list[index]
 
-    def get_img_name_prediction(self, index):
+    def get_output_filename_predict(self, index):
         """
         Returns the original filename of the doc image.
         You can just use this during testing!
@@ -245,4 +245,4 @@ class DataModuleRolfFormat(AbstractDatamodule):
         if not hasattr(self, 'predict'):
             raise Exception('This method can just be called during prediction')
 
-        return self.predict.image_path_list[index].stem
+        return self.predict.output_file_list[index]

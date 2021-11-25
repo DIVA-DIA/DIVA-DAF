@@ -7,7 +7,7 @@ from torch import is_tensor
 from torchvision.datasets.folder import pil_loader
 from torchvision.transforms import ToTensor
 
-from src.datamodules.utils.misc import ImageDimensions
+from src.datamodules.utils.misc import ImageDimensions, get_output_file_list
 from src.utils import utils
 
 log = utils.get_logger(__name__)
@@ -29,6 +29,7 @@ class DatasetPredict(data.Dataset):
 
         self._raw_image_path_list = list(image_path_list)
         self.image_path_list = self.expend_glob_path_list(glob_path_list=self._raw_image_path_list)
+        self.output_file_list = get_output_file_list(image_path_list=self.image_path_list)
 
         self.image_dims = image_dims
 
@@ -97,3 +98,5 @@ class DatasetPredict(data.Dataset):
                 if path not in output_list:
                     output_list.append(Path(s))
         return output_list
+
+

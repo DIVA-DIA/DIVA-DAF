@@ -54,6 +54,14 @@ test_specs:
         gt_names:   "A1-MR-truthD-####.gif"
         range_from: 1080
         range_to:   1099
+    append3:
+        doc_dir:    "../synthetic/SetA1_sizeM/layoutR/split/test/data"
+        doc_names:  "A1-MR-page-####.jpg"
+        gt_dir:     "../synthetic/SetA1_sizeM/layoutR/split/test/gtD"
+        gt_names:   "A1-MR-page-####.gif"
+        range_from: 1080
+        range_to:   1099
+
 
 image_dims:
     width:  640
