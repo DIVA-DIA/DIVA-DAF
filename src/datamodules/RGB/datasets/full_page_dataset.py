@@ -39,7 +39,6 @@ class DatasetRGB(data.Dataset):
                  is_test=False, image_transform=None, target_transform=None, twin_transform=None,
                  classes=None, **kwargs):
         """
-        #TODO doc
         Parameters
         ----------
         path : string

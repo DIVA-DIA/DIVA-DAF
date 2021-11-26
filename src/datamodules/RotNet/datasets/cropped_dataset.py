@@ -37,7 +37,6 @@ class CroppedRotNet(CroppedHisDBDataset):
                  selection: Optional[Union[int, List[str]]] = None,
                  is_test=False, image_transform=None, **kwargs):
         """
-        #TODO doc
         Parameters
         ----------
         path : string
