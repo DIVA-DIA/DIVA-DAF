@@ -206,7 +206,7 @@ class DatasetRGB(data.Dataset):
                     raise ValueError(msg)
 
             elif isinstance(selection, ListConfig) or isinstance(selection, list):
-                if not all(x in [f.name for f in files_in_data_root] for x in selection):
+                if not all(x in [f.stem for f in files_in_data_root] for x in selection):
                     msg = f'Parameter "selection" contains a non-existing file names.)'
                     log.error(msg)
                     raise ValueError(msg)
@@ -227,7 +227,7 @@ class DatasetRGB(data.Dataset):
                         break
 
                 elif isinstance(selection, ListConfig) or isinstance(selection, list):
-                    if path_data_file.name not in selection:
+                    if path_data_file.stem not in selection:
                         continue
 
             assert has_file_allowed_extension(path_data_file.name, IMG_EXTENSIONS) == \

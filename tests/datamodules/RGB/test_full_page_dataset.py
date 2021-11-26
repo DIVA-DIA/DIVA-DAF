@@ -42,7 +42,7 @@ def test_get_gt_data_paths_selection_int_too_big(data_dir):
 
 def test_get_gt_data_paths_selection_list(data_dir):
     file_list = DatasetRGB.get_img_gt_path_list(directory=data_dir / 'test', data_folder_name='data',
-                                                gt_folder_name='gt', selection=['e-codices_fmb-cb-0055_0098v_max.jpg'])
+                                                gt_folder_name='gt', selection=['e-codices_fmb-cb-0055_0098v_max'])
     assert len(file_list) == 1
     assert file_list[0] == (data_dir / 'test' / 'data' / 'e-codices_fmb-cb-0055_0098v_max.jpg',
                             data_dir / 'test' / 'gt' / 'e-codices_fmb-cb-0055_0098v_max.png',
