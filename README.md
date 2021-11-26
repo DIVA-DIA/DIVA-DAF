@@ -127,3 +127,7 @@ freeze: True
 ...
 ```
 CARE: You can not train a model when you do not have trainable parameters (e.g. freezing backbone and header).
+
+### Selection in datasets
+If you use the `selection` key you can either use an int, which takes the first n files, or a list of strings to filter the different datasets.
+In the case you are using a full-page dataset be aware that the selection list is a list of file names without the extension.

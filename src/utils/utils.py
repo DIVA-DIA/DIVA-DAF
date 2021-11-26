@@ -141,7 +141,7 @@ def print_config(
         resolve (bool, optional): Whether to resolve reference fields of DictConfig.
     """
 
-    style = "dim"
+    style = 'default'
     tree = Tree(f":gear: CONFIG", style=style, guide_style=style)
 
     if add_missing_fields:
@@ -158,7 +158,7 @@ def print_config(
         if isinstance(config_section, DictConfig):
             branch_content = OmegaConf.to_yaml(config_section, resolve=resolve)
 
-        branch.add(Syntax(branch_content, "yaml"))
+        branch.add(Syntax(branch_content, "yaml", background_color=style))
 
     rich.print(tree)
 

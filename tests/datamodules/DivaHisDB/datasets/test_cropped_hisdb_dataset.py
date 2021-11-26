@@ -82,62 +82,62 @@ def test_get_gt_data_paths_val(data_dir_cropped):
             data_dir_cropped / f'val/data/{DATASET_PREFIX}_x0000_y0000.png'),
          PosixPath(
              data_dir_cropped / f'val/gt/{DATASET_PREFIX}_x0000_y0000.png'),
-         'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0000_y0000', (0, 0)), (
+         'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0000_y0000'), (
             PosixPath(
                 data_dir_cropped / f'val/data/{DATASET_PREFIX}_x0000_y0150.png'),
             PosixPath(
                 data_dir_cropped / f'val/gt/{DATASET_PREFIX}_x0000_y0150.png'),
-            'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0000_y0150', (0, 150)), (
+            'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0000_y0150'), (
             PosixPath(
                 data_dir_cropped / f'val/data/{DATASET_PREFIX}_x0000_y0187.png'),
             PosixPath(
                 data_dir_cropped / f'val/gt/{DATASET_PREFIX}_x0000_y0187.png'),
-            'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0000_y0187', (0, 187)), (
+            'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0000_y0187'), (
             PosixPath(
                 data_dir_cropped / f'val/data/{DATASET_PREFIX}_x0150_y0000.png'),
             PosixPath(
                 data_dir_cropped / f'val/gt/{DATASET_PREFIX}_x0150_y0000.png'),
-            'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0150_y0000', (150, 0)), (
+            'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0150_y0000'), (
             PosixPath(
                 data_dir_cropped / f'val/data/{DATASET_PREFIX}_x0150_y0150.png'),
             PosixPath(
                 data_dir_cropped / f'val/gt/{DATASET_PREFIX}_x0150_y0150.png'),
-            'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0150_y0150', (150, 150)), (
+            'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0150_y0150'), (
             PosixPath(
                 data_dir_cropped / f'val/data/{DATASET_PREFIX}_x0150_y0187.png'),
             PosixPath(
                 data_dir_cropped / f'val/gt/{DATASET_PREFIX}_x0150_y0187.png'),
-            'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0150_y0187', (150, 187)), (
+            'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0150_y0187'), (
             PosixPath(
                 data_dir_cropped / f'val/data/{DATASET_PREFIX}_x0300_y0000.png'),
             PosixPath(
                 data_dir_cropped / f'val/gt/{DATASET_PREFIX}_x0300_y0000.png'),
-            'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0300_y0000', (300, 0)), (
+            'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0300_y0000'), (
             PosixPath(
                 data_dir_cropped / f'val/data/{DATASET_PREFIX}_x0300_y0150.png'),
             PosixPath(
                 data_dir_cropped / f'val/gt/{DATASET_PREFIX}_x0300_y0150.png'),
-            'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0300_y0150', (300, 150)), (
+            'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0300_y0150'), (
             PosixPath(
                 data_dir_cropped / f'val/data/{DATASET_PREFIX}_x0300_y0187.png'),
             PosixPath(
                 data_dir_cropped / f'val/gt/{DATASET_PREFIX}_x0300_y0187.png'),
-            'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0300_y0187', (300, 187)), (
+            'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0300_y0187'), (
             PosixPath(
                 data_dir_cropped / f'val/data/{DATASET_PREFIX}_x0349_y0000.png'),
             PosixPath(
                 data_dir_cropped / f'val/gt/{DATASET_PREFIX}_x0349_y0000.png'),
-            'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0349_y0000', (349, 0)), (
+            'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0349_y0000'), (
             PosixPath(
                 data_dir_cropped / f'val/data/{DATASET_PREFIX}_x0349_y0150.png'),
             PosixPath(
                 data_dir_cropped / f'val/gt/{DATASET_PREFIX}_x0349_y0150.png'),
-            'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0349_y0150', (349, 150)), (
+            'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0349_y0150'), (
             PosixPath(
                 data_dir_cropped / f'val/data/{DATASET_PREFIX}_x0349_y0187.png'),
             PosixPath(
                 data_dir_cropped / f'val/gt/{DATASET_PREFIX}_x0349_y0187.png'),
-            'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0349_y0187', (349, 187))]
+            'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0349_y0187')]
     assert len(files_from_method) == 12
     assert files_from_method == expected_result
 
@@ -149,77 +149,77 @@ def test_get_gt_data_paths_test(data_dir_cropped):
         data_dir_cropped / f'test/data/{DATASET_PREFIX}_x0000_y0000.png'),
                         PosixPath(
                             data_dir_cropped / f'test/gt/{DATASET_PREFIX}_x0000_y0000.png'),
-                        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0000_y0000', (0, 0)), (
+                        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0000_y0000'), (
         PosixPath(
             data_dir_cropped / f'test/data/{DATASET_PREFIX}_x0000_y0128.png'),
         PosixPath(
             data_dir_cropped / f'test/gt/{DATASET_PREFIX}_x0000_y0128.png'),
-        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0000_y0128', (0, 128)), (
+        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0000_y0128'), (
         PosixPath(
             data_dir_cropped / f'test/data/{DATASET_PREFIX}_x0000_y0231.png'),
         PosixPath(
             data_dir_cropped / f'test/gt/{DATASET_PREFIX}_x0000_y0231.png'),
-        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0000_y0231', (0, 231)), (
+        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0000_y0231'), (
         PosixPath(
             data_dir_cropped / f'test/data/{DATASET_PREFIX}_x0128_y0000.png'),
         PosixPath(
             data_dir_cropped / f'test/gt/{DATASET_PREFIX}_x0128_y0000.png'),
-        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0128_y0000', (128, 0)), (
+        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0128_y0000'), (
         PosixPath(
             data_dir_cropped / f'test/data/{DATASET_PREFIX}_x0128_y0128.png'),
         PosixPath(
             data_dir_cropped / f'test/gt/{DATASET_PREFIX}_x0128_y0128.png'),
-        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0128_y0128', (128, 128)), (
+        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0128_y0128'), (
         PosixPath(
             data_dir_cropped / f'test/data/{DATASET_PREFIX}_x0128_y0231.png'),
         PosixPath(
             data_dir_cropped / f'test/gt/{DATASET_PREFIX}_x0128_y0231.png'),
-        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0128_y0231', (128, 231)), (
+        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0128_y0231'), (
         PosixPath(
             data_dir_cropped / f'test/data/{DATASET_PREFIX}_x0256_y0000.png'),
         PosixPath(
             data_dir_cropped / f'test/gt/{DATASET_PREFIX}_x0256_y0000.png'),
-        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0256_y0000', (256, 0)), (
+        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0256_y0000'), (
         PosixPath(
             data_dir_cropped / f'test/data/{DATASET_PREFIX}_x0256_y0128.png'),
         PosixPath(
             data_dir_cropped / f'test/gt/{DATASET_PREFIX}_x0256_y0128.png'),
-        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0256_y0128', (256, 128)), (
+        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0256_y0128'), (
         PosixPath(
             data_dir_cropped / f'test/data/{DATASET_PREFIX}_x0256_y0231.png'),
         PosixPath(
             data_dir_cropped / f'test/gt/{DATASET_PREFIX}_x0256_y0231.png'),
-        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0256_y0231', (256, 231)), (
+        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0256_y0231'), (
         PosixPath(
             data_dir_cropped / f'test/data/{DATASET_PREFIX}_x0384_y0000.png'),
         PosixPath(
             data_dir_cropped / f'test/gt/{DATASET_PREFIX}_x0384_y0000.png'),
-        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0384_y0000', (384, 0)), (
+        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0384_y0000'), (
         PosixPath(
             data_dir_cropped / f'test/data/{DATASET_PREFIX}_x0384_y0128.png'),
         PosixPath(
             data_dir_cropped / f'test/gt/{DATASET_PREFIX}_x0384_y0128.png'),
-        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0384_y0128', (384, 128)), (
+        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0384_y0128'), (
         PosixPath(
             data_dir_cropped / f'test/data/{DATASET_PREFIX}_x0384_y0231.png'),
         PosixPath(
             data_dir_cropped / f'test/gt/{DATASET_PREFIX}_x0384_y0231.png'),
-        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0384_y0231', (384, 231)), (
+        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0384_y0231'), (
         PosixPath(
             data_dir_cropped / f'test/data/{DATASET_PREFIX}_x0393_y0000.png'),
         PosixPath(
             data_dir_cropped / f'test/gt/{DATASET_PREFIX}_x0393_y0000.png'),
-        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0393_y0000', (393, 0)), (
+        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0393_y0000'), (
         PosixPath(
             data_dir_cropped / f'test/data/{DATASET_PREFIX}_x0393_y0128.png'),
         PosixPath(
             data_dir_cropped / f'test/gt/{DATASET_PREFIX}_x0393_y0128.png'),
-        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0393_y0128', (393, 128)), (
+        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0393_y0128'), (
         PosixPath(
             data_dir_cropped / f'test/data/{DATASET_PREFIX}_x0393_y0231.png'),
         PosixPath(
             data_dir_cropped / f'test/gt/{DATASET_PREFIX}_x0393_y0231.png'),
-        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0393_y0231', (393, 231))]
+        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0393_y0231')]
     assert len(files_from_method) == 15
     assert files_from_method == expected_result
 
@@ -230,59 +230,59 @@ def get_train_file_names(data_dir_cropped):
         data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0000_y0000.png'),
              PosixPath(
                  data_dir_cropped / f'train/gt/{DATASET_PREFIX}_x0000_y0000.png'),
-             'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0000_y0000', (0, 0)), (
+             'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0000_y0000'), (
         PosixPath(
             data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0000_y0150.png'),
         PosixPath(
             data_dir_cropped / f'train/gt/{DATASET_PREFIX}_x0000_y0150.png'),
-        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0000_y0150', (0, 150)), (
+        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0000_y0150'), (
         PosixPath(
             data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0000_y0187.png'),
         PosixPath(
             data_dir_cropped / f'train/gt/{DATASET_PREFIX}_x0000_y0187.png'),
-        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0000_y0187', (0, 187)), (
+        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0000_y0187'), (
         PosixPath(
             data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0150_y0000.png'),
         PosixPath(
             data_dir_cropped / f'train/gt/{DATASET_PREFIX}_x0150_y0000.png'),
-        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0150_y0000', (150, 0)), (
+        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0150_y0000'), (
         PosixPath(
             data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0150_y0150.png'),
         PosixPath(
             data_dir_cropped / f'train/gt/{DATASET_PREFIX}_x0150_y0150.png'),
-        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0150_y0150', (150, 150)), (
+        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0150_y0150'), (
         PosixPath(
             data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0150_y0187.png'),
         PosixPath(
             data_dir_cropped / f'train/gt/{DATASET_PREFIX}_x0150_y0187.png'),
-        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0150_y0187', (150, 187)), (
+        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0150_y0187'), (
         PosixPath(
             data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0300_y0000.png'),
         PosixPath(
             data_dir_cropped / f'train/gt/{DATASET_PREFIX}_x0300_y0000.png'),
-        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0300_y0000', (300, 0)), (
+        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0300_y0000'), (
         PosixPath(
             data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0300_y0150.png'),
         PosixPath(
             data_dir_cropped / f'train/gt/{DATASET_PREFIX}_x0300_y0150.png'),
-        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0300_y0150', (300, 150)), (
+        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0300_y0150'), (
         PosixPath(
             data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0300_y0187.png'),
         PosixPath(
             data_dir_cropped / f'train/gt/{DATASET_PREFIX}_x0300_y0187.png'),
-        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0300_y0187', (300, 187)), (
+        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0300_y0187'), (
         PosixPath(
             data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0349_y0000.png'),
         PosixPath(
             data_dir_cropped / f'train/gt/{DATASET_PREFIX}_x0349_y0000.png'),
-        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0349_y0000', (349, 0)), (
+        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0349_y0000'), (
         PosixPath(
             data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0349_y0150.png'),
         PosixPath(
             data_dir_cropped / f'train/gt/{DATASET_PREFIX}_x0349_y0150.png'),
-        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0349_y0150', (349, 150)), (
+        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0349_y0150'), (
         PosixPath(
             data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0349_y0187.png'),
         PosixPath(
             data_dir_cropped / f'train/gt/{DATASET_PREFIX}_x0349_y0187.png'),
-        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0349_y0187', (349, 187))]
+        'e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0349_y0187')]
