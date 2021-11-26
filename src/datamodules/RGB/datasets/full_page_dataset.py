@@ -189,8 +189,6 @@ class DatasetRGB(data.Dataset):
 
         # check the selection parameter
         if selection:
-            subdirectories = [x.name for x in files_in_data_root if x.is_dir()]
-
             if isinstance(selection, int):
                 if selection < 0:
                     msg = f'Parameter "selection" is a negative integer ({selection}). ' \
@@ -201,15 +199,15 @@ class DatasetRGB(data.Dataset):
                 elif selection == 0:
                     selection = None
 
-                elif selection > len(subdirectories):
+                elif selection > len(files_in_data_root):
                     msg = f'Parameter "selection" is larger ({selection}) than ' \
-                          f'number of subdirectories ({len(subdirectories)}).'
+                          f'number of files ({len(files_in_data_root)}).'
                     log.error(msg)
                     raise ValueError(msg)
 
             elif isinstance(selection, ListConfig) or isinstance(selection, list):
-                if not all(x in subdirectories for x in selection):
-                    msg = f'Parameter "selection" contains a non-existing subdirectory.)'
+                if not all(x in [f.name for f in files_in_data_root] for x in selection):
+                    msg = f'Parameter "selection" contains a non-existing file names.)'
                     log.error(msg)
                     raise ValueError(msg)
 
@@ -238,7 +236,6 @@ class DatasetRGB(data.Dataset):
 
             assert path_data_file.stem == path_gt_file.stem, \
                 'get_img_gt_path_list(): mismatch between data filename and gt filename'
-            # TODO check if we need x/y
             paths.append((path_data_file, path_gt_file, path_data_file.stem))
 
         return paths
