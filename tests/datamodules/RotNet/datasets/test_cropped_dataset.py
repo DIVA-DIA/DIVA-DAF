@@ -96,6 +96,87 @@ def test_get_gt_data_paths(data_dir_cropped):
             data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0349_y0150.png'),
         PosixPath(
             data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0349_y0187.png'),
-        ]
+    ]
+    assert len(file_paths) == len(expected_result)
+    assert file_paths == expected_result
+
+
+def test_get_gt_data_paths_selection_int(data_dir_cropped):
+    file_paths = CroppedRotNet.get_gt_data_paths(directory=data_dir_cropped / 'train',
+                                                 data_folder_name=DATA_FOLDER_NAME, selection=1)
+
+    expected_result = [
+        PosixPath(
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0000_y0000.png'),
+        PosixPath(
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0000_y0150.png'),
+        PosixPath(
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0000_y0187.png'),
+        PosixPath(
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0150_y0000.png'),
+        PosixPath(
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0150_y0150.png'),
+        PosixPath(
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0150_y0187.png'),
+        PosixPath(
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0300_y0000.png'),
+        PosixPath(
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0300_y0150.png'),
+        PosixPath(
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0300_y0187.png'),
+        PosixPath(
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0349_y0000.png'),
+        PosixPath(
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0349_y0150.png'),
+        PosixPath(
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0349_y0187.png'),
+    ]
+    assert len(file_paths) == len(expected_result)
+    assert file_paths == expected_result
+
+
+def test_get_gt_data_paths_selection_int_negative(data_dir_cropped):
+    with pytest.raises(ValueError):
+        CroppedRotNet.get_gt_data_paths(directory=data_dir_cropped / 'train',
+                                        data_folder_name=DATA_FOLDER_NAME, selection=-1)
+
+
+def test_get_gt_data_paths_selection_int_too_big(data_dir_cropped):
+    with pytest.raises(ValueError):
+        CroppedRotNet.get_gt_data_paths(directory=data_dir_cropped / 'train',
+                                        data_folder_name=DATA_FOLDER_NAME, selection=3)
+
+
+def test_get_gt_data_paths_selection_list(data_dir_cropped):
+    file_paths = CroppedRotNet.get_gt_data_paths(directory=data_dir_cropped / 'train',
+                                                 data_folder_name=DATA_FOLDER_NAME,
+                                                 selection=['e-codices_fmb-cb-0055_0098v_max'])
+
+    expected_result = [
+        PosixPath(
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0000_y0000.png'),
+        PosixPath(
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0000_y0150.png'),
+        PosixPath(
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0000_y0187.png'),
+        PosixPath(
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0150_y0000.png'),
+        PosixPath(
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0150_y0150.png'),
+        PosixPath(
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0150_y0187.png'),
+        PosixPath(
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0300_y0000.png'),
+        PosixPath(
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0300_y0150.png'),
+        PosixPath(
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0300_y0187.png'),
+        PosixPath(
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0349_y0000.png'),
+        PosixPath(
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0349_y0150.png'),
+        PosixPath(
+            data_dir_cropped / f'train/data/{DATASET_PREFIX}_x0349_y0187.png'),
+    ]
     assert len(file_paths) == len(expected_result)
     assert file_paths == expected_result
