@@ -4,6 +4,7 @@ import pytest
 import torch
 import torchmetrics
 from omegaconf import OmegaConf
+from pl_bolts.models.vision import UNet
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.trainer.states import TrainerState, RunningStage
 from torch.nn import Identity, CrossEntropyLoss
@@ -14,13 +15,17 @@ from src.models.backbone_header_model import BackboneHeaderModel
 from src.tasks.base_task import AbstractTask
 from src.tasks.utils.outputs import OutputKeys
 from tests.test_data.dummy_data_hisdb.dummy_data import data_dir_cropped
-from tests.tasks.DivaHisDB.test_semantic_segmentation import model
 
 
 @pytest.fixture(autouse=True)
 def clear_resolvers():
     OmegaConf.clear_resolvers()
     seed_everything(42)
+
+
+@pytest.fixture()
+def model():
+    return UNet(num_classes=4, num_layers=2, features_start=32)
 
 
 @pytest.fixture()
