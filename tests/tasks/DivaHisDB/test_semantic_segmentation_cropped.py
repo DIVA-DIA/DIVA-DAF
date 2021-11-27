@@ -100,7 +100,7 @@ def test_validation_step(monkeypatch, datamodule_and_dir, task, capsys):
 
     img, gt, mask = data_module_cropped.val[0]
     task.validation_step(batch=(img[None, :], gt[None, :], mask[None, :]), batch_idx=0)
-    assert 'val/crossentropyloss 1.4\n' in capsys.readouterr().out
+    assert 'val/crossentropyloss 1.4' in capsys.readouterr().out
 
 
 def test_test_step(monkeypatch, datamodule_and_dir, task, capsys, tmp_path):
