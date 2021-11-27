@@ -7,13 +7,11 @@ import torch.optim.optimizer
 from omegaconf import OmegaConf
 from pl_bolts.models.vision import UNet
 from pytorch_lightning import seed_everything, Trainer
-from torch.nn import Identity, CrossEntropyLoss
 
 from src.datamodules.DivaHisDB.datamodule_cropped import DivaHisDBDataModuleCropped
-from src.models.backbone_header_model import BackboneHeaderModel
 from src.tasks.DivaHisDB.semantic_segmentation_cropped import SemanticSegmentationCroppedHisDB
 from src.tasks.utils.outputs import OutputKeys
-from tasks.test_base_task import fake_log
+from tests.tasks.test_base_task import fake_log
 from tests.test_data.dummy_data_hisdb.dummy_data import data_dir_cropped
 
 

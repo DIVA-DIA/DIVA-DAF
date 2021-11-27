@@ -12,7 +12,7 @@ from src.models.backbones.baby_cnn import CNN_basic
 from src.models.headers.fully_connected import SingleLinear
 from src.tasks.classification.classification import Classification
 from src.tasks.utils.outputs import OutputKeys
-from tasks.test_base_task import fake_log
+from tests.tasks.test_base_task import fake_log
 from tests.test_data.dummy_data_hisdb.dummy_data import data_dir_cropped
 
 
