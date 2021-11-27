@@ -98,10 +98,7 @@ def test__check_if_in_config_bad_config(get_dict):
             _check_if_in_config(config=get_dict, name=cf)
 
 
-def test_print_config(get_dict):
-    captured_output = io.StringIO()
-    sys.stdout = captured_output
-
+def test_print_config(get_dict, capsys):
     print_config(config=get_dict, fields=(
         "trainer",
         "task",
@@ -117,7 +114,6 @@ def test_print_config(get_dict):
         "test",
         "predict"
     ))
-    sys.stdout = sys.__stdout__
     expected_result = \
         "⚙ CONFIG                                                                        \n" \
         "├── trainer                                                                     \n" \
@@ -223,4 +219,4 @@ def test_print_config(get_dict):
         "│   └── True                                                                    \n" \
         "└── work_dir                                                                    \n" \
         "    └── .                                                                       \n"
-    assert captured_output.getvalue() == expected_result
+    assert capsys.readouterr().out == expected_result
