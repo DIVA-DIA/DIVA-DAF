@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 import pytest
 import torch
 import torchmetrics
@@ -209,8 +210,8 @@ def test_training_step(monkeypatch, model, data_module_cropped, capsys):
 
     img, gt, _ = data_module_cropped.train[0]
     output = task.training_step(batch=(img[None, :], gt[None, :]), batch_idx=0)
-    assert capsys.readouterr().out == 'train/crossentropyloss 1.4348618984222412\n'
-    assert output[OutputKeys.LOSS].item() == 1.4348618984222412
+    assert 'train/crossentropyloss 1.4' in capsys.readouterr().out
+    assert np.isclose(output[OutputKeys.LOSS].item(), 1.4348618984222412, rtol=2e-03)
     assert torch.equal(output[OutputKeys.TARGET], gt[None, :])
     assert output[OutputKeys.PREDICTION].shape == torch.Size([1, 4, 256, 256])
 
@@ -227,8 +228,8 @@ def test_validation_step(monkeypatch, model, data_module_cropped, capsys):
 
     img, gt, _ = data_module_cropped.val[0]
     output = task.validation_step(batch=(img[None, :], gt[None, :]), batch_idx=0)
-    assert capsys.readouterr().out == 'val/crossentropyloss 1.4348618984222412\n'
-    assert output[OutputKeys.LOSS].item() == 1.4348618984222412
+    assert 'val/crossentropyloss 1.4' in capsys.readouterr().out
+    assert np.isclose(output[OutputKeys.LOSS].item(), 1.4348618984222412, rtol=2e-03)
     assert torch.equal(output[OutputKeys.TARGET], gt[None, :])
     assert output[OutputKeys.PREDICTION].shape == torch.Size([1, 4, 256, 256])
 
@@ -245,8 +246,8 @@ def test_test_step(monkeypatch, model, data_module_cropped, capsys):
 
     img, gt, _, _ = data_module_cropped.test[0]
     output = task.test_step(batch=(img[None, :], gt[None, :]), batch_idx=0)
-    assert capsys.readouterr().out == 'test/crossentropyloss 1.428513765335083\n'
-    assert output[OutputKeys.LOSS].item() == 1.428513765335083
+    assert 'test/crossentropyloss 1.4' in capsys.readouterr().out
+    assert np.isclose(output[OutputKeys.LOSS].item(), 1.428513765335083, rtol=2e-03)
     assert torch.equal(output[OutputKeys.TARGET], gt[None, :])
     assert output[OutputKeys.PREDICTION].shape == torch.Size([1, 4, 256, 256])
 
