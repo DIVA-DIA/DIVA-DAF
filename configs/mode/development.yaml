@@ -1,9 +1,6 @@
 # @package _global_
 
-experiment_mode: True
-
-# name of the experiment
-name: default
+development_mode: True
 
 hydra:
     run:
