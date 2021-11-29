@@ -1,4 +1,4 @@
-_target_: pl_bolts.models.vision.UNet
+_target_: src.models.backbones.unet.UNet
 num_classes: ${datamodule:num_classes}
 
 #path_to_weights: 'path/to/checkpoint' # path to the checkpoint(.pth) with surrounded with ''
