@@ -1,0 +1,10 @@
+# @package _global_
+
+experiment_mode: True
+
+# name of the experiment
+name: default
+
+hydra:
+    run:
+        dir: outputs/development/${now:%Y-%m-%d}/${now:%H-%M-%S}

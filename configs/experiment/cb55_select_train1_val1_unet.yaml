@@ -4,6 +4,7 @@
 # python run.py +experiment=exp_example_full
 
 defaults:
+    - /mode: experiment.yaml
     - /plugins: default.yaml
     - /task: semantic_segmentation_HisDB_cropped.yaml
     - /loss: crossentropyloss.yaml
@@ -22,6 +23,8 @@ defaults:
 # we override default configurations with nulls to prevent them from loading at all
 # instead we define all modules and their paths directly in this config,
 # so everything is stored in one place for more readibility
+
+name: "semantic_segmentation_cb55_train1_val1_unet"
 
 train: True
 test: True
@@ -64,6 +67,6 @@ callbacks:
 
 logger:
     wandb:
-        name: 'cb55-select-train1-val1-unet'
+        name: ${name}
         tags: ["best_model", "USL", "baseline"]
         group: 'baseline'
