@@ -10,18 +10,17 @@ import seaborn as sns
 import torch
 from matplotlib import pyplot as plt
 from torch import nn
-from torchvision import models
 
 
 def plot_weights(model, layer_num, single_channel=False, collated=False):
     # extracting the model features at the particular layer number
-    layer = list(model.parameters())[layer_num]
-    # layer = model.features[layer_num]
+    layer = list(model.modules())[layer_num]
+    # layer = list(model.parameters())[layer_num]
 
     # checking whether the layer is convolution layer or not
-    if layer.ndim > 3:
+    if isinstance(layer, nn.Conv2d):
         # getting the weight tensor data
-        weight_tensor = list(model.parameters())[layer_num].data
+        weight_tensor = layer.weight.data
 
         if single_channel:
             if collated:
