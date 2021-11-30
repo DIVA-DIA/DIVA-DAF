@@ -288,13 +288,13 @@ class CroppedOutputMerger:
             elif i == 3:
                 pbar3.set_description(f'{page_info_str}: Saving merged image files ' + '(pred)'.ljust(10))
                 # Save prediction only when complete
-                if not np.isnan(np.sum(pred_canvas)):
+                # if not np.isnan(np.sum(pred_canvas)):
                     # Save the final image (image_name, output_image, output_folder, class_encoding)
-                    save_output_page_image(image_name=f'{img_name}.png', output_image=pred_canvas,
+                save_output_page_image(image_name=f'{img_name}.png', output_image=pred_canvas,
                                            output_folder=outdir_pred, class_encoding=self.class_encodings)
-                else:
-                    print(f'WARNING: Test image {img_name} was not written! It still contains NaN values.')
-                    break  # so last step is not
+                # else:
+                #     print(f'WARNING: Test image {img_name} was not written! It still contains NaN values.')
+                #     break  # so last step is not
 
             elif i == 4:
                 pbar3.set_description(f'{page_info_str}: Saving merged image files ' + '(pred_viz)'.ljust(10))
