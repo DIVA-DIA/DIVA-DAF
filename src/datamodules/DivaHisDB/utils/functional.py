@@ -7,20 +7,18 @@ from sklearn.preprocessing import OneHotEncoder
 
 
 def gt_to_int_encoding(matrix: torch.Tensor, class_encodings: List[int]):
-    np_array = (matrix * 255).numpy().astype(np.uint8)
+    matrix = (matrix * 255)
 
     # take only blue channel
-    im_np = np_array[2, :, :].astype(np.uint8)
+    img_blue = matrix[2, :, :]
 
     # change border pixels to background
-    border_mask = np_array[0, :, :].astype(np.uint8) != 0
-    im_np[border_mask] = 1
+    border_mask = torch.where(matrix[0, :, :] != 0, True, False)
+    img_blue[border_mask] = 1
 
-    im_tensor = torch.tensor(im_np)
-
-    integer_encoded = torch.full(size=im_tensor.shape, fill_value=-1, dtype=torch.long)
+    integer_encoded = torch.full(size=img_blue.shape, fill_value=-1, dtype=torch.long)
     for index, encoding in enumerate(class_encodings):
-        mask = torch.where(im_tensor == encoding, True, False)
+        mask = torch.where(img_blue == encoding, True, False)
         integer_encoded[mask] = index
 
     return integer_encoded
