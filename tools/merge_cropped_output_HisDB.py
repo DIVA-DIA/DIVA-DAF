@@ -54,12 +54,19 @@ class CroppedOutputMerger:
                                                                    data_folder_name=self.data_folder_name,
                                                                    gt_folder_name=self.gt_folder_name)
 
+        coordinates = re.compile(r'.+_x(\d+)_y(\d+)$')
+
         dataset_img_name_list = []
         self.dataset_dict = defaultdict(list)
-        for img_path, gt_path, img_name, pred_path, (x, y) in img_paths_per_page:
+        for img_path, gt_path, img_name, crop_name in img_paths_per_page:
             if img_name not in dataset_img_name_list:
                 dataset_img_name_list.append(img_name)
-            self.dataset_dict[img_name].append((img_path, gt_path, pred_path, x, y))
+            m = coordinates.match(crop_name)
+            if m is None:
+                continue
+            x = int(m.group(1))
+            y = int(m.group(2))
+            self.dataset_dict[img_name].append((img_path, gt_path, crop_name, x, y))
 
         dataset_img_name_list = sorted(dataset_img_name_list)
 
