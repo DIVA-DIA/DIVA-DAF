@@ -1,0 +1,7 @@
+# @package _global_
+
+development_mode: True
+
+hydra:
+    run:
+        dir: outputs/development/${now:%Y-%m-%d}/${now:%H-%M-%S}

@@ -4,6 +4,7 @@
 # python run.py +experiment=exp_example_full
 
 defaults:
+    - /mode:            development.yaml
     - /plugins:         default.yaml
     - /task:            semantic_segmentation_RGB.yaml
     - /datamodule:      rolf_format_dev.yaml
