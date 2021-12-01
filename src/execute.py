@@ -107,16 +107,17 @@ def execute(config: DictConfig) -> Optional[float]:
     )
 
     if config.save_config:
+        RUN_CONFIG_NAME = 'run_config.yaml'
         log.info("Saving the current config into the output directory!")
         # cwd is already the output directory so we dont need a full path
         if trainer.is_global_zero:
-            with open('config.yaml', mode='w') as fp:
+            with open(RUN_CONFIG_NAME, mode='w') as fp:
                 OmegaConf.save(config=config, f=fp)
             if config.get('logger') is not None and 'wandb' in config.get('logger'):
                 if '_target_' in config.logger.wandb:
                     run_config_folder_path = Path(wandb.run.dir) / 'run_config'
                     run_config_folder_path.mkdir(exist_ok=True)
-                    shutil.copyfile('config.yaml', str(run_config_folder_path / 'config.yaml'))
+                    shutil.copyfile(RUN_CONFIG_NAME, str(run_config_folder_path / RUN_CONFIG_NAME))
 
     if config.train:
         # Train the model
