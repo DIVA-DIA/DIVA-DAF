@@ -61,6 +61,10 @@ def output_to_class_encodings(output, class_encodings, perform_argmax=True):
     for mask, (old, new) in zip(masks, class_to_B.items()):
         B = np.where(mask, new, B)
 
-    rgb = np.dstack((np.zeros(shape=(B.shape[0], B.shape[1], 2), dtype=np.int8), B))
+    nan_mask = np.isnan(np.sum(output, axis=0))
+    B = np.where(nan_mask, 0, B)
+    R = np.where(nan_mask, 255, np.zeros(shape=(B.shape[0], B.shape[1])))
+    G = np.where(nan_mask, 255, np.zeros(shape=(B.shape[0], B.shape[1])))
+    rgb = np.dstack((R, G, B))
 
     return rgb
