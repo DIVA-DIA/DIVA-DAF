@@ -1,4 +1,5 @@
 import shutil
+import sys
 from pathlib import Path
 from typing import List, Optional
 
@@ -148,6 +149,8 @@ def execute(config: DictConfig) -> Optional[float]:
 
     _print_best_paths(conf=config, trainer=trainer)
 
+    _print_run_command(trainer=trainer)
+
     # Return metric score for Optuna optimization
     optimized_metric = config.get("optimized_metric")
     if optimized_metric:
@@ -232,3 +235,22 @@ def _print_best_paths(conf: DictConfig, trainer: Trainer):
         log.info(
             f"Best header checkpoint path:"
             f"\n{_create_print_path(base_path, conf.callbacks.model_checkpoint.header_filename)}")
+
+
+def _print_run_command(trainer: Trainer):
+    """
+    Print out a run command based on the saved run config.
+
+    Args:
+        conf: the hydra config
+        trainer: the current pl trainer
+    """
+
+    run_path = trainer.default_root_dir
+    run_config_name = 'run_config.yaml'
+
+    log.info(f'Command to rerun using run_config.yaml:\n'
+             f'python run.py -cd {run_path} -cn {run_config_name}')
+
+    log.info(f'Command to rerun using same command:\n'
+             f'python run.py {" ".join(sys.argv[1:])}')
