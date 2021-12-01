@@ -250,7 +250,9 @@ def _print_run_command(trainer: Trainer):
     run_config_name = 'run_config.yaml'
 
     log.info(f'Command to rerun using run_config.yaml:\n'
-             f'python run.py -cd {run_path} -cn {run_config_name}')
+             f'python run.py -cd="{run_path}" -cn="{run_config_name}"')
+
+    param_str_list = [f'"{p}"' for p in sys.argv[1:]]
 
     log.info(f'Command to rerun using same command:\n'
-             f'python run.py {" ".join(sys.argv[1:])}')
+             f'python run.py {" ".join(param_str_list)}')
