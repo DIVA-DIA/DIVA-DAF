@@ -6,6 +6,7 @@ from typing import List, Optional
 import hydra
 import torch
 import wandb
+from hydra.core.hydra_config import HydraConfig
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import LightningModule, LightningDataModule, Callback, Trainer, plugins
 from pytorch_lightning.loggers import LightningLoggerBase
@@ -113,7 +114,10 @@ def execute(config: DictConfig) -> Optional[float]:
         # cwd is already the output directory so we dont need a full path
         if trainer.is_global_zero:
             with open(RUN_CONFIG_NAME, mode='w') as fp:
+                OmegaConf.set_struct(config, False)
+                config['hydra'] = HydraConfig.instance().cfg['hydra']
                 OmegaConf.save(config=config, f=fp)
+                OmegaConf.set_struct(config, True)
             if config.get('logger') is not None and 'wandb' in config.get('logger'):
                 if '_target_' in config.logger.wandb:
                     run_config_folder_path = Path(wandb.run.dir) / 'run_config'
