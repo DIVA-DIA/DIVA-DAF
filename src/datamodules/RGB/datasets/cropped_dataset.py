@@ -37,7 +37,6 @@ class CroppedDatasetRGB(data.Dataset):
                  is_test=False, image_transform=None, target_transform=None, twin_transform=None,
                  classes=None, **kwargs):
         """
-        #TODO doc
         Parameters
         ----------
         path : string
@@ -73,9 +72,6 @@ class CroppedDatasetRGB(data.Dataset):
         # List of tuples that contain the path to the gt and image that belong together
         self.img_paths_per_page = self.get_gt_data_paths(path, data_folder_name=self.data_folder_name,
                                                          gt_folder_name=self.gt_folder_name, selection=self.selection)
-
-        # TODO: make more fanzy stuff here
-        # self.img_paths = [pair for page in self.img_gt_path_list for pair in page]
 
         self.num_samples = len(self.img_paths_per_page)
         if self.num_samples == 0:
@@ -239,13 +235,6 @@ class CroppedDatasetRGB(data.Dataset):
                         has_file_allowed_extension(path_gt_file.name, IMG_EXTENSIONS):
                     assert path_data_file.stem == path_gt_file.stem, \
                         'get_img_gt_path_list(): mismatch between data filename and gt filename'
-                    coordinates = re.compile(r'.+_x(\d+)_y(\d+)\.')
-                    m = coordinates.match(path_data_file.name)
-                    if m is None:
-                        continue
-                    x = int(m.group(1))
-                    y = int(m.group(2))
-                    # TODO check if we need x/y
-                    paths.append((path_data_file, path_gt_file, path_data_subdir.stem, path_data_file.stem, (x, y)))
+                    paths.append((path_data_file, path_gt_file, path_data_subdir.stem, path_data_file.stem))
 
         return paths

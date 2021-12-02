@@ -4,6 +4,7 @@
 # python run.py +experiment=exp_example_full
 
 defaults:
+    - /mode:            experiment.yaml
     - /plugins:         default.yaml
     - /task:            semantic_segmentation_RGB.yaml
     - /datamodule:      rolf_format_layoutD_gtD.yaml
@@ -19,10 +20,13 @@ defaults:
     - /logger:
           - wandb.yaml # set logger here or use command line (e.g. `python run.py logger=wandb`)
           - csv.yaml
+    - _self_
 
 # we override default configurations with nulls to prevent them from loading at all
 # instead we define all modules and their paths directly in this config,
 # so everything is stored in one place for more readibility
+
+name: "semantic_segmentation_synthetic_fullpage_layoutD_gtD_baby_unet"
 
 train: True
 test: True
@@ -52,6 +56,6 @@ callbacks:
 
 logger:
     wandb:
-        name: 'synthetic-baby-unet-layoutD-gtD-rolf-format'
+        name: ${name}
         tags: [ "best_model", "synthetic", "RolfFormat" ]
         group: 'synthetic'

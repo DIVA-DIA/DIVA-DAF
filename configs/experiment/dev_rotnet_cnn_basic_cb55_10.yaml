@@ -4,6 +4,7 @@
 # python run.py +experiment=exp_example_full
 
 defaults:
+    - /mode: development.yaml
     - /plugins: default.yaml
     - /task: classification.yaml
     - /loss: crossentropyloss.yaml
@@ -18,6 +19,7 @@ defaults:
     - /logger:
           - wandb.yaml # set logger here or use command line (e.g. `python run.py logger=wandb`)
           - csv.yaml
+    - _self_
 
 # we override default configurations with nulls to prevent them from loading at all
 # instead we define all modules and their paths directly in this config,

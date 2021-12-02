@@ -41,9 +41,9 @@ def test_get_img_name_coordinates(data_module_cropped, dataset_test):
     coords_0 = data_module_cropped.get_img_name_coordinates(0)
     coords_1 = data_module_cropped.get_img_name_coordinates(1)
     coords_2 = data_module_cropped.get_img_name_coordinates(2)
-    assert coords_0 == ('e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0000_y0000', (0, 0))
-    assert coords_1 == ('e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0000_y0128', (0, 128))
-    assert coords_2 == ('e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0000_y0231', (0, 231))
+    assert coords_0 == ('e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0000_y0000')
+    assert coords_1 == ('e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0000_y0128')
+    assert coords_2 == ('e-codices_fmb-cb-0055_0098v_max', 'e-codices_fmb-cb-0055_0098v_max_x0000_y0231')
 
 
 def test__create_dataset_parameters_cropped(data_module_cropped):

@@ -113,14 +113,14 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
                 num_samples = len(self.trainer.datamodule.predict)
                 datasplit_name = 'predict'
             else:
-                log.warn(f'Unknown stage ({stage}) during setup!')
+                log.warning(f'Unknown stage ({stage}) during setup!')
                 num_samples = -1
                 datasplit_name = None
 
             if num_samples % self.trainer.datamodule.batch_size != 0:
-                log.warn(
+                log.warning(
                     f'Number of sample ({num_samples}) in {datasplit_name} not dividable by batch size ({batch_size}).')
-                log.warn(f'Last batch will be incomplete. Behavior depends on datamodule.drop_last setting.')
+                log.warning(f'Last batch will be incomplete. Behavior depends on datamodule.drop_last setting.')
 
     def step(self,
              batch: Any,
@@ -302,10 +302,10 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
 
         matrix_sum = matrix.sum()
         if not np.isclose(a=expected_sum, b=matrix_sum, rtol=2.5e-7):
-            log.warn(f'matrix.sum() is not close to expected_sum '
-                     f'({matrix_sum} != {expected_sum}, '
-                     f'diff: {matrix_sum - expected_sum}, '
-                     f'diff_crops: {(matrix_sum - expected_sum) / pixels_per_crop})')
+            log.warning(f'matrix.sum() is not close to expected_sum '
+                        f'({matrix_sum} != {expected_sum}, '
+                        f'diff: {matrix_sum - expected_sum}, '
+                        f'diff_crops: {(matrix_sum - expected_sum) / pixels_per_crop})')
 
         # print(f'With all_gather: {str(len(outputs[0][OutputKeys.PREDICTION][0]))}')
         conf_mat_name = f'CM_epoch_{self.trainer.current_epoch}'
@@ -339,5 +339,4 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             experiment.log({f"confusion_matrix_{stage}_img/ep_{self.trainer.current_epoch}": wandb.Image(plt)},
                            commit=False)
         except ValueError as e:
-            log.warn('No wandb logger found. Confusion matrix images are not saved.')
-
+            log.warning('No wandb logger found. Confusion matrix images are not saved.')

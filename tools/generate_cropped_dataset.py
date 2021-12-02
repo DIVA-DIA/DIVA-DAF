@@ -229,7 +229,6 @@ class CropGenerator:
         return img
 
     def _get_img_size_and_crop_numbers(self):
-        # TODO documentation
         img_names_sizes = []  # list of tuples -> (split_name, img_name, img_size (H, W))
         num_horiz_crops = []
         num_vert_crops = []
