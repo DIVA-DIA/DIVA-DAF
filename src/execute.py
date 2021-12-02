@@ -116,8 +116,8 @@ def execute(config: DictConfig) -> Optional[float]:
             with open(RUN_CONFIG_NAME, mode='w') as fp:
                 OmegaConf.set_struct(config, False)
                 config['hydra'] = HydraConfig.instance().cfg['hydra']
-                OmegaConf.save(config=config, f=fp)
                 OmegaConf.set_struct(config, True)
+                OmegaConf.save(config=config, f=fp)
             if config.get('logger') is not None and 'wandb' in config.get('logger'):
                 if '_target_' in config.logger.wandb:
                     run_config_folder_path = Path(wandb.run.dir) / 'run_config'
