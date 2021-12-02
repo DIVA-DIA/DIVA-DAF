@@ -37,6 +37,7 @@ trainer:
     min_epochs: 1
     max_epochs: 50
     precision: 16
+    check_val_every_n_epoch: 4
 
 task:
     confusion_matrix_log_every_n_epoch: 10
