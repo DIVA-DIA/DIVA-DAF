@@ -10,5 +10,5 @@ params="experiment=cb55_select_train15_unet
 
 for seed in ${seeds}
 do
-  python run.py "${params}" +seed="${seed}"
+  python run.py ${params} +seed="${seed}"
 done
