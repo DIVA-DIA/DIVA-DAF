@@ -7,7 +7,6 @@ from typing import List, Sequence
 import numpy as np
 import pytorch_lightning as pl
 import rich
-import torch
 import wandb
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import seed_everything
