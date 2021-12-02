@@ -1,10 +1,12 @@
 import shutil
+import sys
 from pathlib import Path
 from typing import List, Optional
 
 import hydra
 import torch
 import wandb
+from hydra.core.hydra_config import HydraConfig
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import LightningModule, LightningDataModule, Callback, Trainer, plugins
 from pytorch_lightning.loggers import LightningLoggerBase
@@ -107,16 +109,20 @@ def execute(config: DictConfig) -> Optional[float]:
     )
 
     if config.save_config:
+        RUN_CONFIG_NAME = 'run_config.yaml'
         log.info("Saving the current config into the output directory!")
         # cwd is already the output directory so we dont need a full path
         if trainer.is_global_zero:
-            with open('config.yaml', mode='w') as fp:
+            with open(RUN_CONFIG_NAME, mode='w') as fp:
+                OmegaConf.set_struct(config, False)
+                config['hydra'] = HydraConfig.instance().cfg['hydra']
+                OmegaConf.set_struct(config, True)
                 OmegaConf.save(config=config, f=fp)
             if config.get('logger') is not None and 'wandb' in config.get('logger'):
                 if '_target_' in config.logger.wandb:
                     run_config_folder_path = Path(wandb.run.dir) / 'run_config'
                     run_config_folder_path.mkdir(exist_ok=True)
-                    shutil.copyfile('config.yaml', str(run_config_folder_path / 'config.yaml'))
+                    shutil.copyfile(RUN_CONFIG_NAME, str(run_config_folder_path / RUN_CONFIG_NAME))
 
     if config.train:
         # Train the model
@@ -146,6 +152,8 @@ def execute(config: DictConfig) -> Optional[float]:
     )
 
     _print_best_paths(conf=config, trainer=trainer)
+
+    _print_run_command(trainer=trainer)
 
     # Return metric score for Optuna optimization
     optimized_metric = config.get("optimized_metric")
@@ -231,3 +239,24 @@ def _print_best_paths(conf: DictConfig, trainer: Trainer):
         log.info(
             f"Best header checkpoint path:"
             f"\n{_create_print_path(base_path, conf.callbacks.model_checkpoint.header_filename)}")
+
+
+def _print_run_command(trainer: Trainer):
+    """
+    Print out a run command based on the saved run config.
+
+    Args:
+        conf: the hydra config
+        trainer: the current pl trainer
+    """
+
+    run_path = trainer.default_root_dir
+    run_config_name = 'run_config.yaml'
+
+    log.info(f'Command to rerun using run_config.yaml:\n'
+             f'python run.py -cd="{run_path}" -cn="{run_config_name}"')
+
+    param_str_list = [f'"{p}"' for p in sys.argv[1:]]
+
+    log.info(f'Command to rerun using same command:\n'
+             f'python run.py {" ".join(param_str_list)}')

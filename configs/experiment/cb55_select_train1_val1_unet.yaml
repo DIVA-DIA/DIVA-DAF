@@ -35,7 +35,7 @@ trainer:
     gpus: -1
     accelerator: 'ddp'
     min_epochs: 1
-    max_epochs: 200
+    max_epochs: 50
     precision: 16
 
 task:
