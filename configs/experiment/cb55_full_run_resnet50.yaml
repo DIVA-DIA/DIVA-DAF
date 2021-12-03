@@ -24,7 +24,7 @@ defaults:
 # instead we define all modules and their paths directly in this config,
 # so everything is stored in one place for more readibility
 
-name: "semantic_segmentation_cb55_full_resnet50_loss_no_weights"
+name: "semantic_segmentation_cb55_full_resnet50"
 
 train: True
 test: True
