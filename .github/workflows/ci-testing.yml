@@ -63,7 +63,7 @@ jobs:
     - name: Statistics
       if: success()
       run: |
-        coverage report -m --omit="*/test*"
+        coverage report -m --omit="*/test*", "*execute.py"
 
     - name: Produce statistics html
       if: success()
