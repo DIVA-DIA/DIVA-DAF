@@ -31,7 +31,7 @@ test: True
 predict: False
 
 model:
-    backbone:
+    header:
         in_channels: 2048
 
 trainer:
