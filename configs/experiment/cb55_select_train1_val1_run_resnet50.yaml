@@ -1,0 +1,77 @@
+# @package _global_
+
+# to execute this experiment run:
+# python run.py +experiment=exp_example_full
+
+defaults:
+    - /mode: experiment.yaml
+    - /plugins: default.yaml
+    - /task: semantic_segmentation_HisDB_cropped.yaml
+    - /loss: crossentropyloss.yaml
+    - /metric: hisdbiou.yaml
+    - /model/backbone: resnet50.yaml
+    - /model/header: resnet_segmentation.yaml
+    - /optimizer: adam.yaml
+    - /callbacks:
+          - check_compatibility.yaml
+          - model_checkpoint.yaml
+    - /logger:
+          - wandb.yaml # set logger here or use command line (e.g. `python run.py logger=wandb`)
+          - csv.yaml
+    - _self_
+
+# we override default configurations with nulls to prevent them from loading at all
+# instead we define all modules and their paths directly in this config,
+# so everything is stored in one place for more readibility
+
+name: "semantic_segmentation_cb55_full_resnet50_loss_no_weights"
+
+train: True
+test: True
+predict: False
+
+model:
+    backbone:
+        in_channels: 2048
+
+trainer:
+    _target_: pytorch_lightning.Trainer
+    gpus: -1
+    accelerator: 'ddp'
+    min_epochs: 1
+    max_epochs: 50
+    precision: 16
+    check_val_every_n_epoch: 4
+
+task:
+    confusion_matrix_log_every_n_epoch: 10
+    confusion_matrix_val: True
+    confusion_matrix_test: True
+
+datamodule:
+    _target_: src.datamodules.DivaHisDB.datamodule_cropped.DivaHisDBDataModuleCropped
+
+    data_dir: /net/research-hisdoc/datasets/semantic_segmentation/datasets_cropped/CB55
+    crop_size: 256
+    num_workers: 4
+    batch_size: 16
+    shuffle: True
+    drop_last: True
+    data_folder_name: data
+    gt_folder_name: gt
+    selection_train: 1
+    selection_val: 1
+
+callbacks:
+    model_checkpoint:
+        monitor: "val/hisdbiou"
+        mode: "max"
+        filename: ${checkpoint_folder_name}cb55-full-unet
+#    watch_model:
+#        log_freq: 1000
+
+logger:
+    wandb:
+        name: ${name}
+        tags: ["best_model", "USL", "baseline"]
+        group: 'baseline'
