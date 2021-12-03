@@ -58,7 +58,7 @@ jobs:
 
     - name: Tests
       run: |
-        coverage run -m py.test --cov=src tests -v --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
+        coverage run -m --source=src py.test tests -v --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
 
     - name: Statistics
       if: success()
