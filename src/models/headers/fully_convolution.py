@@ -10,7 +10,7 @@ class ResNetFCNHead(nn.Sequential):
     resnet50, 101, 152 = 2048
     """
 
-    def __init__(self, in_channels, num_classes, output_dims: Tuple[int] = (256, 256)):
+    def __init__(self, in_channels, num_classes, output_dims: Tuple[int, int] = (256, 256)):
         self.output_dims = output_dims
         if len(self.output_dims) > 2:
             self.output_dims = output_dims[-2:]
