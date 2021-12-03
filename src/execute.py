@@ -192,16 +192,16 @@ def _load_model_part(config: DictConfig, part_name: str):
         part: LightningModule = hydra.utils.instantiate(config.model.get(part_name))
         missing_keys, unexpected_keys = part.load_state_dict(torch.load(path_to_weights), strict=strict)
         if missing_keys:
-            log.warn(f"When loading the model part {part_name} these keys where missed: \n {missing_keys}")
+            log.warning(f"When loading the model part {part_name} these keys where missed: \n {missing_keys}")
         if unexpected_keys:
-            log.warn(f"When loading the model part {part_name} these keys where to much: \n {unexpected_keys}")
+            log.warning(f"When loading the model part {part_name} these keys where to much: \n {unexpected_keys}")
     else:
         if config.test and not config.train:
-            log.warn(f"You are just testing without a trained {part_name} model! "
-                     "Use 'path_to_weights' in your model to load a trained model")
+            log.warning(f"You are just testing without a trained {part_name} model! "
+                        "Use 'path_to_weights' in your model to load a trained model")
         if config.predict and not config.train:
-            log.warn(f"You are just predicting without a trained {part_name} model! "
-                     "Use 'path_to_weights' in your model to load a trained model")
+            log.warning(f"You are just predicting without a trained {part_name} model! "
+                        "Use 'path_to_weights' in your model to load a trained model")
         part: LightningModule = hydra.utils.instantiate(config.model.get(part_name))
 
     if freeze:
