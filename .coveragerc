@@ -1,7 +1,7 @@
 [run]
-source = src/*
+source = src
 omit = src/execute.py
 
 [report]
-source = src/*
+include = src/*
 omit = src/execute.py

@@ -58,14 +58,14 @@ jobs:
 
     - name: Tests
       run: |
-        coverage run -m --source=src py.test tests -v --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
+        coverage run -m --source=src py.test tests -v
 
     - name: Statistics
       if: success()
       run: |
         coverage report -m --omit="*/test*","*execute.py"
 
-    - name: Produce statistics html
+    - name: Produce statistics xml
       if: success()
       run: |
         coverage xml --omit="*/test*"
