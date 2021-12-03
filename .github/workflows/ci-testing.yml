@@ -58,17 +58,17 @@ jobs:
 
     - name: Tests
       run: |
-        coverage run -m --source=src py.test tests -v
+        coverage run -m pytest -v
 
     - name: Statistics
       if: success()
       run: |
-        coverage report -m --omit="*/test*","*execute.py"
+        coverage report -m
 
     - name: Produce statistics xml
       if: success()
       run: |
-        coverage xml --omit="*/test*"
+        coverage xml
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
