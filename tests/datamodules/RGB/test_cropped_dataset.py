@@ -60,6 +60,13 @@ def test__get_train_val_items_test(dataset_test):
     assert index == 0
 
 
+def test_dataset_train_selection_int_error_negative(data_dir_cropped):
+    with pytest.raises(ValueError):
+        CroppedDatasetRGB.get_gt_data_paths(directory=data_dir_cropped / 'train',
+                                            data_folder_name=DATA_FOLDER_NAME, gt_folder_name=GT_FOLDER_NAME,
+                                            selection=-2)
+
+
 def test_dataset_train_selection_int_error(data_dir_cropped):
     with pytest.raises(ValueError):
         CroppedDatasetRGB.get_gt_data_paths(directory=data_dir_cropped / 'train',
@@ -73,6 +80,23 @@ def test_dataset_train_selection_int(data_dir_cropped, get_train_file_names):
                                                             gt_folder_name=GT_FOLDER_NAME, selection=1)
     assert len(files_from_method) == 12
     assert files_from_method == get_train_file_names
+
+
+def test_dataset_train_selection_list(data_dir_cropped, get_train_file_names):
+    files_from_method = CroppedDatasetRGB.get_gt_data_paths(directory=data_dir_cropped / 'train',
+                                                  data_folder_name=DATA_FOLDER_NAME,
+                                                  gt_folder_name=GT_FOLDER_NAME,
+                                                  selection=['e-codices_fmb-cb-0055_0098v_max'])
+    assert len(files_from_method) == 12
+    assert files_from_method == get_train_file_names
+
+
+def test_dataset_train_selection_list_error(data_dir_cropped, get_train_file_names):
+    with pytest.raises(ValueError):
+        CroppedDatasetRGB.get_gt_data_paths(directory=data_dir_cropped / 'train',
+                                            data_folder_name=DATA_FOLDER_NAME,
+                                            gt_folder_name=GT_FOLDER_NAME,
+                                            selection=['something'])
 
 
 def test_get_gt_data_paths_train(data_dir_cropped, get_train_file_names):
