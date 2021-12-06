@@ -41,6 +41,13 @@ trainer:
     precision: 16
     check_val_every_n_epoch: 5
 
+model:
+    backbone:
+        num_classes: 8                  # <===== Number of classes in downstream task
+    header:
+        in_channels: 524288             # <----- backbone.num_classes x crop_size x crop_size
+        num_classes: 4                  # <===== Number of classes in pretext task
+
 task:
     confusion_matrix_log_every_n_epoch: 20
     confusion_matrix_val: False
@@ -56,12 +63,6 @@ datamodule:
     shuffle: True
     drop_last: True
     data_folder_name: data
-
-model:
-    header:
-        in_channels: 262144
-        num_classes: 4
-
 
 callbacks:
     model_checkpoint:
