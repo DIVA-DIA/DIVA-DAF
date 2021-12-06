@@ -121,7 +121,7 @@ In the command line:
 ```
 python run.py +model.backbone.freeze=True
 ```
-In the config (e.g. model/backbone/baby_unet_model.yaml):
+In the config (e.g. model/backbone/baby_unet.yaml):
 ```
 ...
 freeze: True
