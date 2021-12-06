@@ -3,7 +3,7 @@ import json
 import numpy as np
 
 from src.datamodules.RGB.datasets.cropped_dataset import CroppedDatasetRGB
-from src.datamodules.RGB.utils.image_analytics import get_analytics
+from src.datamodules.RGB.utils.image_analytics import get_analytics, get_class_weights
 from tests.test_data.dummy_data_hisdb.dummy_data import data_dir_cropped
 
 TEST_JSON_DATA = {'mean': [0.7050454974582426, 0.6503181590413943, 0.5567698583877997],
@@ -45,3 +45,8 @@ def test_get_analytics_load_from_file(data_dir_cropped):
     assert analytics_path.exists()
 
     test_get_analytics_no_file(data_dir_cropped=data_dir_cropped)
+
+
+def test_get_class_weights(data_dir_cropped):
+    weights = get_class_weights(input_folder=data_dir_cropped)
+    assert np.array_equal(weights, [0.2857142857142857, 0.35714285714285715, 0.35714285714285715])
