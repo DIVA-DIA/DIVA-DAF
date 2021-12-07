@@ -74,6 +74,21 @@ def test_get_gt_data_paths_train(data_dir_cropped, get_train_file_names):
     assert files_from_method == get_train_file_names
 
 
+def test_get_gt_data_paths_train_selection_string(data_dir_cropped, get_train_file_names):
+    files_from_method = CroppedHisDBDataset.get_gt_data_paths(directory=data_dir_cropped / f'train',
+                                                              data_folder_name='data', gt_folder_name='gt',
+                                                              selection=['e-codices_fmb-cb-0055_0098v_max'])
+    assert files_from_method == get_train_file_names
+    assert len(files_from_method) == 12
+
+
+def test_get_gt_data_paths_val_selection_negative_int(data_dir_cropped):
+    with pytest.raises(ValueError):
+        CroppedHisDBDataset.get_gt_data_paths(directory=data_dir_cropped / f'val',
+                                              data_folder_name='data', gt_folder_name='gt',
+                                              selection=-1)
+
+
 def test_get_gt_data_paths_val(data_dir_cropped):
     files_from_method = CroppedHisDBDataset.get_gt_data_paths(directory=data_dir_cropped / f'val',
                                                               data_folder_name='data', gt_folder_name='gt')
