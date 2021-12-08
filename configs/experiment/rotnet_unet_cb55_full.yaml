@@ -59,7 +59,7 @@ datamodule:
     data_dir: /net/research-hisdoc/datasets/semantic_segmentation/datasets_cropped/CB55
     crop_size: 256
     num_workers: 4
-    batch_size: 16
+    batch_size: 64
     shuffle: True
     drop_last: True
     data_folder_name: data
