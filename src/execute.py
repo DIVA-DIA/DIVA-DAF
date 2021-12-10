@@ -1,3 +1,4 @@
+import os
 import shutil
 import sys
 from pathlib import Path
@@ -7,9 +8,11 @@ import hydra
 import torch
 import wandb
 from hydra.core.hydra_config import HydraConfig
+from hydra.utils import get_original_cwd, to_absolute_path
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import LightningModule, LightningDataModule, Callback, Trainer, plugins
 from pytorch_lightning.loggers import LightningLoggerBase
+from pytorch_lightning.utilities import rank_zero_only
 
 from src.models.backbone_header_model import BackboneHeaderModel
 from src.utils import utils
@@ -27,6 +30,9 @@ def execute(config: DictConfig) -> Optional[float]:
     Returns:
         Optional[float]: Metric score for hyperparameter optimization.
     """
+
+    # Write current run dir into outputs/run_dir_paths.txt
+    _write_current_run_dir(config)
 
     # Init Lightning datamodule
     log.info(f"Instantiating datamodule <{config.datamodule._target_}>")
@@ -260,3 +266,14 @@ def _print_run_command(trainer: Trainer):
 
     log.info(f'Command to rerun using same command:\n'
              f'python run.py {" ".join(param_str_list)}')
+
+
+@rank_zero_only
+def _write_current_run_dir(config: DictConfig):
+    run_dir_log_filename = 'run_dir_log.txt'
+    run_dir_log_file = Path(to_absolute_path(config['run_root_dir'])) / run_dir_log_filename
+    run_dir_log_file = run_dir_log_file.resolve()
+    log.info(f'Writing work dir into run dir log file ({run_dir_log_file})')
+    with run_dir_log_file.open('a') as f:
+        f.write(f'{os.getcwd()}\n')
+
