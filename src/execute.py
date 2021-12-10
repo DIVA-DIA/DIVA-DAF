@@ -196,7 +196,7 @@ def _load_model_part(config: DictConfig, part_name: str):
         path_to_weights = config.model.get(part_name).path_to_weights
         del config.model.get(part_name).path_to_weights
         part: LightningModule = hydra.utils.instantiate(config.model.get(part_name))
-        missing_keys, unexpected_keys = part.load_state_dict(torch.load(path_to_weights), strict=strict)
+        missing_keys, unexpected_keys = part.load_state_dict(torch.load(path_to_weights, map_location='cpu'), strict=strict)
         if missing_keys:
             log.warning(f"When loading the model part {part_name} these keys where missed: \n {missing_keys}")
         if unexpected_keys:
