@@ -1,9 +1,6 @@
-import pytest
 import torch
-from torchvision.datasets.folder import pil_loader
 
 from src.datamodules.utils.single_transforms import OneHotToPixelLabelling
-from tests.test_data.dummy_data_hisdb.dummy_data import data_dir_cropped
 
 
 def test_one_hot_to_pixel_labelling():
