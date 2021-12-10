@@ -11,7 +11,6 @@ from pytorch_lightning.trainer.states import TrainerState, RunningStage
 from torch.nn import Identity, CrossEntropyLoss
 from torchmetrics import Precision
 
-from src.datamodules.DivaHisDB.datamodule_cropped import DivaHisDBDataModuleCropped
 from src.models.backbone_header_model import BackboneHeaderModel
 from src.tasks.base_task import AbstractTask
 from src.tasks.utils.outputs import OutputKeys
@@ -152,7 +151,53 @@ def test_step(monkeypatch, data_module_cropped_hisdb, model):
     assert output[OutputKeys.PREDICTION].shape == torch.Size([1, 4, 256, 256])
 
 
-def test__create_conf_mat(monkeypatch, data_module_cropped_hisdb, model, tmp_path):
+def test__create_conf_mat_test_error(monkeypatch, data_module_cropped_hisdb, model, tmp_path):
+    # setup
+    task = AbstractTask(model=BackboneHeaderModel(backbone=model, header=Identity()),
+                        loss_fn=CrossEntropyLoss(), confusion_matrix_test=True)
+    trainer = Trainer()
+    monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
+    monkeypatch.setattr(task, 'trainer', trainer)
+    monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
+    data_module_cropped_hisdb.setup('test')
+    task.setup('test')
+    monkeypatch.setattr(trainer, 'test_dataloaders', [data_module_cropped_hisdb.test_dataloader()])
+    os.chdir(str(tmp_path))
+
+    img, gt, _, _ = data_module_cropped_hisdb.test[0]
+    task.step(batch=(img[None, :], gt[None, :]), batch_idx=0)
+
+    hist = task.metric_conf_mat_test.compute()
+    hist = hist.detach().numpy()
+    with pytest.raises(ValueError):
+        task._create_conf_mat(matrix=hist, stage='something')
+
+
+def test__create_conf_mat_test(monkeypatch, data_module_cropped_hisdb, model, tmp_path):
+    # setup
+    task = AbstractTask(model=BackboneHeaderModel(backbone=model, header=Identity()),
+                        loss_fn=CrossEntropyLoss(), confusion_matrix_test=True)
+    trainer = Trainer()
+    monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
+    monkeypatch.setattr(task, 'trainer', trainer)
+    monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
+    data_module_cropped_hisdb.setup('test')
+    task.setup('test')
+    monkeypatch.setattr(trainer, 'test_dataloaders', [data_module_cropped_hisdb.test_dataloader()])
+    os.chdir(str(tmp_path))
+
+    img, gt, _, _ = data_module_cropped_hisdb.test[0]
+    task.step(batch=(img[None, :], gt[None, :]), batch_idx=0)
+
+    hist = task.metric_conf_mat_test.compute()
+    hist = hist.detach().numpy()
+    task._create_conf_mat(matrix=hist, stage='test')
+    assert (tmp_path / 'conf_mats').exists()
+    assert (tmp_path / 'conf_mats' / 'test').exists()
+    assert (tmp_path / 'conf_mats' / 'test' / 'CM_epoch_0.txt').exists()
+
+
+def test__create_conf_mat_val(monkeypatch, data_module_cropped_hisdb, model, tmp_path):
     # setup
     task = AbstractTask(model=BackboneHeaderModel(backbone=model, header=Identity()),
                         loss_fn=CrossEntropyLoss(), confusion_matrix_test=True)
