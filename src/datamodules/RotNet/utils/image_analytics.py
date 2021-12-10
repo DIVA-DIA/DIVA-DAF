@@ -36,9 +36,8 @@ def get_analytics_data(input_path: Path, data_folder_name: str, get_gt_data_path
     if missing_analytics_data:
         train_path = input_path / 'train'
         gt_data_path_list = get_gt_data_paths_func(train_path, data_folder_name=data_folder_name, gt_folder_name=None)
-        file_names_data = np.asarray([str(item) for item in gt_data_path_list])
 
-        mean, std = compute_mean_std(file_names=file_names_data, **kwargs)
+        mean, std = compute_mean_std(file_names=gt_data_path_list, **kwargs)
         analytics_data = {'mean': mean.tolist(),
                           'std': std.tolist()}
         # save json
