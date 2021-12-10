@@ -12,8 +12,8 @@ def gt_to_int_encoding(matrix: torch.Tensor, class_encodings: torch.Tensor):
     -------
     matrix: float tensor from to_tensor() or numpy array
         shape (C x H x W) in the range [0.0, 1.0] or shape (H x W x C) BGR
-    class_encodings: List of int
-        Blue channel values that encode the different classes
+    class_encodings: List of list of ints (C x RGB)
+        color to index matching
     Returns
     -------
     torch.LongTensor of size [#C x H x W]
@@ -38,8 +38,8 @@ def gt_to_one_hot(matrix: torch.Tensor, class_encodings: torch.Tensor):
     -------
     matrix: float tensor from to_tensor() or numpy array
         shape (C x H x W) in the range [0.0, 1.0] or shape (H x W x C) BGR
-    class_encodings: List of int
-        Blue channel values that encode the different classes
+    class_encodings: List of list of int
+        color to index matching
     Returns
     -------
     torch.LongTensor of size [#C x H x W]

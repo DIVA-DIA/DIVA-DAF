@@ -58,26 +58,18 @@ jobs:
 
     - name: Tests
       run: |
-        coverage run -m py.test tests -v --junitxml=junit/test-results-${{ runner.os }}-${{ matrix.python-version }}.xml
+        coverage run -m pytest -v
 
     - name: Statistics
       if: success()
       run: |
-        coverage report -m --omit="*/test*"
+        coverage report -m
 
-    - name: Produce statistics html
+    - name: Produce statistics xml
       if: success()
       run: |
-        coverage html --omit="*/test*"
-        coverage xml --omit="*/test*"
+        coverage xml
 
-    - name: Code coverage results upload
-      if: success()
-      uses: actions/upload-artifact@v2
-      with:
-        name: code-coverage-report_${{ runner.os }}_py${{ matrix.python-version }}
-        path: htmlcov/
-        
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
       if: always()
