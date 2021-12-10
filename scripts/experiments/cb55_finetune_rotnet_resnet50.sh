@@ -9,8 +9,16 @@ seed="255827881"
 
 for weight in ${weights}
 do
-  params="+seed=\"${seed}\" +model.backbone.path_to_weights=\"${weight}\" logger.wandb.group=\"finetune\""
-  python run.py experiment=cb55_full_run_resnet50               name="semantic_segmentation_cb55_full_resnet50_finetune_rotnet"        ${params}
-  python run.py experiment=cb55_select_train15_run_resnet50     name="semantic_segmentation_cb55_train15_resnet50_finetune_rotnet"     ${params}
-  python run.py experiment=cb55_select_train1_val1_run_resnet50 name="semantic_segmentation_cb55_train1_val1_resnet50_finetune_rotnet" ${params}
+  params="+seed=\"${seed}\" +model.backbone.path_to_weights=\"${weight}\""
+  python run.py experiment=cb55_select_train1_val1_run_resnet50_finetune_rotnet ${params}
+  python run.py experiment=cb55_select_train15_run_resnet50_finetune_rotnet     ${params}
+  python run.py experiment=cb55_full_run_resnet50_finetune_rotnet               ${params}
+done
+
+for weight in ${weights}
+do
+  params="+seed=\"${seed}\" +model.backbone.path_to_weights=\"${weight}\" logger.wandb.group=\"finetune-freeze\""
+  python run.py experiment=cb55_select_train1_val1_run_resnet50_finetune_rotnet ${params} +model.backbone.freeze="True"
+  python run.py experiment=cb55_select_train15_run_resnet50_finetune_rotnet     ${params} +model.backbone.freeze="True"
+  python run.py experiment=cb55_full_run_resnet50_finetune_rotnet               ${params} +model.backbone.freeze="True"
 done
