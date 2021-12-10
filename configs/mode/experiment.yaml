@@ -2,9 +2,11 @@
 
 experiment_mode: True
 
+run_root_dir: outputs/experiments
+
 # name of the experiment
 name: ???
 
 hydra:
     run:
-        dir: outputs/experiments/${name}/${now:%Y-%m-%d}/${now:%H-%M-%S}
+        dir: ${run_root_dir}/${name}/${now:%Y-%m-%d}/${now:%H-%M-%S}
