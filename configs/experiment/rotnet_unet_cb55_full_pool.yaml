@@ -25,7 +25,7 @@ defaults:
 # instead we define all modules and their paths directly in this config,
 # so everything is stored in one place for more readibility
 
-name: "rotnet_cb55_full_unet"
+name: "rotnet_cb55_full_unet_pool"
 
 train: True
 test: False
