@@ -36,7 +36,7 @@ trainer:
     gpus: -1
     accelerator: 'ddp'
     min_epochs: 1
-    max_epochs: 20
+    max_epochs: 12
     weights_summary: full
     precision: 16
     check_val_every_n_epoch: 4
