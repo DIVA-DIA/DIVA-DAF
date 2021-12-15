@@ -10,7 +10,7 @@ defaults:
     - /loss: crossentropyloss.yaml
     - /metric: accuracy.yaml
     - /model/backbone: unet.yaml
-    - /model/header: single_layer.yaml
+    - /model/header: convpool.yaml
     - /optimizer: adam.yaml
     - /callbacks:
           - check_compatibility.yaml
@@ -39,13 +39,13 @@ trainer:
     max_epochs: 100
     weights_summary: full
     precision: 16
-    check_val_every_n_epoch: 5
 
 model:
     backbone:
         num_classes: 8                  # <===== Number of classes in downstream task
     header:
-        in_channels: 524288             # <----- backbone.num_classes x crop_size x crop_size
+        in_channels: 8
+        num_conv_channels: 32
         num_classes: 4                  # <===== Number of classes in pretext task
 
 task:
@@ -66,7 +66,7 @@ datamodule:
 
 callbacks:
     model_checkpoint:
-        filename: ${checkpoint_folder_name}rotnet-resnet18-cb55
+        filename: ${checkpoint_folder_name}
     watch_model:
         log_freq: 1
 
