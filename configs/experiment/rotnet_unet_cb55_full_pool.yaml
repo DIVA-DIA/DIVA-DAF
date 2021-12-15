@@ -10,7 +10,7 @@ defaults:
     - /loss: crossentropyloss.yaml
     - /metric: accuracy.yaml
     - /model/backbone: unet.yaml
-    - /model/header: convpool.yaml
+    - /model/header: pool.yaml
     - /optimizer: adam.yaml
     - /callbacks:
           - check_compatibility.yaml
@@ -36,16 +36,16 @@ trainer:
     gpus: -1
     accelerator: 'ddp'
     min_epochs: 1
-    max_epochs: 100
+    max_epochs: 20
     weights_summary: full
     precision: 16
+    check_val_every_n_epoch: 4
 
 model:
     backbone:
         num_classes: 8                  # <===== Number of classes in downstream task
     header:
         in_channels: 8
-        num_conv_channels: 32
         num_classes: 4                  # <===== Number of classes in pretext task
 
 task:
