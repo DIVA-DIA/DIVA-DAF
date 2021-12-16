@@ -1,0 +1,5 @@
+_target_: src.models.headers.unet.ConvPoolHeader
+
+in_channels: 8
+num_conv_channels: 32
+num_classes: 4

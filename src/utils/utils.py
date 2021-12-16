@@ -1,12 +1,12 @@
 import logging
 import random
+import sys
 import warnings
 from typing import List, Sequence
 
 import numpy as np
 import pytorch_lightning as pl
 import rich
-import torch
 import wandb
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import seed_everything
@@ -85,6 +85,10 @@ def check_config(config: DictConfig) -> None:
 
     if config.trainer.get("accelerator") == 'ddp_cpu' and config.trainer.precision == 16:
         log.warning(f'You are using ddp_cpu without precision=16. This can lead to a crash! Use 64 or 32!')
+
+    if config.get('experiment_mode') and not config.get('name'):
+        log.info("Experiment mode without specifying a name!")
+        sys.exit(1)
 
     # Set seed for random number generators in pytorch, numpy and python.random
     if "seed" in config:

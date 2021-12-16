@@ -5,9 +5,29 @@ from tests.test_data.dummy_data_hisdb.dummy_data import data_dir
 
 
 @pytest.fixture
+def dataset_test(data_dir):
+    return DatasetRGB(path=data_dir / 'test', data_folder_name='data', gt_folder_name='gt',
+                      image_dims=ImageDimensions(width=487, height=649), is_test=True)
+
+
+@pytest.fixture
 def dataset_train(data_dir):
     return DatasetRGB(path=data_dir / 'train', data_folder_name='data', gt_folder_name='gt',
                       image_dims=ImageDimensions(width=487, height=649))
+
+
+def test___len__(data_dir):
+    dataset = DatasetRGB(path=data_dir / 'train', data_folder_name='data', gt_folder_name='gt',
+                         image_dims=ImageDimensions(width=487, height=649))
+    assert len(dataset) == 1
+
+
+def test__init__test(data_dir):
+    dataset = DatasetRGB(path=data_dir / 'test', data_folder_name='data', gt_folder_name='gt',
+                         image_dims=ImageDimensions(width=487, height=649), is_test=True)
+    assert len(dataset) == 2
+    assert dataset.image_path_list is not None
+    assert dataset.output_file_list is not None
 
 
 def test_get_gt_data_paths(data_dir):
@@ -56,7 +76,15 @@ def test_get_gt_data_paths_selection_list_wrong_name(data_dir):
                                         selection=['e-codices_fmb-cb-0055_0098v_max_3.jpg'])
 
 
-def test_dataset_rgb(dataset_train):
+def test_dataset_rgb_test(dataset_test):
+    data_tensor, gt_tensor, idx = dataset_test[0]
+    assert data_tensor.shape[-2:] == gt_tensor.shape[-2:]
+    assert idx == 0
+    assert data_tensor.ndim == 3
+    assert gt_tensor.ndim == 3
+
+
+def test_dataset_rgb_train(dataset_train):
     data_tensor, gt_tensor = dataset_train[0]
     assert data_tensor.shape[-2:] == gt_tensor.shape[-2:]
     assert data_tensor.ndim == 3

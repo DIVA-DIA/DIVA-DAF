@@ -4,11 +4,12 @@
 # python run.py +experiment=exp_example_full
 
 defaults:
+    - /mode: experiment.yaml
     - /plugins: default.yaml
     - /task: semantic_segmentation_HisDB_cropped.yaml
     - /loss: crossentropyloss.yaml
     - /metric: hisdbiou.yaml
-    - /model/backbone: unet_model.yaml
+    - /model/backbone: unet.yaml
     - /model/header: identity.yaml
     - /optimizer: adam.yaml
     - /callbacks:
@@ -23,6 +24,8 @@ defaults:
 # instead we define all modules and their paths directly in this config,
 # so everything is stored in one place for more readibility
 
+name: "semantic_segmentation_cb55_train15_unet"
+
 train: True
 test: True
 predict: False
@@ -32,8 +35,9 @@ trainer:
     gpus: -1
     accelerator: 'ddp'
     min_epochs: 1
-    max_epochs: 50
+    max_epochs: 100
     precision: 16
+    check_val_every_n_epoch: 8
 
 task:
     confusion_matrix_log_every_n_epoch: 10
@@ -63,6 +67,6 @@ callbacks:
 
 logger:
     wandb:
-        name: 'cb55-select-train15-unet'
+        name: ${name}
         tags: ["best_model", "USL", "baseline"]
         group: 'baseline'

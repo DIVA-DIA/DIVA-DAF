@@ -4,11 +4,12 @@
 # python run.py +experiment=exp_example_full
 
 defaults:
+    - /mode: development.yaml
     - /plugins: default.yaml
     - /task: semantic_segmentation_RGB_cropped.yaml
     - /loss: crossentropyloss.yaml
     - /metric: iou.yaml
-    - /model/backbone: baby_unet_model.yaml
+    - /model/backbone: baby_unet.yaml
     - /model/header: identity.yaml
     - /optimizer: adam.yaml
     - /callbacks:
