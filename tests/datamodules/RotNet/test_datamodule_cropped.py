@@ -38,7 +38,6 @@ def test__create_dataset_parameters_cropped(data_module_cropped_rotnet):
     parameters = data_module_cropped_rotnet._create_dataset_parameters()
     assert 'train' in str(parameters['path'])
     assert not parameters['is_test']
-    assert np.array_equal(parameters['classes'], np.array([0, 90, 180, 270], dtype=np.int64))
 
 
 def test__check_min_num_samples(data_module_cropped_rotnet, monkeypatch):

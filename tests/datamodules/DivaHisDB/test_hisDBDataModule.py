@@ -50,4 +50,3 @@ def test__create_dataset_parameters_cropped(data_module_cropped_hisdb):
     parameters = data_module_cropped_hisdb._create_dataset_parameters()
     assert 'train' in str(parameters['path'])
     assert not parameters['is_test']
-    assert np.array_equal(parameters['classes'], np.array([1, 2, 4, 8], dtype=uint8))

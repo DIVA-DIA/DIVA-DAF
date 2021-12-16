@@ -78,4 +78,3 @@ def test__create_dataset_parameters_cropped(data_module_cropped_rgb, class_encod
     parameters = data_module_cropped_rgb._create_dataset_parameters()
     assert 'train' in str(parameters['path'])
     assert not parameters['is_test']
-    assert np.array_equal(parameters['classes'], np.array(class_encodings, dtype=np.uint8))
