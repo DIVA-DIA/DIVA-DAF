@@ -35,7 +35,7 @@ class CroppedHisDBDataset(data.Dataset):
     def __init__(self, path: Path, data_folder_name: str, gt_folder_name: str,
                  selection: Optional[Union[int, List[str]]] = None,
                  is_test=False, image_transform=None, target_transform=None, twin_transform=None,
-                 classes=None, **kwargs):
+                 **kwargs):
         """
         Parameters
         ----------
@@ -57,10 +57,6 @@ class CroppedHisDBDataset(data.Dataset):
         self.data_folder_name = data_folder_name
         self.gt_folder_name = gt_folder_name
         self.selection = selection
-
-        # Init list
-        self.classes = classes
-        # self.crops_per_image = crops_per_image
 
         # transformations
         self.image_transform = image_transform
