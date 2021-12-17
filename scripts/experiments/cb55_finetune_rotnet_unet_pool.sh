@@ -7,11 +7,9 @@ weights="/net/research-hisdoc/experiments_lars_paul/lars_lucy/experiments/rotnet
 
 seed="255827881"
 
-gpus="[0,1,2,3]"
-
 for weight in ${weights}
 do
-  params="+seed=${seed} +model.backbone.path_to_weights=\"${weight}\" logger.wandb.group=finetune-pool trainer.gpus=\"${gpus}\""
+  params="+seed=${seed} +model.backbone.path_to_weights=\"${weight}\" logger.wandb.group=finetune-pool trainer.gpus=[0,1,2,3]"
   python run.py experiment=cb55_select_train1_val1_unet_finetune_rotnet ${params}
   python run.py experiment=cb55_select_train15_unet_finetune_rotnet     ${params}
   python run.py experiment=cb55_select_train30_unet_finetune_rotnet     ${params}
