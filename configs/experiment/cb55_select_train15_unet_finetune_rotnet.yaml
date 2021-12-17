@@ -30,10 +30,6 @@ train: True
 test: True
 predict: False
 
-model:
-    header:
-        in_channels: 2048
-
 trainer:
     _target_: pytorch_lightning.Trainer
     gpus: -1

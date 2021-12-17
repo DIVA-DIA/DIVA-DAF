@@ -12,7 +12,7 @@ gpus="[4,5,6,7]"
 for weight in ${weights}
 do
   params="+seed=${seed} +model.backbone.path_to_weights=\"${weight}\" logger.wandb.group=finetune-convpool trainer.gpus=\"${gpus}\""
-  python run.py experiment=cb55_select_train1_val1_run_unet_finetune_rotnet ${params}
-  python run.py experiment=cb55_select_train15_run_unet_finetune_rotnet     ${params}
-  python run.py experiment=cb55_full_run_unet_finetune_rotnet               ${params}
+  python run.py experiment=cb55_select_train1_val1_unet_finetune_rotnet ${params}
+  python run.py experiment=cb55_select_train15_unet_finetune_rotnet     ${params}
+  python run.py experiment=cb55_select_train30_unet_finetune_rotnet     ${params}
 done

@@ -24,15 +24,11 @@ defaults:
 # instead we define all modules and their paths directly in this config,
 # so everything is stored in one place for more readibility
 
-name: "semantic_segmentation_cb55_full_unet_finetune_rotnet"
+name: "semantic_segmentation_cb55_train1_val1_unet_finetune_rotnet"
 
 train: True
 test: True
 predict: False
-
-model:
-    header:
-        in_channels: 2048
 
 trainer:
     _target_: pytorch_lightning.Trainer
@@ -59,6 +55,8 @@ datamodule:
     drop_last: True
     data_folder_name: data
     gt_folder_name: gt
+    selection_train: 1
+    selection_val: 1
 
 callbacks:
     model_checkpoint:
