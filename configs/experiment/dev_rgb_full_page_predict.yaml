@@ -5,7 +5,7 @@
 
 defaults:
     - /mode: development.yaml
-    - /plugins: default.yaml
+    - /plugins: null
     - /task: semantic_segmentation_RGB.yaml
     - /loss: crossentropyloss.yaml
     - /metric: iou.yaml
@@ -37,8 +37,9 @@ model:
 
 trainer:
     _target_: pytorch_lightning.Trainer
-    gpus: -1
-    accelerator: 'ddp'
+    accelerator: 'gpu'
+    devices: -1
+    strategy: 'ddp_find_unused_parameters_false'
     min_epochs: 1
     max_epochs: 2
     weights_summary: full

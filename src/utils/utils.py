@@ -73,17 +73,7 @@ def check_config(config: DictConfig) -> None:
         if config.datamodule.get("num_workers"):
             config.datamodule.num_workers = 0
 
-    # force multi-gpu friendly configuration if <config.trainer.accelerator=ddp>
-    if config.trainer.get("accelerator") in ["ddp", "ddp_spawn", "dp", "ddp2"]:
-        log.info("Forcing ddp friendly configuration! <config.trainer.accelerator=ddp>")
-        if "plugins" not in config:
-            config['plugins'] = DictConfig(
-                {'ddp_plugin': {'_target_': 'pytorch_lightning.plugins.DDPPlugin', 'find_unused_parameters': False}})
-        if "ddp_plugin" not in config.plugins:
-            config["plugins"].append(
-                {'ddp_plugin': {'_target_': 'pytorch_lightning.plugins.DDPPlugin', 'find_unused_parameters': False}})
-
-    if config.trainer.get("accelerator") == 'ddp_cpu' and config.trainer.precision == 16:
+    if config.trainer.get("accelerator") == 'cpu' and config.trainer.precision == 16:
         log.warning(f'You are using ddp_cpu without precision=16. This can lead to a crash! Use 64 or 32!')
 
     if config.get('experiment_mode') and not config.get('name'):
