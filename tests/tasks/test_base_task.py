@@ -43,7 +43,7 @@ def test_to_metrics_format():
 
 def test__get_current_metric_fail(monkeypatch):
     task = AbstractTask()
-    trainer = Trainer(accelerator='ddp')
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(task, 'trainer', trainer)
     assert task._get_current_metric() == {}
 
@@ -51,7 +51,7 @@ def test__get_current_metric_fail(monkeypatch):
 def test__get_current_metric_train(monkeypatch):
     metric = Precision()
     task = AbstractTask(metric_train=metric)
-    trainer = Trainer(accelerator='ddp')
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(task, 'trainer', trainer)
     state = TrainerState(stage=RunningStage.TRAINING)
     monkeypatch.setattr(trainer, 'state', state)
@@ -61,7 +61,7 @@ def test__get_current_metric_train(monkeypatch):
 def test__get_current_metric_test(monkeypatch):
     metric = Precision()
     task = AbstractTask(metric_test=metric)
-    trainer = Trainer(accelerator='ddp')
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(task, 'trainer', trainer)
     state = TrainerState(stage=RunningStage.TESTING)
     monkeypatch.setattr(trainer, 'state', state)
@@ -71,7 +71,7 @@ def test__get_current_metric_test(monkeypatch):
 def test_setup_warning(monkeypatch, data_module_cropped_hisdb, caplog):
     stage = 'something'
     task = AbstractTask()
-    trainer = Trainer(accelerator='ddp')
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(task, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
 
@@ -85,7 +85,7 @@ def test_setup_warning(monkeypatch, data_module_cropped_hisdb, caplog):
 def test_setup_test(monkeypatch, data_module_cropped_hisdb):
     stage = 'test'
     task = AbstractTask()
-    trainer = Trainer(accelerator='ddp')
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
     monkeypatch.setattr(task, 'trainer', trainer)
@@ -99,7 +99,7 @@ def test_setup_test(monkeypatch, data_module_cropped_hisdb):
 def test_setup_predict(monkeypatch, data_module_cropped_hisdb):
     stage = 'predict'
     task = AbstractTask()
-    trainer = Trainer(accelerator='ddp')
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
     monkeypatch.setattr(task, 'trainer', trainer)
@@ -112,7 +112,7 @@ def test_setup_predict(monkeypatch, data_module_cropped_hisdb):
 def test_setup_fit(monkeypatch, data_module_cropped_hisdb):
     stage = 'fit'
     task = AbstractTask()
-    trainer = Trainer(accelerator='ddp')
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
     monkeypatch.setattr(task, 'trainer', trainer)
@@ -124,7 +124,7 @@ def test_setup_fit(monkeypatch, data_module_cropped_hisdb):
 
 def test_setup_conf_mats(monkeypatch, data_module_cropped_hisdb):
     task = AbstractTask(confusion_matrix_val=True, confusion_matrix_test=True)
-    trainer = Trainer(accelerator='ddp')
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(task, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
     task.setup(stage='')
@@ -155,7 +155,7 @@ def test__create_conf_mat_test_error(monkeypatch, data_module_cropped_hisdb, mod
     # setup
     task = AbstractTask(model=BackboneHeaderModel(backbone=model, header=Identity()),
                         loss_fn=CrossEntropyLoss(), confusion_matrix_test=True)
-    trainer = Trainer()
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
     monkeypatch.setattr(task, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
@@ -177,7 +177,7 @@ def test__create_conf_mat_test(monkeypatch, data_module_cropped_hisdb, model, tm
     # setup
     task = AbstractTask(model=BackboneHeaderModel(backbone=model, header=Identity()),
                         loss_fn=CrossEntropyLoss(), confusion_matrix_test=True)
-    trainer = Trainer()
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
     monkeypatch.setattr(task, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
@@ -201,7 +201,7 @@ def test__create_conf_mat_val(monkeypatch, data_module_cropped_hisdb, model, tmp
     # setup
     task = AbstractTask(model=BackboneHeaderModel(backbone=model, header=Identity()),
                         loss_fn=CrossEntropyLoss(), confusion_matrix_test=True)
-    trainer = Trainer()
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
     monkeypatch.setattr(task, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
@@ -224,7 +224,7 @@ def test__create_conf_mat_val(monkeypatch, data_module_cropped_hisdb, model, tmp
 def test_forward(monkeypatch, model, data_module_cropped_hisdb):
     task = AbstractTask(model=BackboneHeaderModel(backbone=model, header=Identity()),
                         loss_fn=CrossEntropyLoss())
-    trainer = Trainer()
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
     monkeypatch.setattr(task, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
@@ -239,7 +239,7 @@ def test_forward(monkeypatch, model, data_module_cropped_hisdb):
 def test_training_step(monkeypatch, model, data_module_cropped_hisdb, capsys):
     task = AbstractTask(model=BackboneHeaderModel(backbone=model, header=Identity()),
                         loss_fn=CrossEntropyLoss())
-    trainer = Trainer()
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
     monkeypatch.setattr(task, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
@@ -257,7 +257,7 @@ def test_training_step(monkeypatch, model, data_module_cropped_hisdb, capsys):
 def test_validation_step(monkeypatch, model, data_module_cropped_hisdb, capsys):
     task = AbstractTask(model=BackboneHeaderModel(backbone=model, header=Identity()),
                         loss_fn=CrossEntropyLoss())
-    trainer = Trainer()
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
     monkeypatch.setattr(task, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
@@ -275,7 +275,7 @@ def test_validation_step(monkeypatch, model, data_module_cropped_hisdb, capsys):
 def test_test_step(monkeypatch, model, data_module_cropped_hisdb, capsys):
     task = AbstractTask(model=BackboneHeaderModel(backbone=model, header=Identity()),
                         loss_fn=CrossEntropyLoss())
-    trainer = Trainer()
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
     monkeypatch.setattr(task, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
@@ -293,7 +293,7 @@ def test_test_step(monkeypatch, model, data_module_cropped_hisdb, capsys):
 def test_predict_step(monkeypatch, model, data_module_cropped_hisdb, capsys):
     task = AbstractTask(model=BackboneHeaderModel(backbone=model, header=Identity()),
                         loss_fn=CrossEntropyLoss())
-    trainer = Trainer()
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
     monkeypatch.setattr(task, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)

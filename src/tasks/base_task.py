@@ -14,6 +14,7 @@ from matplotlib.patches import Rectangle
 from omegaconf import OmegaConf
 from pytorch_lightning import LightningModule
 from pytorch_lightning.trainer.states import RunningStage
+from pytorch_lightning.utilities.enums import DistributedType
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
 from torch import nn
 from torch.optim import Optimizer
@@ -101,7 +102,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         if self.confusion_matrix_test:
             self.metric_conf_mat_test = torchmetrics.ConfusionMatrix(num_classes=self.trainer.datamodule.num_classes,
                                                                      compute_on_step=False)
-        if self.trainer.distributed_backend == 'ddp':
+        if self.trainer.training_type_plugin.distributed_backend == DistributedType.DDP:
             batch_size = self.trainer.datamodule.batch_size
             if stage == 'fit':
                 num_samples = len(self.trainer.datamodule.train)
