@@ -70,17 +70,8 @@ def test_check_config_fast_dev_run(get_dict, caplog):
     assert "Forcing debugger friendly configuration! <config.trainer.fast_dev_run=True>" in caplog.text
 
 
-def test_check_config_no_plugins(get_dict):
-    del get_dict['plugins']
-    assert 'plugins' not in get_dict
-    check_config(get_dict)
-    assert 'plugins' in get_dict
-    assert get_dict['plugins'] == {
-        'ddp_plugin': {'_target_': 'pytorch_lightning.plugins.DDPPlugin', 'find_unused_parameters': False}}
-
-
 def test_check_config_ddp_cpu_and_precision(get_dict, caplog):
-    get_dict['trainer']['accelerator'] = 'ddp_cpu'
+    get_dict['trainer']['accelerator'] = 'cpu'
     get_dict['trainer']['precision'] = 16
     check_config(get_dict)
     assert 'You are using ddp_cpu without precision=16. This can lead to a crash! Use 64 or 32!' in caplog.text
