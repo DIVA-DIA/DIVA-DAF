@@ -24,7 +24,7 @@ def test__return_mean(data_dir):
     path_to_files = data_dir / 'train' / 'data'
     path_file = list(path_to_files.iterdir())[0]
     mean = _return_mean(image_path=path_file)
-    assert np.array_equal(mean, [0.6613600924561268, 0.6080705925283078, 0.5188177611400755])
+    assert np.allclose(mean, [0.6613600924561268, 0.6080705925283078, 0.5188177611400755], rtol=2e-02)
 
 
 def test__return_std(data_dir):
@@ -32,4 +32,4 @@ def test__return_std(data_dir):
     path_file = list(path_to_files.iterdir())[0]
     std_class, std_glob = _return_std(image_path=path_file, mean=_return_mean(path_file))
     assert std_glob == 316063.0
-    assert np.array_equal(std_class, [38926.12389586361, 36001.38344827261, 30250.40256187894])
+    assert np.allclose(std_class, [38926.12389586361, 36001.38344827261, 30250.40256187894], rtol=2e-02)

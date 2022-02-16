@@ -1,13 +1,13 @@
 <div align="center">
 
-# Your Project Name
+# DIVA-DAF
 
 <a href="https://pytorch.org/get-started/locally/"><img alt="PyTorch" src="https://img.shields.io/badge/PyTorch-ee4c2c?logo=pytorch&logoColor=white"></a>
 <a href="https://pytorchlightning.ai/"><img alt="Lightning" src="https://img.shields.io/badge/-Lightning-792ee5"></a>
 <a href="https://hydra.cc/"><img alt="Config: Hydra" src="https://img.shields.io/badge/Config-Hydra-89b8cd"></a>
 <a href="https://github.com/ashleve/lightning-hydra-template"><img alt="Template" src="https://img.shields.io/badge/-Lightning--Hydra--Template-017F2F?style=flat&logo=github&labelColor=gray"></a><br>
 ![tests](https://github.com/DIVA-DIA/unsupervised_learning/actions/workflows/ci-testing.yml/badge.svg)
-[![codecov](https://codecov.io/gh/DIVA-DIA/unsupervised_learning/branch/main/graph/badge.svg?token=PK7S0VESG7)](https://codecov.io/gh/DIVA-DIA/unsupervised_learning)
+[![codecov](https://codecov.io/gh/DIVA-DIA/DIVA-DAF/branch/main/graph/badge.svg?token=PK7S0VESG7)](https://codecov.io/gh/DIVA-DIA/DIVA-DAF)
 
 [comment]: <> ([![Paper]&#40;http://img.shields.io/badge/paper-arxiv.1001.2234-B31B1B.svg&#41;]&#40;https://www.nature.com/articles/nature14539&#41;)
 
@@ -16,7 +16,7 @@
 </div>
 
 ## Description
-What it does
+A deep learning framework for historical document image analysis.
 
 ## How to run
 Install dependencies
@@ -132,3 +132,16 @@ CARE: You can not train a model when you do not have trainable parameters (e.g. 
 ### Selection in datasets
 If you use the `selection` key you can either use an int, which takes the first n files, or a list of strings to filter the different datasets.
 In the case you are using a full-page dataset be aware that the selection list is a list of file names without the extension.
+    
+    
+### Cite us
+```
+@misc{vögtlin2022divadaf,
+      title={DIVA-DAF: A Deep Learning Framework for Historical Document Image Analysis}, 
+      author={Lars Vögtlin and Paul Maergner and Rolf Ingold},
+      year={2022},
+      eprint={2201.08295},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV}
+}
+```

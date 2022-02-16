@@ -14,7 +14,7 @@ def visualize(img, out):
     class_encodings = [(1, 'Background', (0, 0, 0)),
                        (2, 'Comment', (255, 0, 0)),
                        (4, 'Decoration', (255, 255, 0)),
-                       (6, 'Comment + Decoration', (255, 255, 255)),
+                       (6, 'Comment + Decoration', (125, 125, 125)),
                        (8, 'Main Text', (255, 0, 255)),
                        (10, 'Main Text + Comment', (0, 0, 255)),
                        (12, 'Main Text + Decoration', (0, 255, 255))]
