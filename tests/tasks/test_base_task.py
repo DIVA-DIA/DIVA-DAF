@@ -138,7 +138,7 @@ def test_step(monkeypatch, data_module_cropped_hisdb, model):
     # setup
     task = AbstractTask(model=BackboneHeaderModel(backbone=model, header=Identity()),
                         loss_fn=CrossEntropyLoss())
-    trainer = Trainer()
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
     monkeypatch.setattr(task, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
@@ -201,7 +201,7 @@ def test__create_conf_mat_val_not_drop_last(monkeypatch, data_module_cropped_his
     # setup
     task = AbstractTask(model=BackboneHeaderModel(backbone=model, header=Identity()),
                         loss_fn=CrossEntropyLoss(), confusion_matrix_test=True)
-    trainer = Trainer()
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
     monkeypatch.setattr(data_module_cropped_hisdb, 'drop_last', False)
     monkeypatch.setattr(task, 'trainer', trainer)
