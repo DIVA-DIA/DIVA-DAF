@@ -52,20 +52,20 @@ def test_classification(tmp_path, task, datamodule_and_dir):
     data_module, _ = datamodule_and_dir
 
     trainer = pl.Trainer(max_epochs=2, precision=32, default_root_dir=task.test_output_path,
-                         accelerator='ddp_cpu')
+                         accelerator='cpu', strategy='ddp')
 
     trainer.fit(task, datamodule=data_module)
 
-    results = trainer.test()
+    results = trainer.test(datamodule=data_module)
     print(results)
-    assert np.isclose(results[0]['test/crossentropyloss'], 1.5777363777160645, rtol=2e-03)
-    assert np.isclose(results[0]['test/crossentropyloss_epoch'], 1.5777363777160645, rtol=2e-03)
+    assert np.isclose(results[0]['test/crossentropyloss'], 0.7748091220855713, rtol=2e-03)
+    assert np.isclose(results[0]['test/crossentropyloss_epoch'], 0.7748091220855713, rtol=2e-03)
 
 
 def test_setup_train(monkeypatch, datamodule_and_dir, task):
     data_module_cropped, data_dir_cropped = datamodule_and_dir
     stage = 'fit'
-    trainer = Trainer(accelerator='ddp')
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped)
     monkeypatch.setattr(task, 'trainer', trainer)
@@ -78,7 +78,7 @@ def test_setup_train(monkeypatch, datamodule_and_dir, task):
 def test_setup_test(monkeypatch, datamodule_and_dir, task):
     data_module_cropped, data_dir_cropped = datamodule_and_dir
     stage = 'test'
-    trainer = Trainer(accelerator='ddp')
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped)
     monkeypatch.setattr(task, 'trainer', trainer)
@@ -90,7 +90,7 @@ def test_setup_test(monkeypatch, datamodule_and_dir, task):
 
 def test_training_step(monkeypatch, datamodule_and_dir, task, capsys):
     data_module_cropped, data_dir_cropped = datamodule_and_dir
-    trainer = Trainer()
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped, 'trainer', trainer)
     monkeypatch.setattr(task, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped)
@@ -106,7 +106,7 @@ def test_training_step(monkeypatch, datamodule_and_dir, task, capsys):
 
 def test_validation_step(monkeypatch, datamodule_and_dir, task, capsys):
     data_module_cropped, data_dir_cropped = datamodule_and_dir
-    trainer = Trainer()
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped, 'trainer', trainer)
     monkeypatch.setattr(task, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped)
@@ -123,7 +123,7 @@ def test_validation_step(monkeypatch, datamodule_and_dir, task, capsys):
 
 def test_test_step(monkeypatch, datamodule_and_dir, task, capsys):
     data_module_cropped, data_dir_cropped = datamodule_and_dir
-    trainer = Trainer()
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped, 'trainer', trainer)
     monkeypatch.setattr(task, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped)
