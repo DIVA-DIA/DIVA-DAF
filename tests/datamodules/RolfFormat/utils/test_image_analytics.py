@@ -20,8 +20,8 @@ def test_get_analytics_data(data_dir):
         list_specs=[_get_dataspecs(data_root=data_dir, train=True)])
     analytics_data = get_analytics_data(img_gt_path_list=img_gt_path_list)
 
-    assert np.array_equal(np.round(TEST_JSON_DATA['mean'], 3), np.round(analytics_data['mean'], 3))
-    assert np.array_equal(np.round(TEST_JSON_DATA['std'], 3), np.round(analytics_data['std'], 3))
+    assert np.allclose(TEST_JSON_DATA['mean'], analytics_data['mean'], rtol=2e-03)
+    assert np.allclose(TEST_JSON_DATA['std'], analytics_data['std'], rtol=2e-02)
 
 
 def test_get_analytics_gt(data_dir):
