@@ -1,6 +1,6 @@
 import numpy as np
 
-from datamodules.RolfFormat.datasets.test_full_page_dataset import _get_dataspecs
+from tests.datamodules.RolfFormat.datasets.test_full_page_dataset import _get_dataspecs
 from src.datamodules.RolfFormat.datasets.dataset import DatasetRolfFormat
 from src.datamodules.RolfFormat.utils.image_analytics import get_analytics_data, get_analytics_gt, get_image_dims
 from src.datamodules.utils.misc import ImageDimensions
