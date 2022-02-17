@@ -37,7 +37,7 @@ class DatasetRGB(data.Dataset):
                  image_dims: ImageDimensions,
                  selection: Optional[Union[int, List[str]]] = None,
                  is_test=False, image_transform=None, target_transform=None, twin_transform=None,
-                 classes=None, **kwargs):
+                 **kwargs):
         """
         Parameters
         ----------
@@ -61,10 +61,6 @@ class DatasetRGB(data.Dataset):
         self.selection = selection
 
         self.image_dims = image_dims
-
-        # Init list
-        self.classes = classes
-        # self.crops_per_image = crops_per_image
 
         # transformations
         self.image_transform = image_transform

@@ -138,7 +138,7 @@ def test_step(monkeypatch, data_module_cropped_hisdb, model):
     # setup
     task = AbstractTask(model=BackboneHeaderModel(backbone=model, header=Identity()),
                         loss_fn=CrossEntropyLoss())
-    trainer = Trainer()
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
     monkeypatch.setattr(task, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
@@ -197,7 +197,32 @@ def test__create_conf_mat_test(monkeypatch, data_module_cropped_hisdb, model, tm
     assert (tmp_path / 'conf_mats' / 'test' / 'CM_epoch_0.txt').exists()
 
 
-def test__create_conf_mat_val(monkeypatch, data_module_cropped_hisdb, model, tmp_path):
+def test__create_conf_mat_val_not_drop_last(monkeypatch, data_module_cropped_hisdb, model, tmp_path):
+    # setup
+    task = AbstractTask(model=BackboneHeaderModel(backbone=model, header=Identity()),
+                        loss_fn=CrossEntropyLoss(), confusion_matrix_test=True)
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
+    monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
+    monkeypatch.setattr(data_module_cropped_hisdb, 'drop_last', False)
+    monkeypatch.setattr(task, 'trainer', trainer)
+    monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
+    data_module_cropped_hisdb.setup('fit')
+    task.setup('fit')
+    monkeypatch.setattr(trainer, 'val_dataloaders', [data_module_cropped_hisdb.val_dataloader()])
+    os.chdir(str(tmp_path))
+
+    img, gt, _ = data_module_cropped_hisdb.val[0]
+    task.step(batch=(img[None, :], gt[None, :]), batch_idx=0)
+
+    hist = task.metric_conf_mat_test.compute()
+    hist = hist.detach().numpy()
+    task._create_conf_mat(matrix=hist, stage='val')
+    assert (tmp_path / 'conf_mats').exists()
+    assert (tmp_path / 'conf_mats' / 'val').exists()
+    assert (tmp_path / 'conf_mats' / 'val' / 'CM_epoch_0.txt').exists()
+
+
+def test__create_conf_mat_val_drop_last(monkeypatch, data_module_cropped_hisdb, model, tmp_path):
     # setup
     task = AbstractTask(model=BackboneHeaderModel(backbone=model, header=Identity()),
                         loss_fn=CrossEntropyLoss(), confusion_matrix_test=True)

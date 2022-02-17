@@ -18,7 +18,7 @@ def data_module_rgb(data_dir):
 
 def test_setup_fit(data_module_rgb, monkeypatch, caplog):
     stage = 'fit'
-    trainer = Trainer(accelerator='ddp')
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_rgb, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_rgb)
     monkeypatch.setattr(data_module_rgb, 'batch_size', 1)
@@ -31,7 +31,7 @@ def test_setup_fit(data_module_rgb, monkeypatch, caplog):
 
 def test_setup_fit_error(data_module_rgb, monkeypatch, caplog):
     stage = 'fit'
-    trainer = Trainer(accelerator='ddp')
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_rgb, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_rgb)
     with pytest.raises(ValueError):
@@ -40,7 +40,7 @@ def test_setup_fit_error(data_module_rgb, monkeypatch, caplog):
 
 def test_setup_test(data_module_rgb, monkeypatch):
     stage = 'test'
-    trainer = Trainer(accelerator='ddp')
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_rgb, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_rgb)
     data_module_rgb.setup(stage)
@@ -53,7 +53,7 @@ def test_setup_test(data_module_rgb, monkeypatch):
 def test_setup_predict(data_dir, monkeypatch):
     stage = 'predict'
     pred_file_path_list = [str(data_dir / 'test' / 'data' / 'e-codices_fmb-cb-0055_0098v_max.jpg')]
-    trainer = Trainer(accelerator='ddp')
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     data_module_rgb = DataModuleRGB(data_dir, data_folder_name='data', gt_folder_name='gt', num_workers=NUM_WORKERS,
                                     pred_file_path_list=pred_file_path_list)
 
@@ -68,7 +68,7 @@ def test_setup_predict(data_dir, monkeypatch):
 
 def test_setup_predict_error(data_dir, monkeypatch):
     stage = 'predict'
-    trainer = Trainer(accelerator='ddp')
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     data_module_rgb = DataModuleRGB(data_dir, data_folder_name='data', gt_folder_name='gt',
                                     num_workers=NUM_WORKERS, pred_file_path_list=['1', '2'])
     monkeypatch.setattr(data_module_rgb, 'trainer', trainer)

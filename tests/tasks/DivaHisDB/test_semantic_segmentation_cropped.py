@@ -48,8 +48,9 @@ def task(model, tmp_path):
     return task
 
 
-def test_semantic_segmentation(tmp_path, task, datamodule_and_dir):
+def test_semantic_segmentation(tmp_path, task, datamodule_and_dir, monkeypatch):
     data_module, data_dir_cropped = datamodule_and_dir
+    monkeypatch.chdir(data_dir_cropped)
 
     # different paths needed later
     patches_path = task.test_output_path / 'patches'

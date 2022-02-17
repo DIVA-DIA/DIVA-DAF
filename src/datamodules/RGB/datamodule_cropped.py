@@ -133,7 +133,6 @@ class DataModuleCroppedRGB(AbstractDatamodule):
                 'image_transform': self.image_transform,
                 'target_transform': self.target_transform,
                 'twin_transform': self.twin_transform,
-                'classes': self.class_encodings,
                 'is_test': is_test}
 
     def get_img_name_coordinates(self, index):

@@ -48,8 +48,9 @@ def task(model, tmp_path):
     return task
 
 
-def test_classification(tmp_path, task, datamodule_and_dir):
-    data_module, _ = datamodule_and_dir
+def test_classification(tmp_path, task, datamodule_and_dir, monkeypatch):
+    data_module, data_dir = datamodule_and_dir
+    monkeypatch.chdir(data_dir)
 
     trainer = pl.Trainer(max_epochs=2, precision=32, default_root_dir=task.test_output_path,
                          accelerator='cpu', strategy='ddp')

@@ -72,8 +72,7 @@ class DataModuleRGB(AbstractDatamodule):
     def setup(self, stage: Optional[str] = None):
         super().setup()
 
-        common_kwargs = {'classes': self.class_encodings,
-                         'image_dims': self.image_dims,
+        common_kwargs = {'image_dims': self.image_dims,
                          'image_transform': self.image_transform,
                          'target_transform': self.target_transform,
                          'twin_transform': self.twin_transform}

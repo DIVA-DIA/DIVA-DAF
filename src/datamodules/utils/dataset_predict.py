@@ -17,7 +17,7 @@ class DatasetPredict(data.Dataset):
 
     def __init__(self, image_path_list: List[str], image_dims: ImageDimensions,
                  image_transform=None, target_transform=None, twin_transform=None,
-                 classes=None, **kwargs):
+                 **kwargs):
         """
         Parameters
         ----------
@@ -32,10 +32,6 @@ class DatasetPredict(data.Dataset):
         self.output_file_list = get_output_file_list(image_path_list=self.image_path_list)
 
         self.image_dims = image_dims
-
-        # Init list
-        self.classes = classes
-        # self.crops_per_image = crops_per_image
 
         # transformations
         self.image_transform = image_transform

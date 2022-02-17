@@ -46,7 +46,7 @@ class DatasetRolfFormat(data.Dataset):
 
     def __init__(self, dataset_specs: List[DatasetSpecs], image_dims: ImageDimensions,
                  is_test=False, image_transform=None, target_transform=None, twin_transform=None,
-                 classes=None, **kwargs):
+                 **kwargs):
         """
         Parameters
         ----------
@@ -67,9 +67,6 @@ class DatasetRolfFormat(data.Dataset):
         self.dataset_specs = dataset_specs
 
         self.image_dims = image_dims
-
-        # Init list
-        self.classes = classes
 
         # transformations
         self.image_transform = image_transform

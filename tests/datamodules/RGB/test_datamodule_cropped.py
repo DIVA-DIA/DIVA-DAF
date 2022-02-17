@@ -27,7 +27,7 @@ def class_encodings():
 
 def test_setup_fit(data_module_cropped_rgb, monkeypatch):
     stage = 'fit'
-    trainer = Trainer(accelerator='ddp')
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_rgb, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_rgb)
     data_module_cropped_rgb.setup(stage)
@@ -38,7 +38,7 @@ def test_setup_fit(data_module_cropped_rgb, monkeypatch):
 
 def test_setup_test(data_module_cropped_rgb, monkeypatch):
     stage = 'test'
-    trainer = Trainer(accelerator='ddp')
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_rgb, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_rgb)
     data_module_cropped_rgb.setup(stage)
@@ -78,4 +78,3 @@ def test__create_dataset_parameters_cropped(data_module_cropped_rgb, class_encod
     parameters = data_module_cropped_rgb._create_dataset_parameters()
     assert 'train' in str(parameters['path'])
     assert not parameters['is_test']
-    assert np.array_equal(parameters['classes'], np.array(class_encodings, dtype=np.uint8))
