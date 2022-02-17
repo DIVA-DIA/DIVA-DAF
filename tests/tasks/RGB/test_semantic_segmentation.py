@@ -8,13 +8,11 @@ from omegaconf import OmegaConf
 from pl_bolts.models.vision import UNet
 from pytorch_lightning import seed_everything, Trainer
 
-from datamodules.RolfFormat.datasets.test_full_page_dataset import _get_dataspecs
+from tests.datamodules.RolfFormat.datasets.test_full_page_dataset import _get_dataspecs
 from src.datamodules.RolfFormat.datamodule import DataModuleRolfFormat
-from src.tasks.DivaHisDB.semantic_segmentation_cropped import SemanticSegmentationCroppedHisDB
 from src.tasks.RGB.semantic_segmentation import SemanticSegmentationRGB
 from src.tasks.utils.outputs import OutputKeys
 from tests.tasks.test_base_task import fake_log
-from tests.test_data.dummy_data_hisdb.dummy_data import data_dir_cropped
 from tests.test_data.dummy_data_rolf.dummy_data import data_dir
 
 
