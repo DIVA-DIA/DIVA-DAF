@@ -91,7 +91,7 @@ def test_training_step(monkeypatch, datamodule_and_dir, task, capsys):
 
     img, gt = data_module.train[0]
     output = task.training_step(batch=(img[None, :], gt[None, :]), batch_idx=0)
-    assert 'train/crossentropyloss 1.8575176000595093\n' in capsys.readouterr().out
+    assert 'train/crossentropyloss 1.8' in capsys.readouterr().out
     assert np.isclose(output[OutputKeys.LOSS].item(), 1.8575176000595093, rtol=2e-03)
 
 
@@ -107,7 +107,7 @@ def test_validation_step(monkeypatch, datamodule_and_dir, task, capsys):
 
     img, gt = data_module.val[0]
     task.validation_step(batch=(img[None, :], gt[None, :]), batch_idx=0)
-    assert 'val/crossentropyloss 1.8575176000595093\n' in capsys.readouterr().out
+    assert 'val/crossentropyloss 1.8' in capsys.readouterr().out
 
 
 def test_test_step(monkeypatch, datamodule_and_dir, task, capsys, tmp_path):
@@ -124,7 +124,7 @@ def test_test_step(monkeypatch, datamodule_and_dir, task, capsys, tmp_path):
     img, gt, idx = data_module.test[0]
     idx_tensor = torch.as_tensor([idx])
     task.test_step(batch=(img[None, :], gt[None, :], idx_tensor), batch_idx=0)
-    assert 'test/crossentropyloss 1.8563412427902222\n' in capsys.readouterr().out
+    assert 'test/crossentropyloss 1.8' in capsys.readouterr().out
     assert (tmp_path / 'pred').exists()
     assert (tmp_path / 'pred' / 'D1-LC-Car-folio-1000.gif').exists()
     assert len(list((tmp_path / 'pred').iterdir())) == 1
