@@ -36,8 +36,10 @@ def datamodule_and_dir(data_dir):
     specs_test = _get_dataspecs(data_root=data_dir, train=False).__dict__
     del specs_test['data_root']
     OmegaConf.clear_resolvers()
+    pred_file_path_list = [str(data_dir / 'codex' / 'D1-LC-Car-folio-1001.jpg')]
     datamodule = DataModuleRolfFormat(data_dir, train_specs={'a': specs_train}, test_specs={'a': specs_test},
-                                      val_specs={'a': specs_train}, num_workers=4, drop_last=False, shuffle=True)
+                                      val_specs={'a': specs_train}, num_workers=4, drop_last=False, shuffle=True,
+                                      pred_file_path_list=pred_file_path_list)
     return datamodule, data_dir
 
 
@@ -52,8 +54,9 @@ def task(model, tmp_path):
     return task
 
 
-def test_semantic_segmentation(tmp_path, task, datamodule_and_dir):
+def test_semantic_segmentation(tmp_path, task, datamodule_and_dir, monkeypatch):
     data_module, data_dir = datamodule_and_dir
+    monkeypatch.chdir(data_dir)
 
     # different paths needed later
     patches_path = task.test_output_path / 'patches'
@@ -127,4 +130,27 @@ def test_test_step(monkeypatch, datamodule_and_dir, task, capsys, tmp_path):
     assert len(list((tmp_path / 'pred').iterdir())) == 1
     assert (tmp_path / 'pred_raw').exists()
     assert (tmp_path / 'pred_raw' / 'D1-LC-Car-folio-1000.npy').exists()
+    assert len(list((tmp_path / 'pred_raw').iterdir())) == 1
+
+
+def test_predict_step(monkeypatch, datamodule_and_dir, task, capsys, tmp_path):
+    data_module, data_dir = datamodule_and_dir
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
+    monkeypatch.setattr(data_module, 'trainer', trainer)
+    monkeypatch.setattr(task, 'trainer', trainer)
+    monkeypatch.setattr(task, 'predict_output_path', data_dir)
+    monkeypatch.setattr(trainer, 'datamodule', data_module)
+    monkeypatch.setattr(task, 'log', fake_log)
+    monkeypatch.setattr(task, 'confusion_matrix_val', False)
+    monkeypatch.setattr(task, 'test_output_path', tmp_path)
+    data_module.setup('predict')
+
+    img, idx = data_module.predict[0]
+    idx_tensor = torch.as_tensor([idx])
+    task.predict_step(batch=(img[None, :], idx_tensor), batch_idx=0)
+    assert (tmp_path / 'pred').exists()
+    assert (tmp_path / 'pred' / 'D1-LC-Car-folio-1001.gif').exists()
+    assert len(list((tmp_path / 'pred').iterdir())) == 1
+    assert (tmp_path / 'pred_raw').exists()
+    assert (tmp_path / 'pred_raw' / 'D1-LC-Car-folio-1001.npy').exists()
     assert len(list((tmp_path / 'pred_raw').iterdir())) == 1
