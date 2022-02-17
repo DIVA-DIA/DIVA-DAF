@@ -27,7 +27,7 @@ def class_encodings():
 
 def test_setup_fit(data_module_cropped_rgb, monkeypatch):
     stage = 'fit'
-    trainer = Trainer(accelerator='ddp')
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_rgb, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_rgb)
     data_module_cropped_rgb.setup(stage)
@@ -38,7 +38,7 @@ def test_setup_fit(data_module_cropped_rgb, monkeypatch):
 
 def test_setup_test(data_module_cropped_rgb, monkeypatch):
     stage = 'test'
-    trainer = Trainer(accelerator='ddp')
+    trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_rgb, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_rgb)
     data_module_cropped_rgb.setup(stage)
