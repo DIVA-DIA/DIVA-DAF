@@ -21,23 +21,6 @@ def data_module_rolf(data_dir):
     return datamodules
 
 
-def test__print_analytics_data(data_dir, caplog):
-    specs = _get_dataspecs(data_root=data_dir, train=True).__dict__
-    del specs['data_root']
-    DataModuleRolfFormat(data_root=data_dir, train_specs={'a': specs})
-    indent = 4 * ' '
-    expected_output = f'image_analytics:\n' + \
-                      f'{indent}mean:\n' + \
-                      f'{indent}{indent}R: 0.857888280095024\n' + \
-                      f'{indent}{indent}G: 0.729052895463741\n' + \
-                      f'{indent}{indent}B: 0.6279161697230975\n' + \
-                      f'{indent}std:\n' + \
-                      f'{indent}{indent}R: 0.22418223754018474\n' + \
-                      f'{indent}{indent}G: 0.21583317527112408\n' + \
-                      f'{indent}{indent}B: 0.1944047822539466\n'
-    assert expected_output in caplog.text
-
-
 def test__print_image_dims(data_dir, caplog):
     specs = _get_dataspecs(data_root=data_dir, train=True).__dict__
     del specs['data_root']
