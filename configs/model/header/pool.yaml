@@ -1,0 +1,4 @@
+_target_: src.models.headers.unet.PoolHeader
+
+in_channels: 8
+num_classes: 4

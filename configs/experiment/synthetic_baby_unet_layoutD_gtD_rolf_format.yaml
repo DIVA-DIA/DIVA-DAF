@@ -5,12 +5,12 @@
 
 defaults:
     - /mode:            experiment.yaml
-    - /plugins:         default.yaml
+    - /plugins:         null
     - /task:            semantic_segmentation_RGB.yaml
     - /datamodule:      rolf_format_layoutD_gtD.yaml
     - /loss:            crossentropyloss.yaml
     - /metric:          iou.yaml
-    - /model/backbone:  baby_unet_model.yaml
+    - /model/backbone:  baby_unet.yaml
     - /model/header:    identity.yaml
     - /optimizer:       adam.yaml
     - /callbacks:
@@ -34,8 +34,9 @@ predict: False
 
 trainer:
     _target_: pytorch_lightning.Trainer
-    gpus: -1
-    accelerator: 'ddp'
+    accelerator: 'gpu'
+    devices: -1
+    strategy: 'ddp_find_unused_parameters_false'
     min_epochs: 1
     max_epochs: 200
     weights_summary: full

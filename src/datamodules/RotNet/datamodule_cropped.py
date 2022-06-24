@@ -122,5 +122,4 @@ class RotNetDivaHisDBDataModuleCropped(AbstractDatamodule):
         return {'path': self.data_dir / dataset_type,
                 'data_folder_name': self.data_folder_name,
                 'image_transform': self.image_transform,
-                'classes': self.class_encodings,
                 'is_test': is_test}

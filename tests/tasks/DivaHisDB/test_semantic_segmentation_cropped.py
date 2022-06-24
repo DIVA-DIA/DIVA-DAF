@@ -48,22 +48,23 @@ def task(model, tmp_path):
     return task
 
 
-def test_semantic_segmentation(tmp_path, task, datamodule_and_dir):
+def test_semantic_segmentation(tmp_path, task, datamodule_and_dir, monkeypatch):
     data_module, data_dir_cropped = datamodule_and_dir
+    monkeypatch.chdir(data_dir_cropped)
 
     # different paths needed later
     patches_path = task.test_output_path / 'patches'
     test_data_patch = data_dir_cropped / 'test' / 'data'
 
     trainer = pl.Trainer(max_epochs=2, precision=32, default_root_dir=task.test_output_path,
-                         accelerator='ddp_cpu')
+                         accelerator='cpu', strategy='ddp')
 
     trainer.fit(task, datamodule=data_module)
 
-    results = trainer.test()
+    results = trainer.test(datamodule=data_module)
     print(results)
-    assert np.isclose(results[0]['test/crossentropyloss'], 1.0896027088165283, rtol=2e-03)
-    assert np.isclose(results[0]['test/crossentropyloss_epoch'], 1.0896027088165283, rtol=2e-03)
+    assert np.isclose(results[0]['test/crossentropyloss'], 1.0896027088165283, rtol=2.5e-02)
+    assert np.isclose(results[0]['test/crossentropyloss_epoch'], 1.0896027088165283, rtol=2.5e-02)
     assert len(list(patches_path.glob('*/*.npy'))) == len(list(test_data_patch.glob('*/*.png')))
 
 

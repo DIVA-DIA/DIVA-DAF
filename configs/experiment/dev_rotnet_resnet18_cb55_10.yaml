@@ -5,7 +5,7 @@
 
 defaults:
     - /mode: development.yaml
-    - /plugins: default.yaml
+    - /plugins: null
     - /task: classification.yaml
     - /loss: crossentropyloss.yaml
     - /metric: accuracy.yaml
@@ -33,8 +33,9 @@ predict: False
 
 trainer:
     _target_: pytorch_lightning.Trainer
-    gpus: -1
-    accelerator: 'ddp'
+    accelerator: 'gpu'
+    devices: -1
+    strategy: 'ddp_find_unused_parameters_false'
     min_epochs: 1
     max_epochs: 3
     weights_summary: full

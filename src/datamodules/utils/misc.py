@@ -96,14 +96,16 @@ def get_output_file_list(image_path_list: List[Path]) -> List[str]:
     assert len(image_path_list) == len(output_list)
 
     if len(duplicate_filenames) > 0:
-        log.warn(f'Duplicate filenames in output list. '
-                 f'Output filenames have been changed to be unique. Duplicates:\n'
-                 f'{duplicate_filenames}')
+        log.warning(f'Duplicate filenames in output list. '
+                    f'Output filenames have been changed to be unique. Duplicates:\n'
+                    f'{duplicate_filenames}')
 
     return output_list
 
 
 def find_new_filename(filename: str, current_list: List[str]) -> str:
+    if filename not in current_list:
+        return filename
     for i in range(len(current_list)):
         new_filename = f'{filename}_{i}'
         if new_filename not in current_list:
