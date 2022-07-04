@@ -143,3 +143,6 @@ dmypy.json
 /data/
 logs/
 wandb/
+
+#outputs
+outputs
