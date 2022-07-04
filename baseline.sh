@@ -1,0 +1,5 @@
+python run.py experiment=cb55_full_run_deeplab_vinay
+python run.py experiment=cb55_full_run_deeplab_vinay
+python run.py experiment=cb55_full_run_deeplab_vinay
+python run.py experiment=cb55_full_run_deeplab_vinay
+python run.py experiment=cb55_full_run_deeplab_vinay
