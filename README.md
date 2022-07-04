@@ -71,7 +71,7 @@ python run.py trainer.accelerator=ddp_cpu trainer.precision=32
 
 Train model with chosen experiment configuration from [configs/experiment/](configs/experiment/)
 ```yaml
-python run.py +experiment=experiment_name
+python run.py experiment=experiment_name
 ```
 
 You can override any parameter from command line like this
