@@ -10,6 +10,7 @@ from src.datamodules.utils.misc import _get_argmax
 from src.tasks.base_task import AbstractTask
 from src.utils import utils
 from src.tasks.utils.outputs import OutputKeys, reduce_dict
+from tools.merge_cropped_output_HisDB import CroppedOutputMerger
 
 log = utils.get_logger(__name__)
 
@@ -115,7 +116,7 @@ class SemanticSegmentationCroppedHisDB(AbstractTask):
 
         return reduce_dict(input_dict=output, key_list=[])
 
-    def on_test_end(self) -> None:
+    def on_test_epoch_end(self) -> None:
         datamodule_path = self.trainer.datamodule.data_dir
         prediction_path = (self.test_output_path / 'patches').absolute()
         output_path = (self.test_output_path / 'result').absolute()
@@ -127,8 +128,15 @@ class SemanticSegmentationCroppedHisDB(AbstractTask):
         log.info(f'python tools/merge_cropped_output_HisDB.py -d {datamodule_path} -p {prediction_path} '
                  f'-o {output_path} -df {data_folder_name} -gf {gt_folder_name}')
 
-        script_location = self.test_output_path / 'merge_cropped_output_HisDB.sh'
-        log.info(f'When done, you can run the evaluation script:{script_location}')                
-        with open(script_location, 'w') as f:
-            f.write(f'python tools/merge_cropped_output_HisDB.py -d {datamodule_path} -p {prediction_path} '
-                    f'-o {output_path} -df {data_folder_name} -gf {gt_folder_name}')
+        # script_location = self.test_output_path / 'merge_cropped_output_HisDB.sh'
+        # log.info(f'When done, you can run the evaluation script:{script_location}')                
+        # with open(script_location, 'w') as f:
+        #     f.write(f'python tools/merge_cropped_output_HisDB.py -d {datamodule_path} -p {prediction_path} '
+        #             f'-o {output_path} -df {data_folder_name} -gf {gt_folder_name} \n')
+
+        merger = CroppedOutputMerger(datamodule_path=datamodule_path,prediction_path=prediction_path,
+                                     output_path=output_path, data_folder_name=data_folder_name,
+                                     gt_folder_name=gt_folder_name)
+        score = merger.merge_all()
+        log.info(f'Final evalation average miou: {score}')
+        self.log(f"final/average_miou", score)

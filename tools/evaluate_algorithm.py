@@ -55,7 +55,7 @@ def evaluate(prediction_img_path: Path, gt_img_path: Path, output_path: Path, ev
     return [get_score(logs, 'Mean IU (Jaccard index) = '), logs]
 
 
-def main(gt_folder: Path, prediction_folder: Path, original_images: str, output_path: Path, no_visualization: bool,
+def entry_point(gt_folder: Path, prediction_folder: Path, original_images: str, output_path: Path, no_visualization: bool,
          eval_tool: Path, processes: int):
     # Select the number of threads
     if processes == 0:
@@ -117,7 +117,7 @@ def main(gt_folder: Path, prediction_folder: Path, original_images: str, output_
         score = -1
 
     # np.save(os.path.join(output_path, 'results.npy'), results)
-    write_stats(results, errors, score)
+    # write_stats(results, errors, score)
     print('Total time taken: {:.2f}, avg_miou={}, nb_errors={}'.format(time.time() - tic, score, len(errors)))
     return score
 
@@ -152,4 +152,4 @@ if __name__ == "__main__":
                         help='number of thread to use for parallel search. If set to 0 #cores will be used instead')
     args = parser.parse_args()
 
-    main(**args.__dict__)
+    entry_point(**args.__dict__)

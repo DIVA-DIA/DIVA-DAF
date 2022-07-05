@@ -1,6 +1,7 @@
 import argparse
 import math
 import re
+import os
 import threading
 from collections import defaultdict
 from dataclasses import dataclass
@@ -18,6 +19,7 @@ from src.datamodules.DivaHisDB.utils.output_tools import save_output_page_image
 from src.datamodules.utils.output_tools import merge_patches
 from tools.generate_cropped_dataset import pil_loader
 from tools.viz import visualize
+from tools.evaluate_algorithm import entry_point
 
 
 @dataclass
@@ -144,8 +146,22 @@ class CroppedOutputMerger:
               f' --original_images {self.output_path / "img"}'
               f' --output_path analysis'
               f'\n')
+        
+        print(f'Current working directory is: {os.getcwd()}')
+
+        score = entry_point(
+            gt_folder=self.output_path / "gt", 
+            prediction_folder = self.output_path / "pred",
+            original_images=str(self.output_path / "img"), 
+            output_path=Path('analysis'), 
+            no_visualization=False, 
+            eval_tool=Path('/HOME/pondenka/divadaf/tools/utils/LayoutAnalysisEvaluator.jar'), 
+            processes=0
+            )
+              
 
         print('DONE!')
+        return score
 
     def merge_page(self, img_name: str, lock, position):
         page_info_str = f'[{str(position + 1).rjust(int(math.log10(self.num_pages)) + 1)}/{self.num_pages}] {img_name}'
