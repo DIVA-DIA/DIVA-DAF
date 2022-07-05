@@ -126,7 +126,9 @@ class SemanticSegmentationCroppedHisDB(AbstractTask):
         log.info(f'To run the merging of patches:')
         log.info(f'python tools/merge_cropped_output_HisDB.py -d {datamodule_path} -p {prediction_path} '
                  f'-o {output_path} -df {data_folder_name} -gf {gt_folder_name}')
-                 
-        with open(self.test_output_path / 'merge_cropped_output_HisDB.sh', 'w') as f:
+
+        script_location = self.test_output_path / 'merge_cropped_output_HisDB.sh'
+        log.info(f'When done, you can run the evaluation script:{script_location}')                
+        with open(script_location, 'w') as f:
             f.write(f'python tools/merge_cropped_output_HisDB.py -d {datamodule_path} -p {prediction_path} '
                     f'-o {output_path} -df {data_folder_name} -gf {gt_folder_name}')
