@@ -146,7 +146,7 @@ def test_step(monkeypatch, data_module_cropped_hisdb, model):
 
     img, gt, _ = data_module_cropped_hisdb.train[0]
     output = task.step(batch=(img[None, :], gt[None, :]), batch_idx=0)
-    assert output[OutputKeys.LOSS].item() == 1.4348618984222412
+    assert torch.isclose(output[OutputKeys.LOSS], torch.tensor(1.4348618984222412).type_as(output[OutputKeys.LOSS]))
     assert torch.equal(output[OutputKeys.TARGET], gt[None, :])
     assert output[OutputKeys.PREDICTION].shape == torch.Size([1, 4, 256, 256])
 
