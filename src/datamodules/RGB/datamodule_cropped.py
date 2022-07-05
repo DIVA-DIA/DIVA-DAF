@@ -84,17 +84,17 @@ class DataModuleCroppedRGB(AbstractDatamodule):
             #                             drop_last=False)
 
     def _check_min_num_samples(self, num_samples: int, data_split: str, drop_last: bool):
-        num_processes = self.trainer.num_processes
+        num_processes = self.trainer.num_devices
         batch_size = self.batch_size
         if drop_last:
-            if num_samples < (self.trainer.num_processes * self.batch_size):
+            if num_samples < (self.trainer.num_devices * self.batch_size):
                 log.error(
                     f'#samples ({num_samples}) in "{data_split}" smaller than '
                     f'#processes({num_processes}) times batch size ({batch_size}). '
                     f'This only works if drop_last is false!')
                 raise ValueError()
         else:
-            if num_samples < (self.trainer.num_processes * self.batch_size):
+            if num_samples < (self.trainer.num_devices * self.batch_size):
                 log.warning(
                     f'#samples ({num_samples}) in "{data_split}" smaller than '
                     f'#processes ({num_processes}) times batch size ({batch_size}). '
