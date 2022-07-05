@@ -102,7 +102,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         if self.confusion_matrix_test:
             self.metric_conf_mat_test = torchmetrics.ConfusionMatrix(num_classes=self.trainer.datamodule.num_classes,
                                                                      compute_on_step=False)
-        if self.trainer.training_type_plugin.distributed_backend == DistributedType.DDP:
+        if self.trainer.strategy.strategy_name == 'ddp':
             batch_size = self.trainer.datamodule.batch_size
             if stage == 'fit':
                 num_samples = len(self.trainer.datamodule.train)
@@ -280,7 +280,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
     def _create_conf_mat(self, matrix: np.ndarray, stage: str = 'val'):
         # verify sum of conf mat entries
         pixels_per_crop = self.trainer.datamodule.dims[1] * self.trainer.datamodule.dims[2]
-        num_processes = self.trainer.num_processes
+        num_processes = self.trainer.num_devices
         if stage == 'val':
             dataloader = self.trainer.val_dataloaders[0]
         elif stage == 'test':
