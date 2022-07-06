@@ -93,7 +93,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         self.lr = lr
         self.test_output_path = Path(test_output_path)
         self.predict_output_path = Path(predict_output_path)
-        self.save_hyperparameters()
+        # self.save_hyperparameters()
 
     def setup(self, stage: str):
         if self.confusion_matrix_val:
