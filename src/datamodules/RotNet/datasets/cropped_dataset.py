@@ -13,6 +13,7 @@ from torchvision.datasets.folder import has_file_allowed_extension, pil_loader
 from torchvision.transforms import ToTensor
 
 from src.datamodules.DivaHisDB.datasets.cropped_dataset import CroppedHisDBDataset
+from src.datamodules.utils.misc import selection_validation
 from src.utils import utils
 
 IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm')
@@ -140,34 +141,7 @@ class CroppedRotNet(CroppedHisDBDataset):
 
         # check the selection parameter
         if selection:
-            subdirectories = [x.name for x in subitems if x.is_dir()]
-
-            if isinstance(selection, int):
-                if selection < 0:
-                    msg = f'Parameter "selection" is a negative integer ({selection}). ' \
-                          f'Negative values are not supported!'
-                    log.error(msg)
-                    raise ValueError(msg)
-
-                elif selection == 0:
-                    selection = None
-
-                elif selection > len(subdirectories):
-                    msg = f'Parameter "selection" is larger ({selection}) than ' \
-                          f'number of subdirectories ({len(subdirectories)}).'
-                    log.error(msg)
-                    raise ValueError(msg)
-
-            elif isinstance(selection, ListConfig) or isinstance(selection, list):
-                if not all(x in subdirectories for x in selection):
-                    msg = f'Parameter "selection" contains a non-existing subdirectory.)'
-                    log.error(msg)
-                    raise ValueError(msg)
-
-            else:
-                msg = f'Parameter "selection" exists, but it is of unsupported type ({type(selection)})'
-                log.error(msg)
-                raise TypeError(msg)
+            selection = selection_validation(subitems, selection, full_page=False)
 
         counter = 0  # Counter for subdirectories, needed for selection parameter
 

@@ -1,9 +1,10 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Union, List
+from typing import Union, List, Generator
 
 import numpy as np
 import torch
+from omegaconf import ListConfig
 
 from src.datamodules.utils.exceptions import PathNone, PathNotDir, PathMissingSplitDir, PathMissingDirinSplitDir
 from src.utils import utils
@@ -113,3 +114,44 @@ def find_new_filename(filename: str, current_list: List[str]) -> str:
     else:
         log.error('Unexpected error: Did not find new filename that is not a duplicate!')
         raise AssertionError
+
+
+def selection_validation(files_in_data_root: List[Path], selection, full_page: bool):
+    if not full_page:
+        subdirectories = [x.name for x in files_in_data_root if x.is_dir()]
+
+    if isinstance(selection, int):
+
+        if selection < 0:
+            msg = f'Parameter "selection" is a negative integer ({selection}). ' \
+                  f'Negative values are not supported!'
+            log.error(msg)
+            raise ValueError(msg)
+
+        elif selection == 0:
+            selection = None
+
+        elif (selection > len(files_in_data_root) and full_page) or (not full_page and selection > len(subdirectories)):
+            msg = f'Parameter "selection" is larger ({selection}) than ' \
+                  f'number of files ({len(files_in_data_root)}).'
+            log.error(msg)
+            raise ValueError(msg)
+
+    elif isinstance(selection, ListConfig) or isinstance(selection, list):
+        if full_page:
+            if not all(x in [f.stem for f in files_in_data_root] for x in selection):
+                msg = f'Parameter "selection" contains a non-existing file names.)'
+                log.error(msg)
+                raise ValueError(msg)
+        else:
+            if not all(x in subdirectories for x in selection):
+                msg = f'Parameter "selection" contains a non-existing subdirectory.)'
+                log.error(msg)
+                raise ValueError(msg)
+
+    else:
+        msg = f'Parameter "selection" exists, but it is of unsupported type ({type(selection)})'
+        log.error(msg)
+        raise TypeError(msg)
+
+    return selection
