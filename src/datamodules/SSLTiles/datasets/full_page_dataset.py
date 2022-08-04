@@ -50,7 +50,7 @@ class DatasetSSLTiles(DatasetRGB):
         # cut image in tiles and shuffle them
         new_img, gt = self._cut_image_in_tiles_and_put_together(img)
 
-        return ToTensor()(new_img), gt
+        return ToTensor()(new_img), Tensor(gt)
 
     @staticmethod
     def get_img_gt_path_list(directory: Path, data_folder_name: str, gt_folder_name: str = None,
