@@ -132,4 +132,4 @@ class DatasetSSLTiles(DatasetRGB):
 
         if np.isnan(np.sum(new_img_array)):
             raise ValueError('The patched image is not valid! It still contains NaN values (perhaps a patch missing)')
-        return Image.fromarray(new_img_array), gt
+        return Image.fromarray(new_img_array.astype(np.uint8)), gt
