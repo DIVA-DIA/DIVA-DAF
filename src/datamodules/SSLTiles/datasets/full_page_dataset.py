@@ -2,9 +2,14 @@ from pathlib import Path
 
 from typing import Optional, Union, List, Tuple
 
+import numpy as np
+from PIL import Image
 from omegaconf import ListConfig
+from torch import Tensor
 from torchvision.datasets.folder import pil_loader, has_file_allowed_extension
+from torchvision.transforms import ToTensor
 
+from datamodules.SSLTiles.utils.shuffeling import shuffle_horizontal, shuffle_vertical
 from src.datamodules.RGB.datasets.full_page_dataset import DatasetRGB
 from src.datamodules.utils.misc import ImageDimensions, selection_validation
 from src.utils import utils
@@ -22,8 +27,12 @@ class DatasetSSLTiles(DatasetRGB):
         super().__init__(path=path, data_folder_name=data_folder_name, gt_folder_name=gt_folder_name,
                          image_dims=image_dims, selection=selection, is_test=False, image_transform=image_transform,
                          target_transform=None, twin_transform=None, **kwargs)
+        if self.image_dims.height % rows != 0 or self.image_dims.width % cols != 0:
+            raise ValueError('Image dimensions must be dividable by rows and cols')
         self.rows = rows
         self.cols = cols
+        if not horizontal_shuffle and not vertical_shuffle:
+            raise ValueError('At least one of horizontal_shuffle or vertical_shuffle must be True')
         self.horizontal_shuffle = horizontal_shuffle
         self.vertical_shuffle = vertical_shuffle
 
@@ -34,6 +43,14 @@ class DatasetSSLTiles(DatasetRGB):
 
     def _load_data_and_gt(self, index):
         return pil_loader(self.img_gt_path_list[index])
+
+    def _apply_transformation(self, img, _):
+        img, _ = super()._apply_transformation(img, None)
+
+        # cut image in tiles and shuffle them
+        new_img, gt = self._cut_image_in_tiles_and_put_together(img)
+
+        return ToTensor()(new_img), gt
 
     @staticmethod
     def get_img_gt_path_list(directory: Path, data_folder_name: str, gt_folder_name: str = None,
@@ -88,4 +105,31 @@ class DatasetSSLTiles(DatasetRGB):
 
         return paths
 
+    def _cut_image_in_tiles_and_put_together(self, img_array: np.ndarray) -> Tuple[Image.Image, Tensor]:
+        # cut image in tiles and shuffle them
+        tile_dims = ImageDimensions(width=self.image_dims.width // self.cols,
+                                    height=self.image_dims.height // self.rows)
 
+        gt = np.arange(self.rows * self.cols).reshape((self.rows, self.cols))
+        if self.horizontal_shuffle:
+            shuffle_horizontal(gt)
+        if self.vertical_shuffle:
+            shuffle_vertical(gt)
+
+        # put tiles together
+        new_img_array = np.zeros((self.image_dims.height, self.image_dims.width, 3))
+        new_img_array.fill(np.nan)
+
+        for i in range(self.rows):
+            for j in range(self.cols):
+                width_start = (gt[i, j] % self.cols) * tile_dims.width
+                width_end = width_start + tile_dims.width
+                height_start = (gt[i, j] // self.cols) * tile_dims.height
+                height_end = height_start + tile_dims.height
+                new_img_array[i * tile_dims.height: (i + 1) * tile_dims.height,
+                j * tile_dims.width: (j + 1) * tile_dims.width, :] = img_array[height_start:height_end,
+                                                                               width_start:width_end]
+
+        if np.isnan(np.sum(new_img_array)):
+            raise ValueError('The patched image is not valid! It still contains NaN values (perhaps a patch missing)')
+        return Image.fromarray(new_img_array), gt
