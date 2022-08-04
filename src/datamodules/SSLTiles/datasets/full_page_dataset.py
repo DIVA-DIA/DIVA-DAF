@@ -7,7 +7,7 @@ from PIL import Image
 from omegaconf import ListConfig
 from torch import Tensor
 from torchvision.datasets.folder import pil_loader, has_file_allowed_extension
-from torchvision.transforms import ToTensor
+from torchvision.transforms import ToTensor, ToPILImage
 
 from datamodules.SSLTiles.utils.shuffeling import shuffle_horizontal, shuffle_vertical
 from src.datamodules.RGB.datasets.full_page_dataset import DatasetRGB
@@ -39,16 +39,17 @@ class DatasetSSLTiles(DatasetRGB):
     def __getitem__(self, index):
         data_img = self._load_data_and_gt(index)
         # create gt_img
-        return super().__getitem__(index)
+        img_tensor, gt_tensor = self._apply_transformation(data_img, None)
+        return img_tensor, gt_tensor
 
     def _load_data_and_gt(self, index):
         return pil_loader(self.img_gt_path_list[index])
 
-    def _apply_transformation(self, img, _):
-        img, _ = super()._apply_transformation(img, None)
+    def _apply_transformation(self, img_tensor, _):
+        img_tensor, _ = super()._apply_transformation(img_tensor, None)
 
         # cut image in tiles and shuffle them
-        new_img, gt = self._cut_image_in_tiles_and_put_together(img)
+        new_img, gt = self._cut_image_in_tiles_and_put_together(img_tensor)
 
         return ToTensor()(new_img), Tensor(gt)
 
@@ -105,7 +106,7 @@ class DatasetSSLTiles(DatasetRGB):
 
         return paths
 
-    def _cut_image_in_tiles_and_put_together(self, img_array: np.ndarray) -> Tuple[Image.Image, Tensor]:
+    def _cut_image_in_tiles_and_put_together(self, img_tensor: Tensor) -> Tuple[Image.Image, Tensor]:
         # cut image in tiles and shuffle them
         tile_dims = ImageDimensions(width=self.image_dims.width // self.cols,
                                     height=self.image_dims.height // self.rows)
@@ -117,7 +118,8 @@ class DatasetSSLTiles(DatasetRGB):
             shuffle_vertical(gt)
 
         # put tiles together
-        new_img_array = np.zeros((self.image_dims.height, self.image_dims.width, 3))
+        img_array = np.array(ToPILImage()(img_tensor).convert('RGB'))
+        new_img_array = np.zeros(img_array.shape)
         new_img_array.fill(np.nan)
 
         for i in range(self.rows):

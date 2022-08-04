@@ -145,7 +145,7 @@ class DatasetRGB(data.Dataset):
 
         if not is_tensor(img):
             img = ToTensor()(img)
-        if not is_tensor(gt):
+        if not is_tensor(gt) and gt is not None:
             gt = ToTensor()(gt)
 
         if self.target_transform is not None:
