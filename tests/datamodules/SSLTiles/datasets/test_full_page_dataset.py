@@ -17,10 +17,9 @@ DATA_FOLDER_NAME = 'data'
 @pytest.fixture
 def dataset_train_ssl(data_dir):
     return DatasetSSLTiles(path=data_dir / 'train',
-                           data_folder_name=DATA_FOLDER_NAME, gt_folder_name='',
+                           data_folder_name=DATA_FOLDER_NAME,
                            image_dims=ImageDimensions(width=960, height=1344),
                            rows=3, cols=2, horizontal_shuffle=True, vertical_shuffle=False)
-
 
 
 def test__cut_image_in_tiles_and_put_together_2_3_vertical(dataset_train_ssl, data_dir, result_img_2_3_vertical,
