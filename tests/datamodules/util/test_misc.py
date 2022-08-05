@@ -6,7 +6,7 @@ import torch
 
 from src.datamodules.utils.exceptions import PathNone, PathNotDir, PathMissingSplitDir, PathMissingDirinSplitDir
 from src.datamodules.utils.misc import validate_path_for_segmentation, _get_argmax, get_output_file_list, \
-    find_new_filename, selection_validation
+    find_new_filename, selection_validation, get_image_dims
 from tests.test_data.dummy_data_hisdb.dummy_data import data_dir_cropped, data_dir
 
 
@@ -224,3 +224,15 @@ def test_selection_validation_list_cropped_page(get_test_data_cropped_page):
     selection_r = selection_validation(files_in_data_root=get_test_data_cropped_page, selection=selection,
                                        full_page=False)
     assert len(selection_r) == 1
+
+
+def test_get_image_dims_list_paths(get_test_data_full_page):
+    img_dims = get_image_dims(get_test_data_full_page)
+    assert img_dims.width == 487
+    assert img_dims.height == 649
+
+
+def test_get_image_dims_list_tuples(get_test_data_full_page):
+    img_dims = get_image_dims([(get_test_data_full_page[0], get_test_data_full_page[0])])
+    assert img_dims.width == 487
+    assert img_dims.height == 649
