@@ -159,7 +159,10 @@ def selection_validation(files_in_data_root: List[Path], selection, full_page: b
 
 
 def get_image_dims(data_gt_path_list, **kwargs):
-    img = Image.open(data_gt_path_list[0][0]).convert('RGB')
+    if isinstance(data_gt_path_list[0], tuple):
+        img = Image.open(data_gt_path_list[0][0]).convert('RGB')
+    else:
+        img = Image.open(data_gt_path_list[0]).convert('RGB')
 
     image_dims = ImageDimensions(width=img.width, height=img.height)
 
