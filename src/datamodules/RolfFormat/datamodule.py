@@ -6,10 +6,10 @@ from torchvision import transforms
 
 from src.datamodules.RGB.utils.single_transform import IntegerEncoding
 from src.datamodules.RolfFormat.datasets.dataset import DatasetRolfFormat, DatasetSpecs
-from src.datamodules.RolfFormat.utils.image_analytics import get_analytics_data, get_analytics_gt, get_image_dims
+from src.datamodules.RolfFormat.utils.image_analytics import get_analytics_data, get_analytics_gt
 from src.datamodules.base_datamodule import AbstractDatamodule
 from src.datamodules.utils.dataset_predict import DatasetPredict
-from src.datamodules.utils.misc import ImageDimensions
+from src.datamodules.utils.misc import ImageDimensions, get_image_dims
 from src.datamodules.utils.wrapper_transforms import OnlyImage, OnlyTarget
 from src.utils import utils
 

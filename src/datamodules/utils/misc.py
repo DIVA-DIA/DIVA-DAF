@@ -4,6 +4,7 @@ from typing import Union, List
 
 import numpy as np
 import torch
+from PIL import Image
 from omegaconf import ListConfig
 
 from src.datamodules.utils.exceptions import PathNone, PathNotDir, PathMissingSplitDir, PathMissingDirinSplitDir
@@ -155,3 +156,11 @@ def selection_validation(files_in_data_root: List[Path], selection, full_page: b
         raise TypeError(msg)
 
     return selection
+
+
+def get_image_dims(data_gt_path_list, **kwargs):
+    img = Image.open(data_gt_path_list[0][0]).convert('RGB')
+
+    image_dims = ImageDimensions(width=img.width, height=img.height)
+
+    return image_dims

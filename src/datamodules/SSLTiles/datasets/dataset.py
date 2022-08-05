@@ -20,11 +20,11 @@ log = utils.get_logger(__name__)
 
 class DatasetSSLTiles(DatasetRGB):
 
-    def __init__(self, path: Path, data_folder_name: str, gt_folder_name: str, image_dims: ImageDimensions,
+    def __init__(self, path: Path, data_folder_name: str, image_dims: ImageDimensions,
                  rows: int, cols: int, horizontal_shuffle: bool, vertical_shuffle: bool,
                  selection: Optional[Union[int, List[str]]] = None, image_transform=None,
                  **kwargs):
-        super().__init__(path=path, data_folder_name=data_folder_name, gt_folder_name=gt_folder_name,
+        super().__init__(path=path, data_folder_name=data_folder_name, gt_folder_name="",
                          image_dims=image_dims, selection=selection, is_test=False, image_transform=image_transform,
                          target_transform=None, twin_transform=None, **kwargs)
         if self.image_dims.height % rows != 0 or self.image_dims.width % cols != 0:

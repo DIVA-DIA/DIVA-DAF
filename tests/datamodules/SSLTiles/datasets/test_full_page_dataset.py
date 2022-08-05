@@ -5,7 +5,7 @@ from PIL import ImageChops
 from torchvision.datasets.folder import pil_loader
 from torchvision.transforms import ToTensor
 
-from src.datamodules.SSLTiles.datasets.full_page_dataset import DatasetSSLTiles
+from src.datamodules.SSLTiles.datasets.dataset import DatasetSSLTiles
 from src.datamodules.utils.misc import ImageDimensions
 from tests.test_data.dummy_data_histdb_new.dummy_data import data_dir
 from tests.test_data.result_data_ssltiles.result_data import result_img_2_3_horizontal, result_img_2_3_vertical, \

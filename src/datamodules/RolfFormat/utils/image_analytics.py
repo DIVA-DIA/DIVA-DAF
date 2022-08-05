@@ -3,11 +3,9 @@ import logging
 
 import numpy as np
 # Torch related stuff
-from PIL import Image
 
 from src.datamodules.RGB.utils.image_analytics import _get_class_frequencies_weights_segmentation
 from src.datamodules.utils.image_analytics import compute_mean_std
-from src.datamodules.utils.misc import ImageDimensions
 
 
 def get_analytics_data(img_gt_path_list, **kwargs):
@@ -34,9 +32,3 @@ def get_analytics_gt(img_gt_path_list, **kwargs):
     return analytics_gt
 
 
-def get_image_dims(data_gt_path_list, **kwargs):
-    img = Image.open(data_gt_path_list[0][0]).convert('RGB')
-
-    image_dims = ImageDimensions(width=img.width, height=img.height)
-
-    return image_dims

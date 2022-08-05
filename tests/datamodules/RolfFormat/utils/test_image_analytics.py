@@ -2,8 +2,8 @@ import numpy as np
 
 from tests.datamodules.RolfFormat.datasets.test_full_page_dataset import _get_dataspecs
 from src.datamodules.RolfFormat.datasets.dataset import DatasetRolfFormat
-from src.datamodules.RolfFormat.utils.image_analytics import get_analytics_data, get_analytics_gt, get_image_dims
-from src.datamodules.utils.misc import ImageDimensions
+from src.datamodules.RolfFormat.utils.image_analytics import get_analytics_data, get_analytics_gt
+from src.datamodules.utils.misc import ImageDimensions, get_image_dims
 from tests.test_data.dummy_data_rolf.dummy_data import data_dir
 
 TEST_JSON_DATA = {'mean': [0.857888280095024, 0.729052895463741, 0.6279161697230975],
