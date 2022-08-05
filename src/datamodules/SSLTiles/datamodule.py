@@ -57,8 +57,9 @@ class SSLTilesDataModule(AbstractDatamodule):
         self.selection_val = selection_val
         self.selection_test = selection_test
 
-        image_dims = get_image_dims(data_gt_path_list=DatasetSSLTiles.get_img_gt_path_list(directory=Path(data_dir),
-                                                                                           data_folder_name=self.data_folder_name))
+        image_dims = get_image_dims(
+            data_gt_path_list=DatasetSSLTiles.get_img_gt_path_list(directory=Path(data_dir) / 'train',
+                                                                   data_folder_name=self.data_folder_name))
         self.image_dims = image_dims
         self.dims = (3, self.image_dims.width, self.image_dims.height)
 

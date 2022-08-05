@@ -9,7 +9,7 @@ from torch import Tensor
 from torchvision.datasets.folder import pil_loader, has_file_allowed_extension
 from torchvision.transforms import ToTensor, ToPILImage
 
-from datamodules.SSLTiles.utils.shuffeling import shuffle_horizontal, shuffle_vertical
+from src.datamodules.SSLTiles.utils.shuffeling import shuffle_horizontal, shuffle_vertical
 from src.datamodules.RGB.datasets.full_page_dataset import DatasetRGB
 from src.datamodules.utils.misc import ImageDimensions, selection_validation
 from src.utils import utils
