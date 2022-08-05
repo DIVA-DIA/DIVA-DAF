@@ -4,6 +4,10 @@ import pytorch_lightning as pl
 import torch
 from omegaconf import OmegaConf
 
+from src.utils import utils
+
+log = utils.get_logger(__name__)
+
 
 class AbstractDatamodule(pl.LightningDataModule):
     def __init__(self):
@@ -27,3 +31,21 @@ class AbstractDatamodule(pl.LightningDataModule):
         if self.class_weights is not None:
             assert len(self.class_weights) == self.num_classes
             assert torch.is_tensor(self.class_weights)
+
+    @staticmethod
+    def check_min_num_samples(num_devices, batch_size1, num_samples: int, data_split: str, drop_last: bool):
+        batch_size = batch_size1
+        if drop_last:
+            if num_samples < (num_devices * batch_size1):
+                log.error(
+                    f'#samples ({num_samples}) in "{data_split}" smaller than '
+                    f'#devices({num_devices}) times batch size ({batch_size}). '
+                    f'This only works if drop_last is false!')
+                raise ValueError()
+        else:
+            if num_samples < (num_devices * batch_size1):
+                log.warning(
+                    f'#samples ({num_samples}) in "{data_split}" smaller than '
+                    f'#devices ({num_devices}) times batch size ({batch_size}). '
+                    f'This works due to drop_last=False, however samples might occur multiple times. '
+                    f'Check if this behavior is intended!')

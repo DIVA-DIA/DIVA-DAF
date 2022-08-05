@@ -70,37 +70,21 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
         if stage == 'fit' or stage is None:
             self.train = CroppedHisDBDataset(**self._create_dataset_parameters('train'), selection=self.selection_train)
             log.info(f'Initialized train dataset with {len(self.train)} samples.')
-            self._check_min_num_samples(num_samples=len(self.train), data_split='train',
-                                        drop_last=self.drop_last)
+            self.check_min_num_samples(self.trainer.num_devices, self.batch_size, num_samples=len(self.train),
+                                       data_split='train',
+                                       drop_last=self.drop_last)
 
             self.val = CroppedHisDBDataset(**self._create_dataset_parameters('val'), selection=self.selection_val)
             log.info(f'Initialized val dataset with {len(self.val)} samples.')
-            self._check_min_num_samples(num_samples=len(self.val), data_split='val',
-                                        drop_last=self.drop_last)
+            self.check_min_num_samples(self.trainer.num_devices, self.batch_size, num_samples=len(self.val),
+                                       data_split='val',
+                                       drop_last=self.drop_last)
 
         if stage == 'test':
             self.test = CroppedHisDBDataset(**self._create_dataset_parameters('test'), selection=self.selection_test)
             log.info(f'Initialized test dataset with {len(self.test)} samples.')
             # self._check_min_num_samples(num_samples=len(self.test), data_split='test',
             #                             drop_last=False)
-
-    def _check_min_num_samples(self, num_samples: int, data_split: str, drop_last: bool):
-        num_processes = self.trainer.num_devices
-        batch_size = self.batch_size
-        if drop_last:
-            if num_samples < (self.trainer.num_devices * self.batch_size):
-                log.error(
-                    f'#samples ({num_samples}) in "{data_split}" smaller than '
-                    f'#processes({num_processes}) times batch size ({batch_size}). '
-                    f'This only works if drop_last is false!')
-                raise ValueError()
-        else:
-            if num_samples < (self.trainer.num_devices * self.batch_size):
-                log.warning(
-                    f'#samples ({num_samples}) in "{data_split}" smaller than '
-                    f'#processes ({num_processes}) times batch size ({batch_size}). '
-                    f'This works due to drop_last=False, however samples might occur multiple times. '
-                    f'Check if this behavior is intended!')
 
     def train_dataloader(self, *args, **kwargs) -> DataLoader:
         return DataLoader(self.train,
