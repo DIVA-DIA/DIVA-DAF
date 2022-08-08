@@ -14,7 +14,7 @@ DATA_FOLDER_NAME = 'data'
 def data_module_ssltiles(data_dir):
     OmegaConf.clear_resolvers()
     return SSLTilesDataModule(data_dir=data_dir,
-                              data_folder_name=DATA_FOLDER_NAME,
+                              data_folder_name=DATA_FOLDER_NAME, gt_type='ROW_COLUMN',
                               rows=3, cols=2, horizontal_shuffle=True, vertical_shuffle=True,
                               num_workers=NUM_WORKERS)
 
@@ -42,3 +42,11 @@ def test__create_dataset_parameters(data_module_ssltiles):
     assert parameters['cols'] == 2
     assert parameters['horizontal_shuffle']
     assert parameters['vertical_shuffle']
+
+
+def test_create_datamodule_fail(data_dir):
+    with pytest.raises(ValueError):
+        SSLTilesDataModule(data_dir=data_dir,
+                           data_folder_name=DATA_FOLDER_NAME, gt_type='NOT',
+                           rows=3, cols=2, horizontal_shuffle=True, vertical_shuffle=True,
+                           num_workers=NUM_WORKERS)

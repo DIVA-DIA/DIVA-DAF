@@ -9,6 +9,7 @@ from torch import Tensor
 from torchvision.datasets.folder import pil_loader, has_file_allowed_extension
 from torchvision.transforms import ToTensor, ToPILImage
 
+from src.datamodules.SSLTiles.utils.misc import GT_Type
 from src.datamodules.SSLTiles.utils.shuffeling import shuffle_horizontal, shuffle_vertical
 from src.datamodules.RGB.datasets.full_page_dataset import DatasetRGB
 from src.datamodules.utils.misc import ImageDimensions, selection_validation
@@ -21,16 +22,19 @@ log = utils.get_logger(__name__)
 class DatasetSSLTiles(DatasetRGB):
 
     def __init__(self, path: Path, data_folder_name: str, image_dims: ImageDimensions,
-                 rows: int, cols: int, horizontal_shuffle: bool, vertical_shuffle: bool,
+                 rows: int, cols: int, horizontal_shuffle: bool, vertical_shuffle: bool, gt_type: GT_Type,
                  selection: Optional[Union[int, List[str]]] = None, image_transform=None,
                  **kwargs):
         super().__init__(path=path, data_folder_name=data_folder_name, gt_folder_name="",
                          image_dims=image_dims, selection=selection, is_test=False, image_transform=image_transform,
                          target_transform=None, twin_transform=None, **kwargs)
+
         if self.image_dims.height % rows != 0 or self.image_dims.width % cols != 0:
             raise ValueError('Image dimensions must be dividable by rows and cols')
         self.rows = rows
         self.cols = cols
+        self.gt_type = gt_type
+
         if not horizontal_shuffle and not vertical_shuffle:
             raise ValueError('At least one of horizontal_shuffle or vertical_shuffle must be True')
         self.horizontal_shuffle = horizontal_shuffle
@@ -38,7 +42,7 @@ class DatasetSSLTiles(DatasetRGB):
 
     def __getitem__(self, index):
         data_img = self._load_data_and_gt(index)
-        # create gt_img
+        # create different forms of gt (class, vector with 0/1 (changed or not [just working for row==2]), matrix)
         img_tensor, gt_tensor = self._apply_transformation(data_img, None)
         return img_tensor, gt_tensor
 

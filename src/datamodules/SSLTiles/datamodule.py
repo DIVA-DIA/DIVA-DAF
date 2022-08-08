@@ -9,6 +9,7 @@ from torchvision import transforms
 from src.datamodules.RotNet.utils.image_analytics import get_analytics_data
 from src.datamodules.RotNet.utils.misc import validate_path_for_self_supervised
 from src.datamodules.SSLTiles.datasets.dataset import DatasetSSLTiles
+from src.datamodules.SSLTiles.utils.misc import GT_Type
 from src.datamodules.utils.misc import get_image_dims
 from src.datamodules.utils.wrapper_transforms import OnlyImage
 from src.datamodules.base_datamodule import AbstractDatamodule
@@ -20,12 +21,39 @@ log = utils.get_logger(__name__)
 class SSLTilesDataModule(AbstractDatamodule):
     def __init__(self, data_dir: str, data_folder_name: str,
                  rows: int, cols: int, horizontal_shuffle: bool, vertical_shuffle: bool,
+                 gt_type:str,
                  selection_train: Optional[Union[int, List[str]]] = None,
                  selection_val: Optional[Union[int, List[str]]] = None,
                  selection_test: Optional[Union[int, List[str]]] = None,
                  num_workers: int = 4, batch_size: int = 8,
                  shuffle: bool = True, drop_last: bool = True):
+        """
+
+        :param data_dir:
+        :param data_folder_name:
+        :param rows:
+        :param cols:
+        :param horizontal_shuffle:
+        :param vertical_shuffle:
+        :param gt_type: str
+                The output format of the gt. (CLASSIFICATION, VECTOR, ROW_COLUMN, FULL_IMAGE)
+                CLASSIFICATION: The gt is a single value ([0, row*cols-1]).
+                VECTOR: The gt is a vector of length row and indicates of the row is flipped 1 or not 0. [just fpr cols=2]
+                ROW_COLUMN: The gt is a metric of form cols * rows. Each tile has a unique number. e.g. [[1,0],[2,3]]
+                FULL_IMAGE: The gt is the entire image. So each pixel gets the class in the ROW_COLUMN format.
+        :param selection_train:
+        :param selection_val:
+        :param selection_test:
+        :param num_workers:
+        :param batch_size:
+        :param shuffle:
+        :param drop_last:
+        """
         super().__init__()
+
+        if gt_type not in GT_Type.__members__:
+            raise ValueError(f'gt_type must be one of {GT_Type.__members__}')
+        self.gt_type = GT_Type[gt_type]
 
         self.data_folder_name = data_folder_name
         analytics_data = get_analytics_data(input_path=Path(data_dir), data_folder_name=self.data_folder_name,
@@ -128,4 +156,5 @@ class SSLTilesDataModule(AbstractDatamodule):
                 'horizontal_shuffle': self.horizontal_shuffle,
                 'vertical_shuffle': self.vertical_shuffle,
                 'image_transform': self.image_transform,
+                'gt_type': self.gt_type,
                 }
