@@ -1,0 +1,10 @@
+# activate conda environment
+conda activate unsupervised_learning
+
+# add current dir to PYTHONPATH
+export PYTHONPATH=$PYTHONPATH:.
+
+# initialize hydra tab completion for zsh
+if [[ $SHELL == *"zsh"* ]]; then
+  eval "$(python run.py -sc install=zsh)"
+fi
