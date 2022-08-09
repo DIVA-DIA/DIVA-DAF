@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import Union, List, Optional
 
-import numpy as np
 import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
@@ -54,6 +53,9 @@ class SSLTilesDataModule(AbstractDatamodule):
         if gt_type not in GT_Type.__members__:
             raise ValueError(f'gt_type must be one of {GT_Type.__members__}')
         self.gt_type = GT_Type[gt_type]
+
+        if (self.gt_type == GT_Type.VECTOR or GT_Type.CLASSIFICATION) and cols != 2 and not vertical_shuffle:
+            raise ValueError(f'gt_type VECTOR requires cols=2')
 
         self.data_folder_name = data_folder_name
         analytics_data = get_analytics_data(input_path=Path(data_dir), data_folder_name=self.data_folder_name,

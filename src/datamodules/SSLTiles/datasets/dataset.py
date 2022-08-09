@@ -9,7 +9,7 @@ from torch import Tensor
 from torchvision.datasets.folder import pil_loader, has_file_allowed_extension
 from torchvision.transforms import ToTensor, ToPILImage
 
-from src.datamodules.SSLTiles.utils.misc import GT_Type
+from src.datamodules.SSLTiles.utils.misc import GT_Type, give_permutation
 from src.datamodules.SSLTiles.utils.shuffeling import shuffle_horizontal, shuffle_vertical
 from src.datamodules.RGB.datasets.full_page_dataset import DatasetRGB
 from src.datamodules.utils.misc import ImageDimensions, selection_validation
@@ -110,16 +110,20 @@ class DatasetSSLTiles(DatasetRGB):
 
         return paths
 
-    def _cut_image_in_tiles_and_put_together(self, img_tensor: Tensor) -> Tuple[Image.Image, Tensor]:
+    def _cut_image_in_tiles_and_put_together(self, img_tensor: Tensor) -> Tuple[Image.Image, np.ndarray]:
         # cut image in tiles and shuffle them
         tile_dims = ImageDimensions(width=self.image_dims.width // self.cols,
                                     height=self.image_dims.height // self.rows)
 
-        gt = np.arange(self.rows * self.cols).reshape((self.rows, self.cols))
-        if self.horizontal_shuffle:
-            shuffle_horizontal(gt)
-        if self.vertical_shuffle:
-            shuffle_vertical(gt)
+        # # creates gt
+        # gt = np.arange(self.rows * self.cols).reshape((self.rows, self.cols))
+        # if self.horizontal_shuffle:
+        #     shuffle_horizontal(gt)
+        # if self.vertical_shuffle:
+        #     shuffle_vertical(gt)
+
+        perm, gt = give_permutation()
+        gt = np.array(gt)
 
         # put tiles together
         img_array = np.array(ToPILImage()(img_tensor).convert('RGB'))
@@ -135,6 +139,9 @@ class DatasetSSLTiles(DatasetRGB):
                 new_img_array[i * tile_dims.height: (i + 1) * tile_dims.height,
                 j * tile_dims.width: (j + 1) * tile_dims.width, :] = img_array[height_start:height_end,
                                                                                width_start:width_end]
+
+        if self.gt_type == GT_Type.CLASSIFICATION:
+            gt = perm
 
         if np.isnan(np.sum(new_img_array)):
             raise ValueError('The patched image is not valid! It still contains NaN values (perhaps a patch missing)')
