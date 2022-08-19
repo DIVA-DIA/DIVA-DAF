@@ -20,7 +20,7 @@ log = utils.get_logger(__name__)
 class SSLTilesDataModule(AbstractDatamodule):
     def __init__(self, data_dir: str, data_folder_name: str,
                  rows: int, cols: int, horizontal_shuffle: bool, vertical_shuffle: bool,
-                 gt_type:str,
+                 gt_type: str,
                  selection_train: Optional[Union[int, List[str]]] = None,
                  selection_val: Optional[Union[int, List[str]]] = None,
                  selection_test: Optional[Union[int, List[str]]] = None,
@@ -50,9 +50,9 @@ class SSLTilesDataModule(AbstractDatamodule):
         """
         super().__init__()
 
-        if gt_type not in GT_Type.__members__:
+        if gt_type.upper() not in GT_Type.__members__:
             raise ValueError(f'gt_type must be one of {GT_Type.__members__}')
-        self.gt_type = GT_Type[gt_type]
+        self.gt_type = GT_Type[gt_type.upper()]
 
         if (self.gt_type == GT_Type.VECTOR or GT_Type.CLASSIFICATION) and cols != 2 and not vertical_shuffle:
             raise ValueError(f'gt_type VECTOR requires cols=2')
@@ -63,8 +63,10 @@ class SSLTilesDataModule(AbstractDatamodule):
 
         self.mean = analytics_data['mean']
         self.std = analytics_data['std']
-        self.class_encodings = list(range(rows * cols))
-        self.num_classes = len(self.class_encodings)
+        # error
+        if self.gt_type == GT_Type.CLASSIFICATION:
+            self.class_encodings = list(range(8))
+            self.num_classes = len(self.class_encodings)
         self.class_weights = torch.as_tensor([1 / self.num_classes for _ in range(self.num_classes)])
 
         self.image_transform = OnlyImage(transforms.Compose([transforms.ToTensor(),

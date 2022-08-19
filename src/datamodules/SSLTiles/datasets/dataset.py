@@ -43,8 +43,9 @@ class DatasetSSLTiles(DatasetRGB):
     def __getitem__(self, index):
         data_img = self._load_data_and_gt(index)
         # create different forms of gt (class, vector with 0/1 (changed or not [just working for row==2]), matrix)
-        img_tensor, gt_tensor = self._apply_transformation(data_img, None)
-        return img_tensor, gt_tensor
+        new_img = self._apply_transformation(data_img, None)
+        img_tensor, gt = self._cut_image_in_tiles_and_put_together(new_img)
+        return img_tensor, gt
 
     def _load_data_and_gt(self, index):
         return pil_loader(self.img_gt_path_list[index])
@@ -52,10 +53,7 @@ class DatasetSSLTiles(DatasetRGB):
     def _apply_transformation(self, img_tensor, _):
         img_tensor, _ = super()._apply_transformation(img_tensor, None)
 
-        # cut image in tiles and shuffle them
-        new_img, gt = self._cut_image_in_tiles_and_put_together(img_tensor)
-
-        return ToTensor()(new_img), Tensor(gt)
+        return img_tensor
 
     @staticmethod
     def get_img_gt_path_list(directory: Path, data_folder_name: str, gt_folder_name: str = None,
@@ -110,7 +108,7 @@ class DatasetSSLTiles(DatasetRGB):
 
         return paths
 
-    def _cut_image_in_tiles_and_put_together(self, img_tensor: Tensor) -> Tuple[Image.Image, np.ndarray]:
+    def _cut_image_in_tiles_and_put_together(self, img_tensor: Tensor) -> Tuple[Tensor, np.ndarray]:
         # cut image in tiles and shuffle them
         tile_dims = ImageDimensions(width=self.image_dims.width // self.cols,
                                     height=self.image_dims.height // self.rows)
@@ -122,7 +120,8 @@ class DatasetSSLTiles(DatasetRGB):
         # if self.vertical_shuffle:
         #     shuffle_vertical(gt)
 
-        perm, gt = give_permutation()
+        perm, gt = give_permutation(rows=self.rows, cols=self.cols, gt_type=self.gt_type,
+                                    horizontal_shuffle=self.horizontal_shuffle, vertical_shuffle=self.vertical_shuffle)
         gt = np.array(gt)
 
         # put tiles together
@@ -138,11 +137,11 @@ class DatasetSSLTiles(DatasetRGB):
                 height_end = height_start + tile_dims.height
                 new_img_array[i * tile_dims.height: (i + 1) * tile_dims.height,
                 j * tile_dims.width: (j + 1) * tile_dims.width, :] = img_array[height_start:height_end,
-                                                                               width_start:width_end]
+                                                                     width_start:width_end]
 
         if self.gt_type == GT_Type.CLASSIFICATION:
             gt = perm
 
         if np.isnan(np.sum(new_img_array)):
             raise ValueError('The patched image is not valid! It still contains NaN values (perhaps a patch missing)')
-        return Image.fromarray(new_img_array.astype(np.uint8)), gt
+        return ToTensor()(Image.fromarray(new_img_array.astype(np.uint8))), gt
