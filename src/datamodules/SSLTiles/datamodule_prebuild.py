@@ -15,7 +15,7 @@ from src.utils import utils
 log = utils.get_logger(__name__)
 
 
-class SSLTilesDataModule(AbstractDatamodule):
+class SSLTilesDataModulePrebuilt(AbstractDatamodule):
     def __init__(self, data_dir: str,
                  selection_train: Optional[Union[int, List[str]]] = None,
                  selection_val: Optional[Union[int, List[str]]] = None,
