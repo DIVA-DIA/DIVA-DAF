@@ -5,6 +5,7 @@ Load a dataset of historic documents by specifying the folder where its located.
 import argparse
 # Utils
 import itertools
+import json
 import logging
 import math
 import multiprocessing
@@ -84,6 +85,10 @@ class TiledDatasetGenerator:
 
         info_str = '\n'.join(info_list)
         print(info_str)
+
+        permutation_file = self.output_path / 'permutations.json'
+        with open(permutation_file, 'w') as f:
+            json.dump(self.permutations, f)
 
         # Write info_cropped_dataset.txt
         self.output_path.mkdir(parents=True, exist_ok=True)
