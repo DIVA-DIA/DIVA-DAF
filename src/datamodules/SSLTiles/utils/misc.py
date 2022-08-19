@@ -1,7 +1,10 @@
 import itertools
 from enum import Enum, auto
+from pathlib import Path
 
 import numpy as np
+
+from src.datamodules.utils.exceptions import PathNone, PathNotDir, PathMissingSplitDir
 
 
 class GT_Type(Enum):
@@ -13,7 +16,6 @@ class GT_Type(Enum):
 
 def give_permutation(rows: int, cols: int, gt_type: GT_Type, horizontal_shuffle: bool = True,
                      vertical_shuffle: bool = True):
-
     gt_structure = np.arange(rows * cols).reshape((rows, cols))
     if horizontal_shuffle:
         perms = itertools.permutations(np.arange(rows))
@@ -30,3 +32,22 @@ def give_permutation(rows: int, cols: int, gt_type: GT_Type, horizontal_shuffle:
              (7, [[1, 0], [3, 2], [5, 4]]),
              ]
     return perms[np.random.randint(0, len(perms))]
+
+
+def validate_path_for_ssl_classification(data_dir: str):
+    if data_dir is None:
+        raise PathNone("Please provide the path to root dir of the dataset "
+                       "(folder containing the train/val folder)")
+    else:
+        split_names = ['train', 'val']
+
+        data_folder = Path(data_dir)
+        if not data_folder.is_dir():
+            raise PathNotDir("Please provide the path to root dir of the dataset "
+                             "(folder containing the train/val folder)")
+        split_folders = [d for d in data_folder.iterdir() if d.is_dir() and d.name in split_names]
+        if len(split_folders) != 2:
+            raise PathMissingSplitDir(f'Your path needs to contain train/val and '
+                                      f'each of them a folder per class')
+
+    return Path(data_dir)
