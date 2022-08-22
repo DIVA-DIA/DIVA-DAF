@@ -41,7 +41,6 @@ class SSLTilesDataModulePrebuilt(AbstractDatamodule):
 
         self.image_transform = transforms.Compose([transforms.ToTensor(),
                                                    transforms.Normalize(mean=self.mean, std=self.std),
-                                                   transforms.RandomCrop(size=(860, 1230))
                                                    ])
 
         self.num_workers = num_workers
