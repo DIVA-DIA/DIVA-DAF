@@ -139,17 +139,18 @@ class TileGenerator:
         for img_index in tqdm(range(self.num_imgs_in_set), desc=self.progress_title):
             self._load_image_and_center_crop(img_index=img_index)
 
-            if self.current_img.width % self.cols or self.current_img.height % self.rows:
-                raise RuntimeError(f"Image dimensions({self.current_img.width, self.current_img.height}) "
-                                   f"are not divisible by the number of rows and columns")
+            if self.center_cropped_image.width % self.cols or self.center_cropped_image.height % self.rows:
+                raise RuntimeError(
+                    f"Image dimensions({self.center_cropped_image.width, self.center_cropped_image.height}) "
+                    f"are not divisible by the number of rows and columns")
             img_name = self.img_paths[img_index].name.replace('_max', '')
-            tile_dims = ImageDimensions(width=self.current_img.width // self.cols,
-                                        height=self.current_img.height // self.rows)
+            tile_dims = ImageDimensions(width=self.center_cropped_image.width // self.cols,
+                                        height=self.center_cropped_image.height // self.rows)
 
             pool = multiprocessing.Pool(multiprocessing.cpu_count())
 
             parameters = zip(itertools.repeat(self.output_path), itertools.repeat(img_name),
-                             itertools.repeat(self.current_img),
+                             itertools.repeat(self.current_img), itertools.repeat(self.center_cropped_image),
                              self.permutations, range(len(self.permutations)), itertools.repeat(tile_dims),
                              itertools.repeat(self.override_existing),
                              itertools.repeat(self.rows), itertools.repeat(self.cols))
@@ -158,8 +159,8 @@ class TileGenerator:
             # for each permutation
 
     @staticmethod
-    def create_image_by_permutation(output_path, img_name, current_img, permutation, permutation_id, tile_dims,
-                                    override_existing, rows, cols):
+    def create_image_by_permutation(output_path, img_name, current_img, center_cropped_image, permutation,
+                                    permutation_id, tile_dims, override_existing, rows, cols):
         dest_folder = output_path / str(permutation_id)
         dest_folder.mkdir(parents=True, exist_ok=True)
 
@@ -169,8 +170,9 @@ class TileGenerator:
             if dest_filename.exists():
                 return
 
-        img_tiled_array = TileGenerator.tile_image(img=current_img, permutation=permutation, tile_dims=tile_dims,
-                                                   rows=rows, cols=cols)
+        img_tiled_array = TileGenerator.tile_image(
+            current_img=current_img, center_cropped_image=center_cropped_image, permutation=permutation,
+            tile_dims=tile_dims, rows=rows, cols=cols)
 
         pil_img_tiled = Image.fromarray(img_tiled_array.astype(np.uint8))
         pil_img_tiled.save(dest_filename)
@@ -188,7 +190,7 @@ class TileGenerator:
 
         # Center crop image 866 x 1236 should be the size at the end. We need an offset on all sides of 3 pixels
         # to get during training a size of 860 x 1230
-        self.current_img = self._center_crop(width=866, height=1236)
+        self.center_cropped_image = self._center_crop(width=860, height=1230)
 
         # Update pointer to current image
         self.current_img_index = img_index
@@ -201,22 +203,30 @@ class TileGenerator:
         return self.current_img.crop((left, top, right, bottom))
 
     @staticmethod
-    def tile_image(img, permutation, tile_dims, rows, cols):
-        img_array = np.array(img)
+    def tile_image(current_img, center_cropped_image, permutation, tile_dims, rows, cols):
+        cropped_img_array = np.array(center_cropped_image)
+        current_img_array = np.array(current_img)
         permutation = np.array(permutation).reshape((rows, cols))
-        new_img_array = np.zeros(img_array.shape)
-        new_img_array.fill(np.nan)
+        new_img_array = current_img_array.copy()
         for i in range(rows):
             for j in range(cols):
-                width_start = (permutation[i, j] % cols) * tile_dims.width
-                width_end = width_start + tile_dims.width
-                height_start = (permutation[i, j] // cols) * tile_dims.height
-                height_end = height_start + tile_dims.height
-                new_img_array[i * tile_dims.height: (i + 1) * tile_dims.height,
-                j * tile_dims.width: (j + 1) * tile_dims.width, :] = img_array[height_start:height_end,
-                                                                     width_start:width_end]
-        if np.isnan(np.sum(new_img_array)):
-            raise ValueError('The tiled image is not valid! It still contains NaN values (perhaps a tile missing)')
+                width_offset = ((current_img_array.shape[1] - cropped_img_array.shape[1]) // 2)
+                height_offset = ((current_img_array.shape[0] - cropped_img_array.shape[0]) // 2)
+
+                width_start_cropped = ((permutation[i, j] % cols) * tile_dims.width)
+                width_end_cropped = width_start_cropped + tile_dims.width
+                height_start_cropped = ((permutation[i, j] // cols) * tile_dims.height)
+                height_end_cropped = height_start_cropped + tile_dims.height
+
+                width_start_ori = width_offset + (j * tile_dims.width)
+                width_end_ori = width_offset + ((j + 1) * tile_dims.width)
+                height_start_ori = height_offset + (i * tile_dims.height)
+                height_end_ori = height_offset + ((i + 1) * tile_dims.height)
+
+                new_img_array[height_start_ori: height_end_ori, width_start_ori: width_end_ori, :] = cropped_img_array[
+                                                                                                     height_start_cropped:height_end_cropped,
+                                                                                                     width_start_cropped:width_end_cropped]
+
         return new_img_array
 
 
