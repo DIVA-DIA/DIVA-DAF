@@ -7,10 +7,11 @@ import argparse
 import itertools
 import json
 import logging
-import math
+import random
 import multiprocessing
 from datetime import datetime
 from pathlib import Path
+
 
 import numpy as np
 from PIL import Image
@@ -190,7 +191,7 @@ class TileGenerator:
 
         # Center crop image 866 x 1236 should be the size at the end. We need an offset on all sides of 3 pixels
         # to get during training a size of 860 x 1230
-        self.center_cropped_image = self._center_crop(width=860, height=1230)
+        self.center_cropped_image = self._center_crop(width=840, height=1200)
 
         # Update pointer to current image
         self.current_img_index = img_index
@@ -208,20 +209,23 @@ class TileGenerator:
         current_img_array = np.array(current_img)
         permutation = np.array(permutation).reshape((rows, cols))
         new_img_array = current_img_array.copy()
+        width_offset = ((current_img_array.shape[1] - cropped_img_array.shape[1]) // 2)
+        height_offset = ((current_img_array.shape[0] - cropped_img_array.shape[0]) // 2)
+
+        random_width_offset = random.randint(-3, 3)
+        random_height_offset = random.randint(-3, 3)
+
         for i in range(rows):
             for j in range(cols):
-                width_offset = ((current_img_array.shape[1] - cropped_img_array.shape[1]) // 2)
-                height_offset = ((current_img_array.shape[0] - cropped_img_array.shape[0]) // 2)
-
                 width_start_cropped = ((permutation[i, j] % cols) * tile_dims.width)
                 width_end_cropped = width_start_cropped + tile_dims.width
                 height_start_cropped = ((permutation[i, j] // cols) * tile_dims.height)
                 height_end_cropped = height_start_cropped + tile_dims.height
 
-                width_start_ori = width_offset + (j * tile_dims.width)
-                width_end_ori = width_offset + ((j + 1) * tile_dims.width)
-                height_start_ori = height_offset + (i * tile_dims.height)
-                height_end_ori = height_offset + ((i + 1) * tile_dims.height)
+                width_start_ori = width_offset + (j * tile_dims.width) + random_width_offset
+                width_end_ori = width_offset + ((j + 1) * tile_dims.width) + random_width_offset
+                height_start_ori = height_offset + (i * tile_dims.height) + random_height_offset
+                height_end_ori = height_offset + ((i + 1) * tile_dims.height) + random_height_offset
 
                 new_img_array[height_start_ori: height_end_ori, width_start_ori: width_end_ori, :] = cropped_img_array[
                                                                                                      height_start_cropped:height_end_cropped,
