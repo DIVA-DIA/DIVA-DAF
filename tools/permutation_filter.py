@@ -37,5 +37,5 @@ def filter_by_permutations(classes: List[int], matches: int, root_path: Path) ->
 
 if __name__ == '__main__':
     positions_w_do_not_change = 3
-    filter_by_permutations(classes=list(range(6)), matches=positions_w_do_not_change, root_path=Path(
-        '/net/research-hisdoc/datasets/self-supervised/CB55/tiles_960_1344_embeded/all_files'))
+    input_path = Path('/net/research-hisdoc/datasets/self-supervised/CB55/tiles_960_1344_embeded/all_files')
+    filter_by_permutations(classes=list(range(6)), matches=positions_w_do_not_change, root_path=input_path)
