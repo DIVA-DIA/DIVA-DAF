@@ -60,6 +60,10 @@ class SSLTilesDataModulePrebuilt(AbstractDatamodule):
         self.image_dims = image_dims
         self.dims = (3, self.image_dims.width, self.image_dims.height)
 
+        train_set = ImageFolder(**self._create_dataset_parameters('train'))
+        self.classes = train_set.classes
+        self.num_classes = len(self.classes)
+
         self.train = None
         self.val = None
 
@@ -104,6 +108,6 @@ class SSLTilesDataModulePrebuilt(AbstractDatamodule):
         raise ValueError('Test data is not available for SSLTiles.')
 
     def _create_dataset_parameters(self, dataset_type: str = 'train'):
-        return {'path': self.data_dir / dataset_type,
+        return {'root': self.data_dir / dataset_type,
                 'transform': self.image_transform,
                 }
