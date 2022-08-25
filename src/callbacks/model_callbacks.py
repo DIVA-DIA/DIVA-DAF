@@ -73,7 +73,7 @@ class CheckBackboneHeaderCompatibility(Callback):
         # test if backbone works
         try:
             b_output = pl_module.model.backbone(torch.rand(*dim, device=pl_module.device))
-            log.error(f"Backbone has an output of {b_output.shape}")
+            log.info(f"Backbone has an output of {b_output.shape}")
         except RuntimeError as e:
             log.error(f"Problem in the backbone! Your image dimension is {trainer.datamodule.dims}")
             log.error(e)
