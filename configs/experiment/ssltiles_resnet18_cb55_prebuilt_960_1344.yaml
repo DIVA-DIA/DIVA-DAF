@@ -1,0 +1,75 @@
+# @package _global_
+
+# to execute this experiment run:
+# python run.py +experiment=exp_example_full
+
+defaults:
+    - /mode: experiment.yaml
+    - /plugins: null
+    - /task: classification.yaml
+    - /loss: crossentropyloss.yaml
+    - /metric: accuracy.yaml
+    - /model/backbone: resnet18.yaml
+    - /model/header: resnet_classification.yaml
+    - /optimizer: adam.yaml
+    - /callbacks:
+          - check_compatibility.yaml
+          - model_checkpoint.yaml
+          - watch_model_wandb.yaml
+    - /logger:
+          - wandb.yaml # set logger here or use command line (e.g. `python run.py logger=wandb`)
+          - csv.yaml
+    - _self_
+
+# we override default configurations with nulls to prevent them from loading at all
+# instead we define all modules and their paths directly in this config,
+# so everything is stored in one place for more readibility
+
+name: "ssltiles_prebuild_cb55_whole_resnet18"
+
+train: True
+test: False
+predict: False
+
+trainer:
+    _target_: pytorch_lightning.Trainer
+    accelerator: 'gpu'
+    devices: -1
+    strategy: 'ddp_find_unused_parameters_false'
+    min_epochs: 1
+    max_epochs: 50
+    weights_summary: full
+    precision: 16
+
+task:
+    confusion_matrix_log_every_n_epoch: 3
+    confusion_matrix_val: True
+    confusion_matrix_test: False
+
+datamodule:
+    _target_: src.datamodules.SSLTiles.datamodule_prebuilt.SSLTilesDataModulePrebuilt
+
+    data_dir: /net/research-hisdoc/datasets/self-supervised/CB55/tiles_960_1344_embeded/3_fixed_positions/dataset_1
+    num_workers: 4
+    batch_size: 10
+    shuffle: True
+    drop_last: False
+
+
+model:
+    header:
+        # needs to be calculated from the output of the last layer of the backbone (do not forget to flatten!)
+        num_classes: ${datamodule:num_classes}
+        in_channels: 645120
+
+callbacks:
+    model_checkpoint:
+        filename: ${checkpoint_folder_name}dev-ssltiles-prebuilt-resnet18-cb55
+    watch_model:
+        log_freq: 1
+
+logger:
+    wandb:
+        name: ${name}
+        tags: [ "best_model", "USL" ]
+        group: 'baseline_ssltiles'
