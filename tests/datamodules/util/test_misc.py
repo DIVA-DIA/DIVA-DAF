@@ -6,7 +6,8 @@ import torch
 
 from src.datamodules.utils.exceptions import PathNone, PathNotDir, PathMissingSplitDir, PathMissingDirinSplitDir
 from src.datamodules.utils.misc import validate_path_for_segmentation, _get_argmax, get_output_file_list, \
-    find_new_filename
+    find_new_filename, selection_validation, get_image_dims
+from tests.test_data.dummy_data_hisdb.dummy_data import data_dir_cropped, data_dir
 
 
 @pytest.fixture
@@ -121,3 +122,117 @@ def test_find_new_filename_duplicate():
     new_file_name = find_new_filename(current_list=current_list, filename=filename)
     assert new_file_name == 'test3_0'
 
+
+@pytest.fixture
+def get_test_data_cropped_page(data_dir_cropped):
+    return sorted(list(list(list(data_dir_cropped.iterdir())[0].iterdir())[0].iterdir()))
+
+
+@pytest.fixture
+def get_test_data_full_page(data_dir):
+    return sorted(list(list(list(data_dir.iterdir())[0].iterdir())[0].iterdir()))
+
+
+def test_selection_validation_int_working_full_page(get_test_data_full_page):
+    selection = 1
+    selection_r = selection_validation(files_in_data_root=get_test_data_full_page, selection=selection,
+                                       full_page=True)
+    assert selection_r == 1
+    assert selection == selection_r
+
+
+def test_selection_validation_int_zero_full_page(get_test_data_full_page):
+    selection = 0
+    selection_r = selection_validation(files_in_data_root=get_test_data_full_page, selection=selection,
+                                       full_page=True)
+    assert selection_r is None
+
+
+def test_selection_validation_int_negative_full_page(get_test_data_full_page):
+    selection = -4
+    with pytest.raises(ValueError):
+        selection_validation(files_in_data_root=get_test_data_full_page, selection=selection,
+                             full_page=True)
+
+
+def test_selection_validation_int_too_big_full_page(get_test_data_full_page):
+    selection = 4
+    with pytest.raises(ValueError):
+        selection_validation(files_in_data_root=get_test_data_full_page, selection=selection,
+                             full_page=True)
+
+
+def test_selection_validation_int_working_cropped_page(get_test_data_cropped_page):
+    selection = 1
+    selection_r = selection_validation(files_in_data_root=get_test_data_cropped_page, selection=selection,
+                                       full_page=False)
+    assert selection_r == 1
+    assert selection == selection_r
+
+
+def test_selection_validation_int_zero_cropped_page(get_test_data_cropped_page):
+    selection = 0
+    selection_r = selection_validation(files_in_data_root=get_test_data_cropped_page, selection=selection,
+                                       full_page=False)
+    assert selection_r is None
+
+
+def test_selection_validation_int_negative_cropped_page(get_test_data_cropped_page):
+    selection = -4
+    with pytest.raises(ValueError):
+        selection_validation(files_in_data_root=get_test_data_cropped_page, selection=selection,
+                             full_page=False)
+
+
+def test_selection_validation_int_too_big_cropped_page(get_test_data_cropped_page):
+    selection = 4
+    with pytest.raises(ValueError):
+        selection_validation(files_in_data_root=get_test_data_cropped_page, selection=selection,
+                             full_page=False)
+
+
+def test_selection_validation_unsupported_type(get_test_data_cropped_page):
+    selection = 'test'
+    with pytest.raises(TypeError):
+        selection_validation(files_in_data_root=get_test_data_cropped_page, selection=selection,
+                             full_page=False)
+
+
+def test_selection_validation_list_full_page_wrong_name(get_test_data_full_page):
+    selection = ['not_in_list']
+    with pytest.raises(ValueError):
+        selection_validation(files_in_data_root=get_test_data_full_page, selection=selection,
+                             full_page=True)
+
+
+def test_selection_validation_list_full_page(get_test_data_full_page):
+    selection = ['e-codices_fmb-cb-0055_0098v_max']
+    selection_r = selection_validation(files_in_data_root=get_test_data_full_page, selection=selection,
+                                       full_page=True)
+    assert len(selection_r) == 1
+
+
+def test_selection_validation_list_cropped_page_wrong_name(get_test_data_cropped_page):
+    selection = ['not_in_list']
+    with pytest.raises(ValueError):
+        selection_validation(files_in_data_root=get_test_data_cropped_page, selection=selection,
+                             full_page=False)
+
+
+def test_selection_validation_list_cropped_page(get_test_data_cropped_page):
+    selection = ['e-codices_fmb-cb-0055_0098v_max']
+    selection_r = selection_validation(files_in_data_root=get_test_data_cropped_page, selection=selection,
+                                       full_page=False)
+    assert len(selection_r) == 1
+
+
+def test_get_image_dims_list_paths(get_test_data_full_page):
+    img_dims = get_image_dims(get_test_data_full_page)
+    assert img_dims.width == 487
+    assert img_dims.height == 649
+
+
+def test_get_image_dims_list_tuples(get_test_data_full_page):
+    img_dims = get_image_dims([(get_test_data_full_page[0], get_test_data_full_page[0])])
+    assert img_dims.width == 487
+    assert img_dims.height == 649

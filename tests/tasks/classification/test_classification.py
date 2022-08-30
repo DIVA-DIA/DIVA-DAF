@@ -58,8 +58,10 @@ def test_classification(tmp_path, task, datamodule_and_dir, monkeypatch):
     trainer.fit(task, datamodule=data_module)
 
     results = trainer.test(datamodule=data_module)
-    print(results)
-    assert np.isclose(results[0]['test/crossentropyloss_epoch'], 0.7748091220855713, rtol=2e-02)
+    output_key = "test/crossentropyloss"
+    if output_key not in results[0]:
+        output_key = "test/crossentropyloss_epoch"
+    assert np.isclose(results[0][output_key], 0.7748091220855713, rtol=2e-02)
 
 
 def test_setup_train(monkeypatch, datamodule_and_dir, task):
