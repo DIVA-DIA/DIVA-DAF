@@ -39,7 +39,7 @@ class DataModuleRGB(AbstractDatamodule):
                                                      get_img_gt_path_list_func=DatasetRGB.get_img_gt_path_list)
 
         self.image_dims = ImageDimensions(width=analytics_data['width'], height=analytics_data['height'])
-        self.dims = (3, self.image_dims.width, self.image_dims.height)
+        self.dims = (3, self.image_dims.height, self.image_dims.width)
 
         self.mean = analytics_data['mean']
         self.std = analytics_data['std']
