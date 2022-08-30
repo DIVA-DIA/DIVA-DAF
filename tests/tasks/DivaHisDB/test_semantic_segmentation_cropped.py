@@ -63,7 +63,7 @@ def test_semantic_segmentation(tmp_path, task, datamodule_and_dir, monkeypatch):
 
     results = trainer.test(datamodule=data_module)
     print(results)
-    assert np.isclose(results[0]['test/crossentropyloss_epoch'], 1.0896027088165283, rtol=2.5e-02)
+    assert np.isclose(results[0]['test/crossentropyloss'], 1.0896027088165283, rtol=2.5e-02)
     assert len(list(patches_path.glob('*/*.npy'))) == len(list(test_data_patch.glob('*/*.png')))
 
 

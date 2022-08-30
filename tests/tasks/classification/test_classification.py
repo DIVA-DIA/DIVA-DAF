@@ -59,7 +59,7 @@ def test_classification(tmp_path, task, datamodule_and_dir, monkeypatch):
 
     results = trainer.test(datamodule=data_module)
     print(results)
-    assert np.isclose(results[0]['test/crossentropyloss_epoch'], 0.7748091220855713, rtol=2e-02)
+    assert np.isclose(results[0]['test/crossentropyloss'], 0.7748091220855713, rtol=2e-02)
 
 
 def test_setup_train(monkeypatch, datamodule_and_dir, task):

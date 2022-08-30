@@ -40,21 +40,6 @@ def test__cut_image_in_tiles_and_put_together_2_3_vertical(dataset_train_ssl, da
     assert ImageChops.difference(tile_img, result_img_2_3_vertical).getbbox() is None
 
 
-def test__cut_image_in_tiles_and_put_together_2_3_horizontal(dataset_train_ssl, data_dir, result_img_2_3_horizontal,
-                                                             monkeypatch):
-    img_path = data_dir / 'train' / 'data' / 'fmb-cb-55-005v.png'
-    img = ToTensor()(pil_loader(img_path))
-    monkeypatch.setattr(dataset_train_ssl, 'vertical_shuffle', False)
-    monkeypatch.setattr(dataset_train_ssl, 'horizontal_shuffle', True)
-    np.random.seed(42)
-    tile_img, gt = dataset_train_ssl._cut_image_in_tiles_and_put_together(img)
-    assert gt.shape == (3, 2)
-    assert tile_img.width == 960
-    assert tile_img.height == 1344
-    assert np.array_equal(gt, np.array([[0, 1], [3, 2], [5, 4]]))
-    # assert ImageChops.difference(tile_img, result_img_2_3_horizontal).getbbox() is None
-
-
 @pytest.mark.skip('just horizontal working')
 def test__cut_image_in_tiles_and_put_together_2_3_horizontal_vertical(dataset_train_ssl, data_dir,
                                                                       result_img_2_3_horizontal_vertical, monkeypatch):
@@ -75,41 +60,6 @@ def test__load_data_and_gt(dataset_train_ssl):
     img = dataset_train_ssl._load_data_and_gt(0)
     assert img.size == (960, 1344)
     assert np.array_equal(np.array(img)[150][150], np.array([236, 225, 199]))
-
-
-def test__apply_transformation(dataset_train_ssl):
-    org0 = dataset_train_ssl._load_data_and_gt(0)
-    org1 = dataset_train_ssl._load_data_and_gt(1)
-
-    np.random.seed(42)
-    img0, gt0 = dataset_train_ssl._apply_transformation(org0, 0)
-    np.random.seed(42)
-    img_index0, gt_index0 = dataset_train_ssl[0]
-    assert torch.equal(img0, img_index0)
-    assert torch.equal(gt0, gt_index0)
-
-    np.random.seed(42)
-    img1, gt1 = dataset_train_ssl._apply_transformation(org0, 1)
-    np.random.seed(42)
-    img_index1, gt_index1 = dataset_train_ssl[1]
-    assert not torch.equal(ToTensor()(org0), img1)
-    assert torch.equal(img1, img_index1)
-    assert torch.equal(gt1, gt_index1)
-
-    np.random.seed(42)
-    img2, gt2 = dataset_train_ssl._apply_transformation(org1, 0)
-    np.random.seed(42)
-    img_index2, gt_index2 = dataset_train_ssl[0]
-    assert torch.equal(img2, img_index2)
-    assert torch.equal(gt2, gt_index2)
-
-    np.random.seed(42)
-    img3, gt3 = dataset_train_ssl._apply_transformation(org1, 1)
-    np.random.seed(42)
-    img_index3, gt_index3 = dataset_train_ssl[1]
-    assert not torch.equal(ToTensor()(org1), img2)
-    assert torch.equal(img3, img_index3)
-    assert torch.equal(gt3, gt_index3)
 
 
 def test_get_img_gt_path_list(data_dir):
