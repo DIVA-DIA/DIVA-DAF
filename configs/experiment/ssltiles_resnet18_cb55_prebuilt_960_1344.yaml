@@ -25,7 +25,7 @@ defaults:
 # instead we define all modules and their paths directly in this config,
 # so everything is stored in one place for more readibility
 
-name: "ssltiles_prebuild_cb55_whole_resnet18"
+name: "ssltiles_prebuild_cb55_whole_resnet18_reduced_lr"
 
 train: True
 test: False
@@ -67,6 +67,9 @@ callbacks:
         filename: ${checkpoint_folder_name}dev-ssltiles-prebuilt-resnet18-cb55
     watch_model:
         log_freq: 1
+
+optimizer:
+    lr: 1e-5
 
 logger:
     wandb:
