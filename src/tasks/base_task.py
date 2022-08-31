@@ -147,6 +147,8 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             metric_kwargs = {}
         x, y = batch
         y_hat = self(x)
+        if isinstance(y_hat, Dict):
+            y_hat = y_hat['out']
         output = {OutputKeys.PREDICTION: y_hat}
         y_hat = self.to_loss_format(output[OutputKeys.PREDICTION])
         losses = {name: l_fn(y_hat, y) for name, l_fn in self.loss_fn.items()}
