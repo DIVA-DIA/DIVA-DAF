@@ -37,7 +37,7 @@ trainer:
     devices: -1
     strategy: 'ddp_find_unused_parameters_false'
     min_epochs: 1
-    max_epochs: 50
+    max_epochs: 200
     weights_summary: full
     precision: 16
 
@@ -65,6 +65,10 @@ model:
 callbacks:
     model_checkpoint:
         filename: ${checkpoint_folder_name}dev-ssltiles-prebuilt-resnet18-cb55
+        monitor: "val/crossentropyloss"      # name of the logged metric which determines when model is improving
+        save_top_k: 1           # save k best models (determined by above metric)
+        save_last: True         # additionaly always save model from last epoch
+        mode: "min"             # can be "max" or "min"
     watch_model:
         log_freq: 1
 

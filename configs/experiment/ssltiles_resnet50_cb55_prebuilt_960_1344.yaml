@@ -25,7 +25,7 @@ defaults:
 # instead we define all modules and their paths directly in this config,
 # so everything is stored in one place for more readibility
 
-name: "ssltiles_prebuild_cb55_whole_resnet50_reduced_lr"
+name: "ssltiles_prebuild_135_cls_cb55_whole_resnet50_reduced_lr"
 
 train: True
 test: False
@@ -34,10 +34,10 @@ predict: False
 trainer:
     _target_: pytorch_lightning.Trainer
     accelerator: 'gpu'
-    devices: -1
+    devices: [0,1,2,3]
     strategy: 'ddp_find_unused_parameters_false'
     min_epochs: 1
-    max_epochs: 100
+    max_epochs: 200
     weights_summary: full
     precision: 16
     accumulate_grad_batches: 5
@@ -50,7 +50,7 @@ task:
 datamodule:
     _target_: src.datamodules.SSLTiles.datamodule_prebuilt.SSLTilesDataModulePrebuilt
 
-    data_dir: /net/research-hisdoc/datasets/self-supervised/CB55/tiles_960_1344_embeded/3_fixed_positions/dataset_1
+    data_dir: /net/research-hisdoc/datasets/self-supervised/CB55/tiles_960_1344_embeded/2_fixed_positions/dataset_1
     num_workers: 4
     batch_size: 2
     shuffle: True
@@ -65,7 +65,7 @@ model:
 
 callbacks:
     model_checkpoint:
-        filename: ${checkpoint_folder_name}dev-ssltiles-prebuilt-resnet50-cb55
+        filename: ${checkpoint_folder_name}ssltiles-prebuilt-resnet50-cb55-135-cls
     watch_model:
         log_freq: 1
 
