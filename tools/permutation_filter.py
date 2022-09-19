@@ -10,7 +10,7 @@ from tqdm import tqdm
 def get_perms_with_n_fixed_positions(permutations: List, classes: List[int], matches: int) -> np.ndarray:
     perms = np.array(permutations)
     cls = np.array(classes)
-    return np.array([p for p in perms if np.sum(p != cls) == matches])
+    return np.array([p for p in perms if np.sum(p == cls) == matches])
 
 
 def filter_by_permutations(classes: List[int], matches: int, root_path: Path) -> None:
@@ -36,6 +36,6 @@ def filter_by_permutations(classes: List[int], matches: int, root_path: Path) ->
 
 
 if __name__ == '__main__':
-    positions_w_do_not_change = 3
+    positions_w_do_not_change = 2
     input_path = Path('/net/research-hisdoc/datasets/self-supervised/CB55/tiles_960_1344_embeded/all_files')
     filter_by_permutations(classes=list(range(6)), matches=positions_w_do_not_change, root_path=input_path)
