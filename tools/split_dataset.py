@@ -10,11 +10,11 @@ def split_dataset(root_folder: Path, dataset_name: str, train_split_size: int, v
     train_folder = root_folder / dataset_name / 'train'
     if train_folder.exists():
         shutil.rmtree(train_folder)
-    train_folder.mkdir()
+    train_folder.mkdir(parents=True)
     val_folder = root_folder / dataset_name / 'val'
     if val_folder.exists():
         shutil.rmtree(val_folder)
-    val_folder.mkdir()
+    val_folder.mkdir(parents=True)
     possible_files = np.asarray(list(next(originals_path.iterdir()).glob('*.png')))
     img_paths_reduced = np.random.choice(possible_files, size=(val_split_size + train_split_size,), replace=False)
     train_idxs = np.random.choice(range(len(img_paths_reduced)), size=(train_split_size,), replace=False)
@@ -46,10 +46,10 @@ def split_dataset(root_folder: Path, dataset_name: str, train_split_size: int, v
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('r', '--root_folder', type=str, required=True,
+    parser.add_argument('-r', '--root_folder', type=Path, required=True,
                         help='Root folder of the dataset. Where the originals folder is in')
-    parser.add_argument('-n', '--dataset_name', type=str, required=True,
-                        help='Name of the datase folder in the root folder')
+    parser.add_argument('-n', '--dataset_name', type=Path, required=True,
+                        help='Name of the dataset folder in the root folder')
     parser.add_argument('-t', '--train_split_size', type=int, required=True, help='Size of the train split')
     parser.add_argument('-v', '--val_split_size', type=int, required=True, help='Size of the val split')
     args = parser.parse_args()
