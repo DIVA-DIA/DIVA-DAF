@@ -2,7 +2,7 @@ import logging
 import os
 import sys
 import traceback
-from typing import Optional
+from typing import Optional, OrderedDict
 
 import pytorch_lightning as pl
 import torch
@@ -76,6 +76,8 @@ class CheckBackboneHeaderCompatibility(Callback):
         # test if backbone works
         try:
             b_output = pl_module.model.backbone(torch.rand(*dim, device=pl_module.device))
+            if isinstance(b_output, OrderedDict):
+                b_output = b_output['out']
             log.info(f"Backbone has an output of {b_output.shape}")
         except RuntimeError as e:
             log.error(f"Problem in the backbone! Your image dimension is {trainer.datamodule.dims}")

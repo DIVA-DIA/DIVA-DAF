@@ -5,6 +5,7 @@ import math
 from typing import Optional, List, Union, Type
 
 import torch.nn as nn
+from torchvision.models.resnet import Bottleneck, BasicBlock
 
 model_urls = {
     'resnet18': 'https://download.pytorch.org/models/resnet18-5c106cde.pth',
@@ -21,82 +22,9 @@ def conv3x3(in_planes, out_planes, stride=1):
                      padding=1, bias=False)
 
 
-class _BasicBlock(nn.Module):
-    expansion = 1
-
-    def __init__(self, inplanes, planes, stride=1, downsample=None, dilation: int = 1):
-        super(_BasicBlock, self).__init__()
-        if dilation > 1:
-            raise NotImplementedError("Dilation > 1 not implemented in BasicBlock")
-        self.conv1 = conv3x3(inplanes, planes, stride)
-        self.bn1 = nn.BatchNorm2d(planes)
-        self.relu = nn.ReLU(inplace=True)
-        self.conv2 = conv3x3(planes, planes)
-        self.bn2 = nn.BatchNorm2d(planes)
-        self.downsample = downsample
-        self.stride = stride
-
-    def forward(self, x):
-        residual = x
-
-        out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
-
-        out = self.conv2(out)
-        out = self.bn2(out)
-
-        if self.downsample is not None:
-            residual = self.downsample(x)
-
-        out += residual
-        out = self.relu(out)
-
-        return out
-
-
-class _Bottleneck(nn.Module):
-    expansion = 4
-
-    def __init__(self, inplanes, planes, stride=1, downsample=None, dilation: int = 1):
-        super(_Bottleneck, self).__init__()
-        self.conv1 = nn.Conv2d(inplanes, planes, kernel_size=1, bias=False)
-        self.bn1 = nn.BatchNorm2d(planes)
-        self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=stride,
-                               padding=1, bias=False, dilation=dilation)
-        self.bn2 = nn.BatchNorm2d(planes)
-        self.conv3 = nn.Conv2d(planes, planes * self.expansion, kernel_size=1, bias=False)
-        self.bn3 = nn.BatchNorm2d(planes * self.expansion)
-        self.relu = nn.ReLU(inplace=True)
-        self.downsample = downsample
-        self.stride = stride
-
-    def forward(self, x):
-        residual = x
-
-        out = self.conv1(x)
-        out = self.bn1(out)
-        out = self.relu(out)
-
-        out = self.conv2(out)
-        out = self.bn2(out)
-        out = self.relu(out)
-
-        out = self.conv3(out)
-        out = self.bn3(out)
-
-        if self.downsample is not None:
-            residual = self.downsample(x)
-
-        out += residual
-        out = self.relu(out)
-
-        return out
-
-
 class ResNet(nn.Module):
 
-    def __init__(self, block: Type[Union[_BasicBlock, _Bottleneck]], layers: List[int],
+    def __init__(self, block: Type[Union[BasicBlock, Bottleneck]], layers: List[int],
                  replace_stride_with_dilation: Optional[List[bool]] = None, **kwargs):
         super(ResNet, self).__init__()
         self.inplanes = 64
@@ -108,9 +36,9 @@ class ResNet(nn.Module):
             raise ValueError(
                 f"replace_stride_with_dilation should be None or a 3-tuple, got {replace_stride_with_dilation}")
 
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
+        self.conv1 = nn.Conv2d(3, self.inplanes, kernel_size=7, stride=2, padding=3,
                                bias=False)
-        self.bn1 = nn.BatchNorm2d(64)
+        self.bn1 = nn.BatchNorm2d(self.inplanes)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
         self.layer1 = self._make_layer(block, 64, layers[0])
@@ -165,24 +93,24 @@ class ResNet(nn.Module):
 
 class ResNet18(ResNet):
     def __init__(self, **kwargs):
-        super(ResNet18, self).__init__(_BasicBlock, [2, 2, 2, 2], **kwargs)
+        super(ResNet18, self).__init__(BasicBlock, [2, 2, 2, 2], **kwargs)
 
 
 class ResNet34(ResNet):
     def __init__(self, **kwargs):
-        super(ResNet34, self).__init__(_BasicBlock, [3, 4, 6, 3], **kwargs)
+        super(ResNet34, self).__init__(BasicBlock, [3, 4, 6, 3], **kwargs)
 
 
 class ResNet50(ResNet):
     def __init__(self, **kwargs):
-        super(ResNet50, self).__init__(_Bottleneck, [3, 4, 6, 3], **kwargs)
+        super(ResNet50, self).__init__(Bottleneck, [3, 4, 6, 3], **kwargs)
 
 
 class ResNet101(ResNet):
     def __init__(self, **kwargs):
-        super(ResNet101, self).__init__(_Bottleneck, [3, 4, 23, 3], **kwargs)
+        super(ResNet101, self).__init__(Bottleneck, [3, 4, 23, 3], **kwargs)
 
 
 class ResNet152(ResNet):
     def __init__(self, **kwargs):
-        super(ResNet152, self).__init__(_Bottleneck, [3, 8, 36, 3], **kwargs)
+        super(ResNet152, self).__init__(Bottleneck, [3, 8, 36, 3], **kwargs)

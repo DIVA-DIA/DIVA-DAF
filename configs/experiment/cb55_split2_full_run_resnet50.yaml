@@ -13,7 +13,7 @@ defaults:
     - /model/header: resnet_segmentation.yaml
     - /optimizer: adam.yaml
     - /callbacks:
-          - check_compatibility.yaml
+#          - check_compatibility.yaml
           - model_checkpoint.yaml
           - watch_model_wandb.yaml
     - /logger:
@@ -32,6 +32,9 @@ test: True
 predict: False
 
 model:
+    backbone:
+        output_layer: "layer4"
+        replace_stride_with_dilation: [False, True, True]
     header:
         in_channels: 2048
 
@@ -41,7 +44,7 @@ trainer:
     devices: -1
     strategy: 'ddp_find_unused_parameters_false'
     min_epochs: 1
-    max_epochs: 50
+    max_epochs: 1000
     precision: 16
     check_val_every_n_epoch: 1
 

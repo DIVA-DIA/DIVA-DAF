@@ -38,6 +38,12 @@ def execute(config: DictConfig) -> Optional[float]:
     log.info(f"Instantiating datamodule <{config.datamodule._target_}>")
     datamodule: LightningDataModule = hydra.utils.instantiate(config.datamodule)
 
+    output_layer_backbone = None
+    if config.model.backbone.output_layer:
+        output_layer_backbone = config.model.backbone.output_layer
+        del config.model.backbone.output_layer
+        log.info(f"Take output layer <{output_layer_backbone}> from backbone")
+
     # Init Lightning model backend
     log.info(f"Instantiating backbone model <{config.model.backbone._target_}>")
     backbone = _load_model_part(config=config, part_name='backbone')
@@ -47,7 +53,8 @@ def execute(config: DictConfig) -> Optional[float]:
     header: LightningModule = _load_model_part(config=config, part_name='header')
 
     # container model
-    model: BackboneHeaderModel = BackboneHeaderModel(backbone=backbone, header=header)
+    model: BackboneHeaderModel = BackboneHeaderModel(backbone=backbone, header=header,
+                                                     backbone_output_layer=output_layer_backbone)
 
     # Init optimizer
     log.info(f"Instantiating optimizer <{config.optimizer._target_}>")
@@ -181,6 +188,7 @@ def _load_model_part(config: DictConfig, part_name: str):
 
     freeze = False
     strict = True
+    # TODO: make it remove a prefix from the loaded weights
     if 'strict' in config.model.get(part_name):
         log.info(f"The model part {part_name} will be loaded with strict={config.model.get(part_name).strict}")
         strict = config.model.get(part_name).strict
