@@ -6,6 +6,8 @@ import argparse
 
 
 def split_dataset(root_folder: Path, dataset_name: str, train_split_size: int, val_split_size: int):
+    if (root_folder / dataset_name).exists():
+        raise FileExistsError(f"Dataset {dataset_name} already exists in {root_folder}")
     originals_path = root_folder / 'originals'
     train_folder = root_folder / dataset_name / 'train'
     if train_folder.exists():
