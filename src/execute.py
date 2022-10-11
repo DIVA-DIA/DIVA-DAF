@@ -39,7 +39,7 @@ def execute(config: DictConfig) -> Optional[float]:
     datamodule: LightningDataModule = hydra.utils.instantiate(config.datamodule)
 
     output_layer_backbone = None
-    if config.model.backbone.output_layer:
+    if 'output_layer' in config.model.backbone:
         output_layer_backbone = config.model.backbone.output_layer
         del config.model.backbone.output_layer
         log.info(f"Take output layer <{output_layer_backbone}> from backbone")
@@ -203,8 +203,13 @@ def _load_model_part(config: DictConfig, part_name: str):
         log.info(f"Loading {part_name} weights from <{config.model.get(part_name).path_to_weights}>")
         path_to_weights = config.model.get(part_name).path_to_weights
         del config.model.get(part_name).path_to_weights
+        # prefix to remove
+        if "prefix" in config.model.get(part_name):
+            prefix = config.model.get(part_name).prefix
+            del config.model.get(part_name).prefix
         part: LightningModule = hydra.utils.instantiate(config.model.get(part_name))
-        missing_keys, unexpected_keys = part.load_state_dict(torch.load(path_to_weights, map_location='cpu'), strict=strict)
+        missing_keys, unexpected_keys = part.load_state_dict(torch.load(path_to_weights, map_location='cpu'),
+                                                             strict=strict)
         if missing_keys:
             log.warning(f"When loading the model part {part_name} these keys where missed: \n {missing_keys}")
         if unexpected_keys:
@@ -284,4 +289,3 @@ def _write_current_run_dir(config: DictConfig):
     log.info(f'Writing work dir into run dir log file ({run_dir_log_file})')
     with run_dir_log_file.open('a') as f:
         f.write(f'{os.getcwd()}\n')
-
