@@ -48,13 +48,12 @@ class ResNet(nn.Module):
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
-                m.weight.data.normal_(0, math.sqrt(2. / n))
+                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
             elif isinstance(m, nn.BatchNorm2d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
+                nn.init.constant_(m.weight, 1)
+                nn.init.constant_(m.bias, 0)
 
-    def _make_layer(self, block: Type[Union[_BasicBlock, _Bottleneck]], planes: int, blocks: int, stride: int = 1,
+    def _make_layer(self, block: Type[Union[BasicBlock, Bottleneck]], planes: int, blocks: int, stride: int = 1,
                     dilate: bool = False):
         downsample = None
         previous_dilation = self.dilation
@@ -73,7 +72,7 @@ class ResNet(nn.Module):
                             dilation=previous_dilation))
         self.inplanes = planes * block.expansion
         for i in range(1, blocks):
-            layers.append(block(self.inplanes, planes))
+            layers.append(block(self.inplanes, planes, dilation=self.dilation, norm_layer=nn.BatchNorm2d))
 
         return nn.Sequential(*layers)
 

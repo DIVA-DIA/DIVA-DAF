@@ -70,7 +70,7 @@ callbacks:
         log_freq: 1
 
 optimizer:
-    lr: 1e-6
+    lr: 1e-5
 
 logger:
     wandb:
