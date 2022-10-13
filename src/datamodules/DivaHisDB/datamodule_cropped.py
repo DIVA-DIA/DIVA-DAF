@@ -19,6 +19,7 @@ log = utils.get_logger(__name__)
 
 class DivaHisDBDataModuleCropped(AbstractDatamodule):
     def __init__(self, data_dir: str, data_folder_name: str, gt_folder_name: str,
+                 train_folder_name: str = 'train', val_folder_name: str = 'val', test_folder_name: str = 'test',
                  selection_train: Optional[Union[int, List[str]]] = None,
                  selection_val: Optional[Union[int, List[str]]] = None,
                  selection_test: Optional[Union[int, List[str]]] = None,
@@ -26,6 +27,9 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
                  shuffle: bool = True, drop_last: bool = True):
         super().__init__()
 
+        self.train_folder_name = train_folder_name
+        self.val_folder_name = val_folder_name
+        self.test_folder_name = test_folder_name
         self.data_folder_name = data_folder_name
         self.gt_folder_name = gt_folder_name
 
@@ -54,7 +58,10 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
         self.data_folder_name = data_folder_name
         self.gt_folder_name = gt_folder_name
         self.data_dir = validate_path_for_segmentation(data_dir=data_dir, data_folder_name=self.data_folder_name,
-                                                       gt_folder_name=self.gt_folder_name)
+                                                       gt_folder_name=self.gt_folder_name,
+                                                       train_folder_name=self.train_folder_name,
+                                                       val_folder_name=self.val_folder_name,
+                                                       test_folder_name=self.test_folder_name)
 
         self.selection_train = selection_train
         self.selection_val = selection_val
