@@ -16,7 +16,8 @@ from torchvision.datasets.folder import pil_loader
 from src.datamodules.utils.image_analytics import compute_mean_std
 
 
-def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, get_img_gt_path_list_func, **kwargs):
+def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, train_folder_name: str,
+                  get_img_gt_path_list_func, **kwargs):
     """
     Parameters
     ----------
@@ -28,8 +29,8 @@ def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, 
     expected_keys_data = ['mean', 'std', 'width', 'height']
     expected_keys_gt = ['class_weights', 'class_encodings']
 
-    analytics_path_data = input_path / f'analytics.data.{data_folder_name}.json'
-    analytics_path_gt = input_path / f'analytics.gt.{gt_folder_name}.json'
+    analytics_path_data = input_path / f'analytics.data.{data_folder_name}.{train_folder_name}.json'
+    analytics_path_gt = input_path / f'analytics.gt.{gt_folder_name}.{train_folder_name}.json'
 
     analytics_data = None
     analytics_gt = None
@@ -52,7 +53,7 @@ def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, 
             missing_analytics_gt = False
 
     if missing_analytics_data or missing_analytics_gt:
-        train_path = input_path / 'train'
+        train_path = input_path / train_folder_name
         img_gt_path_list = get_img_gt_path_list_func(train_path, data_folder_name=data_folder_name,
                                                      gt_folder_name=gt_folder_name)
         file_names_data = np.asarray([str(item[0]) for item in img_gt_path_list])

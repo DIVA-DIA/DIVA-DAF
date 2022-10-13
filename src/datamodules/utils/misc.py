@@ -34,22 +34,26 @@ def _get_argmax(output: Union[torch.Tensor, np.ndarray], dim=1):
     return output
 
 
-def validate_path_for_segmentation(data_dir, data_folder_name: str, gt_folder_name: str):
+def validate_path_for_segmentation(data_dir, data_folder_name: str, gt_folder_name: str, train_folder_name: str,
+                                   val_folder_name: str, test_folder_name: str):
     """
     Checks if the data_dir folder has the following structure:
 
     {data_dir}
-        - train
+        - {train_folder_name}
             - {data_folder_name}
             - {gt_folder_name}
-        - val
+        - {val_folder_name}
             - {data_folder_name}
             - {gt_folder_name}
-        - test
+        - {test_folder_name}
             - {data_folder_name}
             - {gt_folder_name}
 
 
+    :param train_folder_name:
+    :param test_folder_name:
+    :param val_folder_name:
     :param data_dir:
     :param data_folder_name:
     :param gt_folder_name:
@@ -59,7 +63,7 @@ def validate_path_for_segmentation(data_dir, data_folder_name: str, gt_folder_na
         raise PathNone("Please provide the path to root dir of the dataset "
                        "(folder containing the train/val/test folder)")
     else:
-        split_names = ['train', 'val', 'test']
+        split_names = [train_folder_name, val_folder_name, test_folder_name]
         type_names = [data_folder_name, gt_folder_name]
 
         data_folder = Path(data_dir)
