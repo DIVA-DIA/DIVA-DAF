@@ -64,11 +64,7 @@ class DataModuleRGB(AbstractDatamodule):
         self.shuffle = shuffle
         self.drop_last = drop_last
 
-        self.data_dir = validate_path_for_segmentation(data_dir=data_dir, data_folder_name=self.data_folder_name,
-                                                       gt_folder_name=self.gt_folder_name,
-                                                       train_folder_name=self.train_folder_name,
-                                                       val_folder_name=self.val_folder_name,
-                                                       test_folder_name=self.test_folder_name)
+        self.data_dir = data_dir
 
         self.selection_train = selection_train
         self.selection_val = selection_val
@@ -89,6 +85,10 @@ class DataModuleRGB(AbstractDatamodule):
                           'gt_folder_name': self.gt_folder_name}
 
         if stage == 'fit' or stage is None:
+            self.data_dir = validate_path_for_segmentation(data_dir=self.data_dir,
+                                                           data_folder_name=self.data_folder_name,
+                                                           gt_folder_name=self.gt_folder_name,
+                                                           split_name=self.train_folder_name)
             self.train = DatasetRGB(path=self.data_dir / self.train_folder_name,
                                     selection=self.selection_train,
                                     is_test=False,
@@ -96,9 +96,13 @@ class DataModuleRGB(AbstractDatamodule):
                                     **common_kwargs)
             log.info(f'Initialized train dataset with {len(self.train)} samples.')
             self.check_min_num_samples(self.trainer.num_devices, self.batch_size, num_samples=len(self.train),
-                                       data_split='train',
+                                       data_split=self.train_folder_name,
                                        drop_last=self.drop_last)
 
+            self.data_dir = validate_path_for_segmentation(data_dir=self.data_dir,
+                                                           data_folder_name=self.data_folder_name,
+                                                           gt_folder_name=self.gt_folder_name,
+                                                           split_name=self.val_folder_name)
             self.val = DatasetRGB(path=self.data_dir / self.val_folder_name,
                                   selection=self.selection_val,
                                   is_test=False,
@@ -106,10 +110,14 @@ class DataModuleRGB(AbstractDatamodule):
                                   **common_kwargs)
             log.info(f'Initialized val dataset with {len(self.val)} samples.')
             self.check_min_num_samples(self.trainer.num_devices, self.batch_size, num_samples=len(self.val),
-                                       data_split='val',
+                                       data_split=self.val_folder_name,
                                        drop_last=self.drop_last)
 
         if stage == 'test':
+            self.data_dir = validate_path_for_segmentation(data_dir=self.data_dir,
+                                                           data_folder_name=self.data_folder_name,
+                                                           gt_folder_name=self.gt_folder_name,
+                                                           split_name=self.test_folder_name)
             self.test = DatasetRGB(path=self.data_dir / self.test_folder_name,
                                    selection=self.selection_test,
                                    is_test=True,
