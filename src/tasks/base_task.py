@@ -321,8 +321,8 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         fig = sn.heatmap(matrix, annot=True, annot_kws={"size": 8}, fmt="g")
         for i in range(matrix.shape[0]):
             fig.add_patch(Rectangle((i, i), 1, 1, fill=False, edgecolor='yellow', lw=3))
-        plt.xlabel('Predictions')
-        plt.ylabel('Targets')
+        plt.ylabel('Predictions')
+        plt.xlabel('Targets')
         plt.title(conf_mat_name)
         conf_mat_path = Path(os.getcwd()) / 'conf_mats' / stage
         conf_mat_path.mkdir(parents=True, exist_ok=True)
