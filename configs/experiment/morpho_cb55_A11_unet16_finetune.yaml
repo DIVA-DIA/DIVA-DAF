@@ -9,7 +9,7 @@ defaults:
     - /task: semantic_segmentation_RGB.yaml
     - /loss: crossentropyloss.yaml
     - /metric: iou.yaml
-    - /model/backbone: unet.yaml
+    - /model/backbone: unet16.yaml
     - /model/header: identity.yaml
     - /optimizer: adam.yaml
     - /callbacks:
@@ -25,7 +25,7 @@ defaults:
 # instead we define all modules and their paths directly in this config,
 # so everything is stored in one place for more readibility
 
-name: "morpho_fine_tune_AB1_train_20_cb55_B22_unet_loss_no_weights"
+name: "morpho_fine_tune_AB1_train_20_cb55_B22_unet16_loss_no_weights"
 
 train: True
 test: True
@@ -80,5 +80,5 @@ logger:
     wandb:
         project: "ijdar"
         name: ${name}
-        tags: ["Morpho", "pre-training", "unet", "B22", "CB55-ssl-set", "fine-tune", "AB1", "train-20"]
+        tags: ["Morpho", "pre-training", "unet16", "B22", "CB55-ssl-set", "fine-tune", "AB1", "train-20"]
         group: 'pre-training'

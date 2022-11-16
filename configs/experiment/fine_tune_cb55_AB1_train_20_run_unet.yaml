@@ -25,10 +25,10 @@ defaults:
 # instead we define all modules and their paths directly in this config,
 # so everything is stored in one place for more readibility
 
-name: "morpho_cb55_A11_unet_loss_no_weights"
+name: "fine_tune_cb55_AB1_train_20_unet_loss_no_weights"
 
 train: True
-test: False
+test: True
 predict: False
 
 trainer:
@@ -37,9 +37,10 @@ trainer:
     devices: -1
     strategy: 'ddp_find_unused_parameters_false'
     min_epochs: 1
-    max_epochs: 200
+    max_epochs: 100
     precision: 16
     check_val_every_n_epoch: 1
+    accumulate_grad_batches: 5
 
 task:
     confusion_matrix_log_every_n_epoch: 10
@@ -49,30 +50,36 @@ task:
 datamodule:
     _target_: src.datamodules.RGB.datamodule.DataModuleRGB
 
-    data_dir: /net/research-hisdoc/datasets/self-supervised/CB55/morphology_960_1344/A11_dataset_1
+    data_dir: /net/research-hisdoc/datasets/semantic_segmentation/datasets/CB55-splits/AB1
     num_workers: 4
     batch_size: 1
     shuffle: True
     drop_last: True
     data_folder_name: data
     gt_folder_name: gt
-    train_folder_name: train
-    val_folder_name: val
+    train_folder_name: training-20
+    val_folder_name: validation
 
 optimizer:
-    lr: 0.0001
+    lr: 1e-3
     betas: [0.9, 0.999]
+    eps: 1e-5
 
 callbacks:
     model_checkpoint:
-        monitor: "val/crossentropyloss"
-        mode: "min"
-        filename: ${checkpoint_folder_name}cb55-ssl-full-unet
+        monitor: "val/jaccardindex"
+        mode: "max"
+        filename: ${checkpoint_folder_name}AB1-train-20-unet
 #    watch_model:
 #        log_freq: 1000
 
+model:
+    backbone:
+        path_to_weights: /net/research-hisdoc/experiments_lars_paul/lars_lucy/experiments/sem_seg_synthetic_DPC_120_unet_loss_no_weights/2022-10-24/18-12-27/checkpoints/backbone_last.pth
+
 logger:
     wandb:
+        project: "ijdar"
         name: ${name}
-        tags: ["Morpho", "pre-training", "unet", "A11", "CB55-ssl-set"]
-        group: 'pre-training'
+        tags: ["unet", "AB1", "training-20", "4-classes", "baseline", "200-epochs", "no-weights"]
+        group: 'baseline'

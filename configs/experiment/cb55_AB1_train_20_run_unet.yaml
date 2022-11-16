@@ -25,7 +25,7 @@ defaults:
 # instead we define all modules and their paths directly in this config,
 # so everything is stored in one place for more readibility
 
-name: "sem_seg_cb55_AB1_train_20_unet_loss_no_weights"
+name: "sem_seg_cb55_AB1_unet_loss_no_weights"
 
 train: True
 test: True
@@ -37,7 +37,7 @@ trainer:
     devices: -1
     strategy: 'ddp_find_unused_parameters_false'
     min_epochs: 1
-    max_epochs: 1000
+    max_epochs: 200
     precision: 16
     check_val_every_n_epoch: 1
     accumulate_grad_batches: 5
@@ -61,19 +61,21 @@ datamodule:
     val_folder_name: validation
 
 optimizer:
-    lr: 0.0001
+    lr: 1e-3
     betas: [0.9, 0.999]
+    eps: 1e-5
 
 callbacks:
     model_checkpoint:
         monitor: "val/jaccardindex"
         mode: "max"
-        filename: ${checkpoint_folder_name}cb55-train-20-unet
+        filename: ${checkpoint_folder_name}AB1-train-20-unet
 #    watch_model:
 #        log_freq: 1000
 
 logger:
     wandb:
+        project: "ijdar"
         name: ${name}
-        tags: ["unet", "AB1", "training-20", "4-classes", "baseline"]
+        tags: ["unet", "AB1",  "4-classes", "baseline", "700-epochs", "no-weights"]
         group: 'baseline'

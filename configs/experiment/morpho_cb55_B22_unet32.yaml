@@ -9,7 +9,7 @@ defaults:
     - /task: semantic_segmentation_RGB.yaml
     - /loss: crossentropyloss.yaml
     - /metric: iou.yaml
-    - /model/backbone: unet.yaml
+    - /model/backbone: unet32.yaml
     - /model/header: identity.yaml
     - /optimizer: adam.yaml
     - /callbacks:
@@ -25,7 +25,7 @@ defaults:
 # instead we define all modules and their paths directly in this config,
 # so everything is stored in one place for more readibility
 
-name: "morpho_cb55_B21_unet_loss_no_weights"
+name: "morpho_cb55_B22_unet32_loss_no_weights"
 
 train: True
 test: False
@@ -49,7 +49,7 @@ task:
 datamodule:
     _target_: src.datamodules.RGB.datamodule.DataModuleRGB
 
-    data_dir: /net/research-hisdoc/datasets/self-supervised/CB55/morphology_960_1344/B21_dataset_1
+    data_dir: /net/research-hisdoc/datasets/self-supervised/CB55/morphology_960_1344/B22_dataset_60
     num_workers: 4
     batch_size: 1
     shuffle: True
@@ -60,19 +60,21 @@ datamodule:
     val_folder_name: val
 
 optimizer:
-    lr: 0.0001
+    lr: 1e-3
     betas: [0.9, 0.999]
+    eps: 1e-5
 
 callbacks:
     model_checkpoint:
         monitor: "val/crossentropyloss"
-        mode: "max"
-        filename: ${checkpoint_folder_name}cb55-ssl-full-unet
-#    watch_model:
+        mode: "min"
+        filename: ${checkpoint_folder_name}cb55-ssl-full-unet32
+#    watch_model
 #        log_freq: 1000
 
 logger:
     wandb:
+        project: "ijdar"
         name: ${name}
-        tags: ["best_model", "Morpho", "pre-training", "unet", "B21", "CB55-ssl-set"]
+        tags: ["best_model", "Morpho", "pre-training", "unet32", "B22-60", "CB55-ssl-set", "200-epochs"]
         group: 'pre-training'

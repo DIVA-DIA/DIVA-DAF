@@ -61,7 +61,7 @@ datamodule:
     val_folder_name: validation
 
 optimizer:
-    lr: 0.0001
+    lr: 1e-3
     betas: [0.9, 0.999]
 
 callbacks:
@@ -71,14 +71,10 @@ callbacks:
         filename: ${checkpoint_folder_name}cb55-train-40-unet
 #    watch_model:
 #        log_freq: 1000
-    early_stopping:
-        monitor: "val/jaccardindex"      # name of the logged metric which determines when model is improving
-        patience: 10           # how many epochs of not improving until training stops
-        mode: "max"             # can be "max" or "min"
-#        min_delta: 0.0           # minimum change in the monitored metric needed to qualify as an improvement
 
 logger:
     wandb:
+        project: "ijdar"
         name: ${name}
-        tags: ["unet", "AB1", "training-40", "4-classes", "baseline", "early_stopping"]
+        tags: ["unet", "AB1", "training-40", "4-classes", "baseline", "100-epochs", "no-weights"]
         group: 'baseline'

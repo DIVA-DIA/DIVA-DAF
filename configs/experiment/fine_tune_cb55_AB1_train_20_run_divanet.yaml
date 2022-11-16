@@ -7,9 +7,9 @@ defaults:
     - /mode: experiment.yaml
     - /plugins: null
     - /task: semantic_segmentation_RGB.yaml
-    - /loss: crossentropyloss.yaml
+    - /loss: crossentropyloss_balanced.yaml
     - /metric: iou.yaml
-    - /model/backbone: unet.yaml
+    - /model/backbone: divanet.yaml
     - /model/header: identity.yaml
     - /optimizer: adam.yaml
     - /callbacks:
@@ -25,7 +25,7 @@ defaults:
 # instead we define all modules and their paths directly in this config,
 # so everything is stored in one place for more readibility
 
-name: "morpho_fine_tune_AB1_train_20_cb55_B22_unet_loss_no_weights"
+name: "fine_tune_cb55_AB1_train_20_divanet_loss_weights"
 
 train: True
 test: True
@@ -40,6 +40,7 @@ trainer:
     max_epochs: 100
     precision: 16
     check_val_every_n_epoch: 1
+    accumulate_grad_batches: 5
 
 task:
     confusion_matrix_log_every_n_epoch: 10
@@ -62,23 +63,23 @@ datamodule:
 optimizer:
     lr: 1e-3
     betas: [0.9, 0.999]
-
-model:
-    backbone:
-        path_to_weights: /net/research-hisdoc/experiments_lars_paul/lars/experiments/morpho_cb55_A11_unet_loss_no_weights/2022-10-17/17-56-17/checkpoints/epoch=22/backbone.pth
-        strict: False
+    eps: 1e-5
 
 callbacks:
     model_checkpoint:
         monitor: "val/jaccardindex"
         mode: "max"
-        filename: ${checkpoint_folder_name}cb55-train-20-full-unet
+        filename: ${checkpoint_folder_name}fine-tune-cb55-train-20-divanet
 #    watch_model:
 #        log_freq: 1000
+
+model:
+    backbone:
+        path_to_weights: /netscratch/experiments_lars_paul/lars/experiments/sem_seg_synthetic_DPC_120_divanet_loss_no_weights/2022-10-25/14-12-09/checkpoints/backbone_last.pth
 
 logger:
     wandb:
         project: "ijdar"
         name: ${name}
-        tags: ["Morpho", "pre-training", "unet", "B22", "CB55-ssl-set", "fine-tune", "AB1", "train-20"]
-        group: 'pre-training'
+        tags: ["divanet", "AB1", "training-20", "4-classes", "baseline", "balanced"]
+        group: 'baseline'

@@ -4,7 +4,7 @@
 # python run.py +experiment=exp_example_full
 
 defaults:
-    - /mode: experiment.yaml
+    - /mode: development.yaml
     - /plugins: null
     - /task: semantic_segmentation_RGB.yaml
     - /loss: crossentropyloss.yaml
@@ -25,7 +25,7 @@ defaults:
 # instead we define all modules and their paths directly in this config,
 # so everything is stored in one place for more readibility
 
-name: "morpho_fine_tune_AB1_train_20_cb55_B22_unet_loss_no_weights"
+name: "dev_sem_seg_cb55_AB1_train_10_unet_loss_no_weights"
 
 train: True
 test: True
@@ -40,6 +40,7 @@ trainer:
     max_epochs: 100
     precision: 16
     check_val_every_n_epoch: 1
+    accumulate_grad_batches: 5
 
 task:
     confusion_matrix_log_every_n_epoch: 10
@@ -56,23 +57,18 @@ datamodule:
     drop_last: True
     data_folder_name: data
     gt_folder_name: gt
-    train_folder_name: training-20
+    train_folder_name: training-10
     val_folder_name: validation
 
 optimizer:
     lr: 1e-3
     betas: [0.9, 0.999]
 
-model:
-    backbone:
-        path_to_weights: /net/research-hisdoc/experiments_lars_paul/lars/experiments/morpho_cb55_A11_unet_loss_no_weights/2022-10-17/17-56-17/checkpoints/epoch=22/backbone.pth
-        strict: False
-
 callbacks:
     model_checkpoint:
         monitor: "val/jaccardindex"
         mode: "max"
-        filename: ${checkpoint_folder_name}cb55-train-20-full-unet
+        filename: ${checkpoint_folder_name}AB1-train-10-unet
 #    watch_model:
 #        log_freq: 1000
 
@@ -80,5 +76,5 @@ logger:
     wandb:
         project: "ijdar"
         name: ${name}
-        tags: ["Morpho", "pre-training", "unet", "B22", "CB55-ssl-set", "fine-tune", "AB1", "train-20"]
-        group: 'pre-training'
+        tags: ["unet", "AB1", "training-10", "4-classes", "baseline", "400-epochs", "no-weights", "DEV"]
+        group: 'baseline'
