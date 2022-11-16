@@ -185,7 +185,7 @@ def _get_class_frequencies_weights_segmentation(gt_images, **kwargs):
     num_samples_per_class = np.asarray([label_counter[k] for k in classes])
     logging.info('Finished computing class frequencies weights')
     # Normalize vector to sum up to 1.0 (in case the Loss function does not do it)
-    class_weights = (1 / num_samples_per_class) / ((1 / num_samples_per_class).sum())
+    class_weights = (1 / num_samples_per_class)  # / ((1 / num_samples_per_class).sum())
     return class_weights.tolist(), classes
 
 
