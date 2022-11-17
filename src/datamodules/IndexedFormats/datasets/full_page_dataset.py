@@ -2,20 +2,18 @@
 Load a dataset of historic documents by specifying the folder where its located.
 """
 
-from dataclasses import dataclass
 # Utils
 from pathlib import Path
 from typing import List, Tuple, Union, Optional
 
 import numpy as np
 import torch.utils.data as data
-from PIL import Image
 from omegaconf import ListConfig
 from torch import is_tensor
 from torchvision.datasets.folder import pil_loader, has_file_allowed_extension
 from torchvision.transforms import ToTensor
 
-from src.datamodules.utils.misc import ImageDimensions, get_output_file_list, selection_validation, pil_loader_gif
+from src.datamodules.utils.misc import ImageDimensions, selection_validation, pil_loader_gif, get_output_file_list
 from src.utils import utils
 
 IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.gif')
@@ -39,7 +37,7 @@ class DatasetIndexed(data.Dataset):
     """
 
     def __init__(self, path: Path, data_folder_name: str, gt_folder_name: str,
-                 image_dims: ImageDimensions,
+                 image_dims: ImageDimensions, is_test=False,
                  selection: Optional[Union[int, List[str]]] = None,
                  image_transform=None):
         """
@@ -73,10 +71,14 @@ class DatasetIndexed(data.Dataset):
         # transformations
         self.image_transform = image_transform
 
+        self.is_test = is_test
 
         # List of tuples that contain the path to the gt and image that belong together
         self.img_gt_path_list = self.get_img_gt_path_list(path, data_folder_name=self.data_folder_name,
                                                           gt_folder_name=self.gt_folder_name, selection=self.selection)
+        if is_test:
+            self.image_path_list = [img_gt_path[0] for img_gt_path in self.img_gt_path_list]
+            self.output_file_list = get_output_file_list(image_path_list=self.image_path_list)
 
         self.num_samples = len(self.img_gt_path_list)
         if self.num_samples == 0:

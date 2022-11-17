@@ -21,25 +21,31 @@ def dataset_val(data_dir):
 @pytest.fixture
 def dataset_test(data_dir):
     return DatasetIndexed(path=data_dir / 'test', data_folder_name='data', gt_folder_name='gt',
-                          image_dims=ImageDimensions(width=960, height=1344))
+                          image_dims=ImageDimensions(width=960, height=1344), is_test=True)
 
 
 def test_init_train(dataset_train):
+    assert not dataset_train.is_test
     assert dataset_train.num_samples == 2
     assert len(dataset_train.img_gt_path_list) == 2
     assert len(dataset_train.img_gt_path_list[0]) == 2
+    assert not hasattr(dataset_test, 'output_file_list')
 
 
 def test_init_val(dataset_val):
+    assert not dataset_val.is_test
     assert dataset_val.num_samples == 2
     assert len(dataset_val.img_gt_path_list) == 2
     assert len(dataset_val.img_gt_path_list[0]) == 2
+    assert not hasattr(dataset_test, 'output_file_list')
 
 
 def test_init_test(dataset_test):
+    assert dataset_test.is_test
     assert dataset_test.num_samples == 2
     assert len(dataset_test.img_gt_path_list) == 2
     assert len(dataset_test.img_gt_path_list[0]) == 2
+    assert hasattr(dataset_test, 'output_file_list')
 
 
 def test__get_item(dataset_train):
