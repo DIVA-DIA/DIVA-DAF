@@ -38,14 +38,14 @@ class DatasetIndexed(data.Dataset):
         And the ground truth is represented in an index format like GIF.
     """
 
-    def __init__(self, root_path: Path, data_folder_name: str, gt_folder_name: str,
+    def __init__(self, path: Path, data_folder_name: str, gt_folder_name: str,
                  image_dims: ImageDimensions,
                  selection: Optional[Union[int, List[str]]] = None,
                  image_transform=None):
         """
         Parameters
         ----------
-        root_path: Path
+        path: Path
             Path to dataset folder (train / val / test)
         data_folder_name: string
             name of the folder inside of the train/val/test that contains the images
@@ -63,7 +63,7 @@ class DatasetIndexed(data.Dataset):
             A function to load an image given its path.
         """
 
-        self.path = root_path
+        self.path = path
         self.data_folder_name = data_folder_name
         self.gt_folder_name = gt_folder_name
         self.selection = selection
@@ -75,12 +75,12 @@ class DatasetIndexed(data.Dataset):
 
 
         # List of tuples that contain the path to the gt and image that belong together
-        self.img_gt_path_list = self.get_img_gt_path_list(root_path, data_folder_name=self.data_folder_name,
+        self.img_gt_path_list = self.get_img_gt_path_list(path, data_folder_name=self.data_folder_name,
                                                           gt_folder_name=self.gt_folder_name, selection=self.selection)
 
         self.num_samples = len(self.img_gt_path_list)
         if self.num_samples == 0:
-            raise RuntimeError(f"Found 0 images in: {root_path} \n "
+            raise RuntimeError(f"Found 0 images in: {path} \n "
                                f"Supported image extensions are: {' '.join(IMG_EXTENSIONS)}\n"
                                f"Supported ground truth extensions are: {' '.join(GT_EXTENSION)}")
 

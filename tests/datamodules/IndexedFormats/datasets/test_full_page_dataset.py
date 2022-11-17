@@ -8,19 +8,19 @@ from tests.test_data.dummy_fixed_gif.dummy_data import data_dir
 
 @pytest.fixture
 def dataset_train(data_dir):
-    return DatasetIndexed(root_path=data_dir / 'train', data_folder_name='data', gt_folder_name='gt',
+    return DatasetIndexed(path=data_dir / 'train', data_folder_name='data', gt_folder_name='gt',
                           image_dims=ImageDimensions(width=960, height=1344))
 
 
 @pytest.fixture
 def dataset_val(data_dir):
-    return DatasetIndexed(root_path=data_dir / 'val', data_folder_name='data', gt_folder_name='gt',
+    return DatasetIndexed(path=data_dir / 'val', data_folder_name='data', gt_folder_name='gt',
                           image_dims=ImageDimensions(width=960, height=1344))
 
 
 @pytest.fixture
 def dataset_test(data_dir):
-    return DatasetIndexed(root_path=data_dir / 'test', data_folder_name='data', gt_folder_name='gt',
+    return DatasetIndexed(path=data_dir / 'test', data_folder_name='data', gt_folder_name='gt',
                           image_dims=ImageDimensions(width=960, height=1344))
 
 
@@ -49,9 +49,10 @@ def test__get_item(dataset_train):
     assert is_tensor(train_tuple[1])
 
 
-def test__apply_transformation():
-    assert False
-
-
-def test_get_img_gt_path_list():
-    assert False
+def test_get_img_gt_path_list(data_dir):
+    paths = DatasetIndexed.get_img_gt_path_list(directory=data_dir / 'train', data_folder_name='data',
+                                                gt_folder_name='gt')
+    expected_paths = [
+        (data_dir / 'train' / 'data' / '2022C-01-dum-folioN-1000.jpg', data_dir / 'train' / 'gt' / '2022C-01-dum-gtL-1000.gif'),
+        (data_dir / 'train' / 'data' / '2022C-01-dum-folioN-1001.jpg', data_dir / 'train' / 'gt' / '2022C-01-dum-gtL-1001.gif')]
+    assert paths == expected_paths
