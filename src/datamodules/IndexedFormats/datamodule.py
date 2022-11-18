@@ -113,6 +113,7 @@ class DataModuleIndexed(AbstractDatamodule):
                                                            split_name=self.test_folder_name)
             self.test = DatasetIndexed(path=self.data_dir / self.test_folder_name,
                                        selection=self.selection_test,
+                                       is_test=True,
                                        **dataset_kwargs,
                                        **common_kwargs)
             log.info(f'Initialized test dataset with {len(self.test)} samples.')

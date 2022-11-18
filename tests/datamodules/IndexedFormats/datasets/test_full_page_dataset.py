@@ -52,7 +52,9 @@ def test__get_item(dataset_train):
     train_tuple = dataset_train[0]
     assert len(train_tuple) == 2
     assert is_tensor(train_tuple[0])
+    assert train_tuple[0].shape == (3, 1344, 960)
     assert is_tensor(train_tuple[1])
+    assert train_tuple[1].shape == (1344, 960)
 
 
 def test_get_img_gt_path_list(data_dir):

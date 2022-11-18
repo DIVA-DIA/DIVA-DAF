@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import List, Tuple, Union, Optional
 
 import numpy as np
+import torch
 import torch.utils.data as data
 from omegaconf import ListConfig
 from torch import is_tensor
@@ -98,8 +99,11 @@ class DatasetIndexed(data.Dataset):
         data_img, gt_img = self._load_data_and_gt(index=index)
         img, gt = self._apply_transformation(data_img, gt_img)
         assert img.shape[-2:] == gt.shape[-2:]
+        if self.is_test:
+            return img, gt, index
+        else:
+            return img, gt
 
-        return img, gt
 
     def _load_data_and_gt(self, index):
         data_img = pil_loader(self.img_gt_path_list[index][0])
@@ -113,12 +117,16 @@ class DatasetIndexed(data.Dataset):
     def _apply_transformation(self, img, gt):
         if self.image_transform is not None:
             # perform transformations
-            img = self.image_transform(img)
+            img, _ = self.image_transform(img, gt)
 
         if not is_tensor(img):
             img = ToTensor()(img)
 
-        gt = ToTensor()(np.asarray(gt))
+        # remove first dim s.t. gt is just w x h
+        gt_np = np.asarray(gt)
+        if len(gt_np.shape) == 3:
+            gt_np = np.squeeze(gt_np, axis=0)
+        gt = torch.tensor(gt_np, dtype=torch.long)
 
         return img, gt
 
