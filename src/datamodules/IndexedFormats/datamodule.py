@@ -164,7 +164,7 @@ class DataModuleIndexed(AbstractDatamodule):
         :return:
         """
         if not hasattr(self, 'test'):
-            raise Exception('This method can just be called during testing')
+            raise ValueError('This method can just be called during testing')
 
         return self.test.output_file_list[index]
 
@@ -176,6 +176,6 @@ class DataModuleIndexed(AbstractDatamodule):
         :return:
         """
         if not hasattr(self, 'predict'):
-            raise Exception('This method can just be called during prediction')
+            raise ValueError('This method can just be called during prediction')
 
         return self.predict.output_file_list[index]

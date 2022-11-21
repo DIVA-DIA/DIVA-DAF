@@ -56,45 +56,54 @@ def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, 
         file_names_gt = np.asarray([str(item[1]) for item in img_gt_path_list])
 
         if missing_analytics_data:
-            mean, std = compute_mean_std(file_names=file_names_data, **kwargs)
-            img = Image.open(file_names_data[0]).convert('RGB')
-
-            analytics_data = {'mean': mean.tolist(),
-                              'std': std.tolist(),
-                              'width': img.width,
-                              'height': img.height}
-            # save json
-            try:
-                with analytics_path_data.open(mode='w') as f:
-                    json.dump(obj=analytics_data, fp=f)
-            except IOError as e:
-                if e.errno == errno.EACCES:
-                    print(f'WARNING: No permissions to write analytics file ({analytics_path_data})')
-                else:
-                    raise
+            analytics_data = _get_and_save_data_analytics(analytics_path_data, file_names_data, kwargs)
 
         if missing_analytics_gt:
-            # Measure weights for class balancing
-            logging.info(f'Measuring class weights')
-            # create a list with all gt file paths
-            class_weights, class_encodings = _get_class_frequencies_weights_segmentation_indexed(
-                gt_images=file_names_gt, **kwargs)
-            analytics_gt = {'class_weights': class_weights,
-                            'class_encodings': class_encodings}
-            # save json
-            try:
-                with analytics_path_gt.open(mode='w') as f:
-                    json.dump(obj=analytics_gt, fp=f)
-            except IOError as e:
-                if e.errno == errno.EACCES:
-                    print(f'WARNING: No permissions to write analytics file ({analytics_path_gt})')
-                else:
-                    raise
+            analytics_gt = _get_and_save_gt_analytics(analytics_path_gt, file_names_gt, kwargs)
 
     return analytics_data, analytics_gt
 
 
-def _get_class_frequencies_weights_segmentation_indexed(gt_images: np.ndarray, **kwargs):
+def _get_and_save_gt_analytics(analytics_path_gt, file_names_gt, kwargs):
+    # Measure weights for class balancing
+    logging.info(f'Measuring class weights')
+    # create a list with all gt file paths
+    class_weights, class_encodings = _get_class_frequencies_weights_segmentation_indexed(
+        gt_images=file_names_gt, **kwargs)
+    analytics_gt = {'class_weights': class_weights,
+                    'class_encodings': class_encodings}
+    # save json
+    try:
+        with analytics_path_gt.open(mode='w') as f:
+            json.dump(obj=analytics_gt, fp=f)
+    except IOError as e:
+        if e.errno == errno.EACCES:
+            print(f'WARNING: No permissions to write analytics file ({analytics_path_gt})')
+        else:
+            raise
+    return analytics_gt
+
+
+def _get_and_save_data_analytics(analytics_path_data, file_names_data, kwargs):
+    mean, std = compute_mean_std(file_names=file_names_data, **kwargs)
+    img = Image.open(file_names_data[0]).convert('RGB')
+    analytics_data = {'mean': mean.tolist(),
+                      'std': std.tolist(),
+                      'width': img.width,
+                      'height': img.height}
+    # save json
+    try:
+        with analytics_path_data.open(mode='w') as f:
+            json.dump(obj=analytics_data, fp=f)
+    except IOError as e:
+        if e.errno == errno.EACCES:
+            print(f'WARNING: No permissions to write analytics file ({analytics_path_data})')
+        else:
+            raise
+    return analytics_data
+
+
+def _get_class_frequencies_weights_segmentation_indexed(gt_images: np.ndarray):
     """
     Get the weights proportional to the inverse of their class frequencies.
     The vector sums up to 1
@@ -113,7 +122,6 @@ def _get_class_frequencies_weights_segmentation_indexed(gt_images: np.ndarray, *
     """
     logging.info('Begin computing class frequencies weights')
 
-    total_num_pixels = 0
     label_counter = {}
     color_table = []
     unique_colors = 0
@@ -127,7 +135,6 @@ def _get_class_frequencies_weights_segmentation_indexed(gt_images: np.ndarray, *
             unique_colors = len(colors)
 
         for count, index in colors:
-            total_num_pixels += count
             label_counter[index] = label_counter.get(index, 0) + count
 
     classes = np.asarray(color_table).reshape(256, 3)[:unique_colors]
