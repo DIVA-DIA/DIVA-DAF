@@ -13,8 +13,8 @@ def test_get_analytics(data_dir):
     analytics_data, analytics_gt = get_analytics(input_path=data_dir, data_folder_name='data', gt_folder_name='gt',
                                                  train_folder_name='train',
                                                  get_img_gt_path_list_func=DatasetIndexed.get_img_gt_path_list)
-    assert np.allclose(analytics_data['mean'], [0.8267679793271475, 0.7056573666793107, 0.600163116027661])
-    assert np.allclose(analytics_data['std'], [0.26603996365851545, 0.24160881943877677, 0.21738707405192137])
+    assert np.allclose(analytics_data['mean'], [0.8267679793271475, 0.7056573666793107, 0.600163116027661], rtol=2e-03)
+    assert np.allclose(analytics_data['std'], [0.26603996365851545, 0.24160881943877677, 0.21738707405192137], rtol=2e-03)
     assert analytics_data['width'] == 960
     assert analytics_data['height'] == 1344
     assert np.allclose(analytics_gt['class_weights'], CLASS_WEIGHTS)
