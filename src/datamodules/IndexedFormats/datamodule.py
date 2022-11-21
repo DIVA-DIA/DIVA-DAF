@@ -5,9 +5,8 @@ import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from src.datamodules.RGB.datasets.full_page_dataset import DatasetRGB
-from src.datamodules.RGB.utils.image_analytics import get_analytics
-from src.datamodules.RGB.utils.single_transform import IntegerEncoding
+from src.datamodules.IndexedFormats.datasets.full_page_dataset import DatasetIndexed
+from src.datamodules.IndexedFormats.utils.image_analytics import get_analytics
 from src.datamodules.base_datamodule import AbstractDatamodule
 from src.datamodules.utils.dataset_predict import DatasetPredict
 from src.datamodules.utils.misc import validate_path_for_segmentation, ImageDimensions
@@ -17,7 +16,7 @@ from src.utils import utils
 log = utils.get_logger(__name__)
 
 
-class DataModuleRGB(AbstractDatamodule):
+class DataModuleIndexed(AbstractDatamodule):
     def __init__(self, data_dir: str, data_folder_name: str, gt_folder_name: str,
                  train_folder_name: str = 'train', val_folder_name: str = 'val', test_folder_name: str = 'test',
                  pred_file_path_list: List[str] = None,
@@ -41,7 +40,7 @@ class DataModuleRGB(AbstractDatamodule):
                                                      data_folder_name=self.data_folder_name,
                                                      gt_folder_name=self.gt_folder_name,
                                                      train_folder_name=self.train_folder_name,
-                                                     get_img_gt_path_list_func=DatasetRGB.get_img_gt_path_list)
+                                                     get_img_gt_path_list_func=DatasetIndexed.get_img_gt_path_list)
 
         self.image_dims = ImageDimensions(width=analytics_data['width'], height=analytics_data['height'])
         self.dims = (3, self.image_dims.height, self.image_dims.width)
@@ -53,10 +52,8 @@ class DataModuleRGB(AbstractDatamodule):
         self.num_classes = len(self.class_encodings)
         self.class_weights = torch.as_tensor(analytics_gt['class_weights'])
 
-        self.twin_transform = None
         self.image_transform = OnlyImage(transforms.Compose([transforms.ToTensor(),
                                                              transforms.Normalize(mean=self.mean, std=self.std)]))
-        self.target_transform = OnlyTarget(IntegerEncoding(class_encodings=self.class_encodings_tensor))
 
         self.num_workers = num_workers
         self.batch_size = batch_size
@@ -77,9 +74,7 @@ class DataModuleRGB(AbstractDatamodule):
         super().setup()
 
         common_kwargs = {'image_dims': self.image_dims,
-                         'image_transform': self.image_transform,
-                         'target_transform': self.target_transform,
-                         'twin_transform': self.twin_transform}
+                         'image_transform': self.image_transform}
 
         dataset_kwargs = {'data_folder_name': self.data_folder_name,
                           'gt_folder_name': self.gt_folder_name}
@@ -89,11 +84,10 @@ class DataModuleRGB(AbstractDatamodule):
                                                            data_folder_name=self.data_folder_name,
                                                            gt_folder_name=self.gt_folder_name,
                                                            split_name=self.train_folder_name)
-            self.train = DatasetRGB(path=self.data_dir / self.train_folder_name,
-                                    selection=self.selection_train,
-                                    is_test=False,
-                                    **dataset_kwargs,
-                                    **common_kwargs)
+            self.train = DatasetIndexed(path=self.data_dir / self.train_folder_name,
+                                        selection=self.selection_train,
+                                        **dataset_kwargs,
+                                        **common_kwargs)
             log.info(f'Initialized train dataset with {len(self.train)} samples.')
             self.check_min_num_samples(self.trainer.num_devices, self.batch_size, num_samples=len(self.train),
                                        data_split=self.train_folder_name,
@@ -103,11 +97,10 @@ class DataModuleRGB(AbstractDatamodule):
                                                            data_folder_name=self.data_folder_name,
                                                            gt_folder_name=self.gt_folder_name,
                                                            split_name=self.val_folder_name)
-            self.val = DatasetRGB(path=self.data_dir / self.val_folder_name,
-                                  selection=self.selection_val,
-                                  is_test=False,
-                                  **dataset_kwargs,
-                                  **common_kwargs)
+            self.val = DatasetIndexed(path=self.data_dir / self.val_folder_name,
+                                      selection=self.selection_val,
+                                      **dataset_kwargs,
+                                      **common_kwargs)
             log.info(f'Initialized val dataset with {len(self.val)} samples.')
             self.check_min_num_samples(self.trainer.num_devices, self.batch_size, num_samples=len(self.val),
                                        data_split=self.val_folder_name,
@@ -118,11 +111,11 @@ class DataModuleRGB(AbstractDatamodule):
                                                            data_folder_name=self.data_folder_name,
                                                            gt_folder_name=self.gt_folder_name,
                                                            split_name=self.test_folder_name)
-            self.test = DatasetRGB(path=self.data_dir / self.test_folder_name,
-                                   selection=self.selection_test,
-                                   is_test=True,
-                                   **dataset_kwargs,
-                                   **common_kwargs)
+            self.test = DatasetIndexed(path=self.data_dir / self.test_folder_name,
+                                       selection=self.selection_test,
+                                       is_test=True,
+                                       **dataset_kwargs,
+                                       **common_kwargs)
             log.info(f'Initialized test dataset with {len(self.test)} samples.')
 
         if stage == 'predict':
@@ -171,7 +164,7 @@ class DataModuleRGB(AbstractDatamodule):
         :return:
         """
         if not hasattr(self, 'test'):
-            raise Exception('This method can just be called during testing')
+            raise ValueError('This method can just be called during testing')
 
         return self.test.output_file_list[index]
 
@@ -183,6 +176,6 @@ class DataModuleRGB(AbstractDatamodule):
         :return:
         """
         if not hasattr(self, 'predict'):
-            raise Exception('This method can just be called during prediction')
+            raise ValueError('This method can just be called during prediction')
 
         return self.predict.output_file_list[index]
