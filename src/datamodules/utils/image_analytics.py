@@ -7,7 +7,7 @@ import numpy as np
 from PIL import Image
 
 
-def compute_mean_std(file_names: np.ndarray, inmem=False, workers=4, **kwargs):
+def compute_mean_std(file_names: np.ndarray, inmem=False, workers=4):
     """
     Computes mean and std of all images present at target folder.
 

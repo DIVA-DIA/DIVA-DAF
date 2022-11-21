@@ -56,20 +56,20 @@ def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, 
         file_names_gt = np.asarray([str(item[1]) for item in img_gt_path_list])
 
         if missing_analytics_data:
-            analytics_data = _get_and_save_data_analytics(analytics_path_data, file_names_data, kwargs)
+            analytics_data = _get_and_save_data_analytics(analytics_path_data, file_names_data)
 
         if missing_analytics_gt:
-            analytics_gt = _get_and_save_gt_analytics(analytics_path_gt, file_names_gt, kwargs)
+            analytics_gt = _get_and_save_gt_analytics(analytics_path_gt, file_names_gt)
 
     return analytics_data, analytics_gt
 
 
-def _get_and_save_gt_analytics(analytics_path_gt, file_names_gt, kwargs):
+def _get_and_save_gt_analytics(analytics_path_gt, file_names_gt):
     # Measure weights for class balancing
     logging.info(f'Measuring class weights')
     # create a list with all gt file paths
     class_weights, class_encodings = _get_class_frequencies_weights_segmentation_indexed(
-        gt_images=file_names_gt, **kwargs)
+        gt_images=file_names_gt)
     analytics_gt = {'class_weights': class_weights,
                     'class_encodings': class_encodings}
     # save json
@@ -84,8 +84,8 @@ def _get_and_save_gt_analytics(analytics_path_gt, file_names_gt, kwargs):
     return analytics_gt
 
 
-def _get_and_save_data_analytics(analytics_path_data, file_names_data, kwargs):
-    mean, std = compute_mean_std(file_names=file_names_data, **kwargs)
+def _get_and_save_data_analytics(analytics_path_data, file_names_data):
+    mean, std = compute_mean_std(file_names=file_names_data)
     img = Image.open(file_names_data[0]).convert('RGB')
     analytics_data = {'mean': mean.tolist(),
                       'std': std.tolist(),
@@ -144,6 +144,3 @@ def _get_class_frequencies_weights_segmentation_indexed(gt_images: np.ndarray):
     class_weights = (1 / num_samples_per_class)  # / ((1 / num_samples_per_class).sum())
     return class_weights.tolist(), classes.tolist()
 
-
-if __name__ == '__main__':
-    print(get_analytics(input_path=Path('tests/dummy_data/dummy_dataset')))
