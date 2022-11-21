@@ -54,8 +54,9 @@ def test_init_datamodule(data_module_cropped_rgb, class_encodings):
     assert data_module_cropped_rgb.num_classes == 8
     assert data_module_cropped_rgb.class_encodings == class_encodings
     assert torch.equal(data_module_cropped_rgb.class_weights,
-                       torch.tensor([0.00047088927, 0.011501364, 0.1453358, 0.003524866, 0.6084134, 0.018242653,
-                                     0.20573607, 0.0067749745]))
+                       torch.tensor([1.1816224514404894e-06, 2.8860862585133873e-05, 0.0003646973054856062,
+                                     8.845096090226434e-06, 0.0015267175622284412, 4.577706567943096e-05,
+                                     0.0005162622546777129, 1.7000731531879865e-05]))
     assert data_module_cropped_rgb.mean == [0.7050454974582426, 0.6503181590413943, 0.5567698583877997]
     assert data_module_cropped_rgb.std == [0.3104060859619883, 0.3053311838884032, 0.28919611393432726]
     with pytest.raises(AttributeError):
