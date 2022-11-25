@@ -84,9 +84,6 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         self.optimizer_kwargs = optimizer_kwargs or {}
         self.scheduler_kwargs = scheduler_kwargs or {}
 
-        # self.metric_train = nn.ModuleDict({} if metric_train is None else get_callable_dict(metric_train))
-        # self.metric_val = nn.ModuleDict({} if metric_val is None else get_callable_dict(metric_val))
-        # self.metric_test = nn.ModuleDict({} if metric_test is None else get_callable_dict(metric_test))
         self.metric_train = nn.ModuleDict({}) if metric_train is None else metric_train
         self.metric_val = nn.ModuleDict({}) if metric_val is None else metric_val
         self.metric_test = nn.ModuleDict({}) if metric_test is None else metric_test
