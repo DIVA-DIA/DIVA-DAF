@@ -54,9 +54,9 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             optimizer_kwargs: Optional[Dict[str, Any]] = None,
             scheduler: Optional[Union[Type[_LRScheduler], str, _LRScheduler]] = None,
             scheduler_kwargs: Optional[Dict[str, Any]] = None,
-            metric_train: Optional[torchmetrics.Metric] = None,
-            metric_val: Optional[torchmetrics.Metric] = None,
-            metric_test: Optional[torchmetrics.Metric] = None,
+            metric_train: Optional[torchmetrics.MetricCollection] = None,
+            metric_val: Optional[torchmetrics.MetricCollection] = None,
+            metric_test: Optional[torchmetrics.MetricCollection] = None,
             confusion_matrix_val: Optional[bool] = False,
             confusion_matrix_test: Optional[bool] = False,
             confusion_matrix_log_every_n_epoch: Optional[int] = 1,
@@ -84,9 +84,9 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         self.optimizer_kwargs = optimizer_kwargs or {}
         self.scheduler_kwargs = scheduler_kwargs or {}
 
-        self.metric_train = nn.ModuleDict({} if metric_train is None else get_callable_dict(metric_train))
-        self.metric_val = nn.ModuleDict({} if metric_val is None else get_callable_dict(metric_val))
-        self.metric_test = nn.ModuleDict({} if metric_test is None else get_callable_dict(metric_test))
+        self.metric_train = nn.ModuleDict({}) if metric_train is None else metric_train
+        self.metric_val = nn.ModuleDict({}) if metric_val is None else metric_val
+        self.metric_test = nn.ModuleDict({}) if metric_test is None else metric_test
         self.confusion_matrix_val = confusion_matrix_val
         self.confusion_matrix_test = confusion_matrix_test
         self.confusion_matrix_log_every_n_epoch = confusion_matrix_log_every_n_epoch
@@ -157,17 +157,10 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         current_metric = self._get_current_metric()
 
         for name, metric in current_metric.items():
-            if isinstance(metric, torchmetrics.Metric):
-                if name in metric_kwargs:
-                    metric(y_hat, y, **metric_kwargs[name])
-                else:
-                    metric(y_hat, y)
-                logs[name] = metric  # log the metric itself if it is of type Metric
+            if name in metric_kwargs:
+                logs[name] = metric(y_hat, y, **metric_kwargs[name])
             else:
-                if name in metric_kwargs:
-                    logs[name] = metric(y_hat, y, **metric_kwargs[name])
-                else:
-                    logs[name] = metric(y_hat, y)
+                logs[name] = metric(y_hat, y)
         logs.update(losses)
         if len(losses.values()) > 1:
             logs["total_loss"] = sum(losses.values())
@@ -200,18 +193,16 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
 
     def training_step(self, batch: Any, batch_idx: int, **kwargs) -> Any:
         output = self.step(batch=batch, batch_idx=batch_idx, **kwargs)
-        for key, value in output[OutputKeys.LOG].items():
-            self.log(f"train/{key}", value, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
+        self._log_metrics_and_loss(output, phase='train')
         return output
 
     def validation_step(self, batch: Any, batch_idx: int, **kwargs) -> None:
         output = self.step(batch=batch, batch_idx=batch_idx, **kwargs)
-        if self.trainer.state.stage != RunningStage.SANITY_CHECKING \
-                and self.confusion_matrix_val \
-                and (self.trainer.current_epoch + 1) % self.confusion_matrix_log_every_n_epoch == 0:
+        if self.trainer.state.stage == RunningStage.SANITY_CHECKING:
+            return output
+        self._log_metrics_and_loss(output, phase='val')
+        if self.confusion_matrix_val and (self.trainer.current_epoch + 1) % self.confusion_matrix_log_every_n_epoch == 0:
             self.metric_conf_mat_val(preds=output[OutputKeys.PREDICTION], target=output[OutputKeys.TARGET])
-        for key, value in output[OutputKeys.LOG].items():
-            self.log(f"val/{key}", value, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
         return output
 
     def validation_epoch_end(self, outputs: Any) -> None:
@@ -231,8 +222,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         output = self.step(batch=batch, batch_idx=batch_idx, **kwargs)
         if self.confusion_matrix_test:
             self.metric_conf_mat_test(preds=output[OutputKeys.PREDICTION], target=output[OutputKeys.TARGET])
-        for key, value in output[OutputKeys.LOG].items():
-            self.log(f"test/{key}", value, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
+        self._log_metrics_and_loss(output, phase='test')
         return output
 
     def test_epoch_end(self, outputs: Any) -> None:
@@ -278,6 +268,14 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         if self.trainer.state.stage == RunningStage.TESTING:
             return self.metric_test
         return {}
+
+    def _log_metrics_and_loss(self, output: Dict[str, Any], phase: str) -> None:
+        for key, value in output[OutputKeys.LOG].items():
+            if value.dim() != 0 and len(value) != 1:
+                for i, v in enumerate(value):
+                    self.log(f"{phase}/{key}_c_{i}", v, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
+            else:
+                self.log(f"{phase}/{key}", value, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
 
     def _create_conf_mat(self, matrix: np.ndarray, stage: str = 'val'):
         # verify sum of conf mat entries

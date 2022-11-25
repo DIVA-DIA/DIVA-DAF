@@ -8,7 +8,8 @@ defaults:
     - /plugins: null
     - /task: semantic_segmentation_RGB.yaml
     - /loss: crossentropyloss_balanced.yaml
-    - /metric: iou.yaml
+    - /metric:
+          - iou.yaml
     - /model/backbone: divanet.yaml
     - /model/header: identity.yaml
     - /optimizer: adam.yaml

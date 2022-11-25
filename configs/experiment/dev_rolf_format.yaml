@@ -9,7 +9,8 @@ defaults:
     - /task:            semantic_segmentation_RGB.yaml
     - /datamodule:      rolf_format_dev.yaml
     - /loss:            crossentropyloss.yaml
-    - /metric:          iou.yaml
+    - /metric:
+          - iou.yaml
     - /model/backbone:  baby_unet.yaml
     - /model/header:    identity.yaml
     - /optimizer:       adam.yaml

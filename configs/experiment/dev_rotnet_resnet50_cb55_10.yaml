@@ -8,7 +8,8 @@ defaults:
     - /plugins: null
     - /task: classification.yaml
     - /loss: crossentropyloss.yaml
-    - /metric: accuracy.yaml
+    - /metric:
+          - accuracy.yaml
     - /model/backbone: resnet50.yaml
     - /model/header: resnet_classification.yaml
     - /optimizer: adam.yaml

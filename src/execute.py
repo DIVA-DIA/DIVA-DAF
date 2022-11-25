@@ -13,6 +13,7 @@ from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import LightningModule, LightningDataModule, Callback, Trainer, plugins
 from pytorch_lightning.loggers import LightningLoggerBase
 from pytorch_lightning.utilities import rank_zero_only
+from torchmetrics import MetricCollection
 
 from src.models.backbone_header_model import BackboneHeaderModel
 from src.utils import utils
@@ -60,10 +61,10 @@ def execute(config: DictConfig) -> Optional[float]:
     metric_val = None
     metric_test = None
     if 'metric' in config:
-        log.info(f"Instantiating metric<{config.metric._target_}>")
-        metric_train = hydra.utils.instantiate(config.metric)
-        metric_val = hydra.utils.instantiate(config.metric)
-        metric_test = hydra.utils.instantiate(config.metric)
+        log.info(f"Instantiating metrics")
+        metric_train = MetricCollection({metric_name: hydra.utils.instantiate(metric) for metric_name, metric in config.metric.items()})
+        metric_val = MetricCollection({metric_name: hydra.utils.instantiate(metric) for metric_name, metric in config.metric.items()})
+        metric_test = MetricCollection({metric_name: hydra.utils.instantiate(metric) for metric_name, metric in config.metric.items()})
 
     # Init the task as lightning module
     log.info(f"Instantiating model <{config.task._target_}>")
