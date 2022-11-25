@@ -8,7 +8,8 @@ defaults:
     - /plugins: null
     - /task: classification.yaml
     - /loss: crossentropyloss.yaml
-    - /metric: accuracy.yaml
+    - /metric:
+          - accuracy.yaml
     - /model/backbone: unet.yaml
     - /model/header: pool.yaml
     - /optimizer: adam.yaml

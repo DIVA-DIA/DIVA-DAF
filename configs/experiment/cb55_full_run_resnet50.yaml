@@ -8,7 +8,8 @@ defaults:
     - /plugins: null
     - /task: semantic_segmentation_HisDB_cropped.yaml
     - /loss: crossentropyloss.yaml
-    - /metric: hisdbiou.yaml
+    - /metric:
+          - hisdbiou.yaml
     - /model/backbone: resnet50.yaml
     - /model/header: resnet_segmentation.yaml
     - /optimizer: adam.yaml

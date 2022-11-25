@@ -15,4 +15,4 @@ if __name__ == '__main__':
     model.to(torch.device('cuda'))
     model.eval()
     model.half()  # to FP16
-    summary(model, (1, 3, 1152, 1728), device='cuda', dtypes=[torch.float16])
+    summary(model, (1, 3, 1024, 1536), device='cuda', dtypes=[torch.float16])
