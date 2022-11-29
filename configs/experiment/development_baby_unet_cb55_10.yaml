@@ -8,7 +8,11 @@ defaults:
     - /plugins: null
     - /task: semantic_segmentation_HisDB_cropped.yaml
     - /loss: crossentropyloss.yaml
-    - /metric: hisdbiou.yaml
+    - /metric:
+        - hisdbiou.yaml
+        - precision.yaml
+        - recall.yaml
+        - f1_score_class_wise.yaml
     - /model/backbone: baby_unet.yaml
     - /model/header: identity.yaml
     - /optimizer: adam.yaml
@@ -66,6 +70,7 @@ callbacks:
 
 logger:
     wandb:
+        project: dev
         name: 'dev-baby-unet-cb55-10'
         tags: [ "best_model", "USL" ]
         group: 'dev-runs'

@@ -9,7 +9,7 @@ from pl_bolts.models.vision import UNet
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.trainer.states import TrainerState, RunningStage
 from torch.nn import Identity, CrossEntropyLoss
-from torchmetrics import Precision
+from torchmetrics import Precision, MetricCollection
 
 from src.models.backbone_header_model import BackboneHeaderModel
 from src.tasks.base_task import AbstractTask
@@ -49,23 +49,23 @@ def test__get_current_metric_fail(monkeypatch):
 
 
 def test__get_current_metric_train(monkeypatch):
-    metric = Precision()
+    metric = MetricCollection(Precision())
     task = AbstractTask(metric_train=metric)
     trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(task, 'trainer', trainer)
     state = TrainerState(stage=RunningStage.TRAINING)
     monkeypatch.setattr(trainer, 'state', state)
-    assert dict(task._get_current_metric().items()) == {'precision': Precision()}
+    assert dict(task._get_current_metric().items()) == {'Precision': Precision()}
 
 
 def test__get_current_metric_test(monkeypatch):
-    metric = Precision()
+    metric = MetricCollection(Precision())
     task = AbstractTask(metric_test=metric)
     trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(task, 'trainer', trainer)
     state = TrainerState(stage=RunningStage.TESTING)
     monkeypatch.setattr(trainer, 'state', state)
-    assert dict(task._get_current_metric().items()) == {'precision': Precision()}
+    assert dict(task._get_current_metric().items()) == {'Precision': Precision()}
 
 
 def test_setup_warning(monkeypatch, data_module_cropped_hisdb, caplog):

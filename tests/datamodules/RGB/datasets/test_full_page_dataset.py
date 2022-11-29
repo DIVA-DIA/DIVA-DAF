@@ -1,6 +1,7 @@
 import pytest
 
-from src.datamodules.RGB.datasets.full_page_dataset import DatasetRGB, ImageDimensions
+from src.datamodules.RGB.datasets.full_page_dataset import DatasetRGB
+from src.datamodules.utils.misc import ImageDimensions
 from tests.test_data.dummy_data_hisdb.dummy_data import data_dir
 
 

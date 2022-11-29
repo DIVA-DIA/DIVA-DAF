@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+bash scripts/experiments/fine_tune_morpho_unet16_cb55_ssl_B22.sh
+bash scripts/experiments/fine_tune_morpho_unet32_cb55_ssl_B22.sh
+bash scripts/experiments/fine_tune_morpho_unet64_cb55_ssl_B22.sh
+bash scripts/experiments/fine_tune_morpho_unet_cb55_ssl_B22.sh

@@ -34,22 +34,24 @@ def _get_argmax(output: Union[torch.Tensor, np.ndarray], dim=1):
     return output
 
 
-def validate_path_for_segmentation(data_dir, data_folder_name: str, gt_folder_name: str):
+def validate_path_for_segmentation(data_dir, data_folder_name: str, gt_folder_name: str,
+                                   split_name: Union[str, List[str]]):
     """
     Checks if the data_dir folder has the following structure:
 
     {data_dir}
-        - train
+        - {train_folder_name}
             - {data_folder_name}
             - {gt_folder_name}
-        - val
+        - {val_folder_name}
             - {data_folder_name}
             - {gt_folder_name}
-        - test
+        - {test_folder_name}
             - {data_folder_name}
             - {gt_folder_name}
 
 
+    :param split_name:
     :param data_dir:
     :param data_folder_name:
     :param gt_folder_name:
@@ -57,27 +59,30 @@ def validate_path_for_segmentation(data_dir, data_folder_name: str, gt_folder_na
     """
     if data_dir is None:
         raise PathNone("Please provide the path to root dir of the dataset "
-                       "(folder containing the train/val/test folder)")
+                       "(folder containing the split(train/val/test) folders)")
+    if isinstance(split_name, str):
+        split_names = [split_name]
     else:
-        split_names = ['train', 'val', 'test']
-        type_names = [data_folder_name, gt_folder_name]
+        split_names = split_name
+    type_names = [data_folder_name, gt_folder_name]
 
-        data_folder = Path(data_dir)
-        if not data_folder.is_dir():
-            raise PathNotDir("Please provide the path to root dir of the dataset "
-                             "(folder containing the train/val/test folder)")
-        split_folders = [d for d in data_folder.iterdir() if d.is_dir() and d.name in split_names]
-        if len(split_folders) != 3:
-            raise PathMissingSplitDir(f'Your path needs to contain train/val/test and '
-                                      f'each of them a folder {data_folder_name} and {gt_folder_name}')
+    data_folder = Path(data_dir)
+    if not data_folder.is_dir():
+        raise PathNotDir("Please provide the path to root dir of the dataset "
+                         "(folder containing the split(train/val/test) folder)")
+    split_folders = [d for d in data_folder.iterdir() if d.is_dir() and d.name in split_names]
+    if len(split_folders) != len(split_names):
+        raise PathMissingSplitDir(
+            f'Your path needs to contain the folder(s) "{split_name}"'
+            f'each of them a folder {data_folder_name} and {gt_folder_name}')
 
-        # check if we have train/test/val
-        for split in split_folders:
-            type_folders = [d for d in split.iterdir() if d.is_dir() and d.name in type_names]
-            # check if we have data/gt
-            if len(type_folders) != 2:
-                raise PathMissingDirinSplitDir(f'Folder {split.name} does not contain a {data_folder_name} '
-                                               f'and {gt_folder_name} folder')
+    # check if we have train/test/val
+    for split in split_folders:
+        type_folders = [d for d in split.iterdir() if d.is_dir() and d.name in type_names]
+        # check if we have data/gt
+        if len(type_folders) != 2:
+            raise PathMissingDirinSplitDir(f'Folder {split.name} does not contain a {data_folder_name} '
+                                           f'and {gt_folder_name} folder')
     return Path(data_dir)
 
 
@@ -167,3 +172,9 @@ def get_image_dims(data_gt_path_list, **kwargs):
     image_dims = ImageDimensions(width=img.width, height=img.height)
 
     return image_dims
+
+
+def pil_loader_gif(path: Path):
+    with open(path, "rb") as f:
+        gt_img = Image.open(f)
+        return gt_img.convert('P')

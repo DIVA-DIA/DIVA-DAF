@@ -19,6 +19,7 @@ log = utils.get_logger(__name__)
 
 class DivaHisDBDataModuleCropped(AbstractDatamodule):
     def __init__(self, data_dir: str, data_folder_name: str, gt_folder_name: str,
+                 train_folder_name: str = 'train', val_folder_name: str = 'val', test_folder_name: str = 'test',
                  selection_train: Optional[Union[int, List[str]]] = None,
                  selection_val: Optional[Union[int, List[str]]] = None,
                  selection_test: Optional[Union[int, List[str]]] = None,
@@ -26,6 +27,9 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
                  shuffle: bool = True, drop_last: bool = True):
         super().__init__()
 
+        self.train_folder_name = train_folder_name
+        self.val_folder_name = val_folder_name
+        self.test_folder_name = test_folder_name
         self.data_folder_name = data_folder_name
         self.gt_folder_name = gt_folder_name
 
@@ -53,8 +57,8 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
 
         self.data_folder_name = data_folder_name
         self.gt_folder_name = gt_folder_name
-        self.data_dir = validate_path_for_segmentation(data_dir=data_dir, data_folder_name=self.data_folder_name,
-                                                       gt_folder_name=self.gt_folder_name)
+
+        self.data_dir = data_dir
 
         self.selection_train = selection_train
         self.selection_val = selection_val
@@ -68,19 +72,31 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
     def setup(self, stage: Optional[str] = None):
         super().setup()
         if stage == 'fit' or stage is None:
+            self.data_dir = validate_path_for_segmentation(data_dir=self.data_dir,
+                                                           data_folder_name=self.data_folder_name,
+                                                           gt_folder_name=self.gt_folder_name,
+                                                           split_name=self.train_folder_name)
             self.train = CroppedHisDBDataset(**self._create_dataset_parameters('train'), selection=self.selection_train)
             log.info(f'Initialized train dataset with {len(self.train)} samples.')
             self.check_min_num_samples(self.trainer.num_devices, self.batch_size, num_samples=len(self.train),
-                                       data_split='train',
+                                       data_split=self.train_folder_name,
                                        drop_last=self.drop_last)
 
+            self.data_dir = validate_path_for_segmentation(data_dir=self.data_dir,
+                                                           data_folder_name=self.data_folder_name,
+                                                           gt_folder_name=self.gt_folder_name,
+                                                           split_name=self.val_folder_name)
             self.val = CroppedHisDBDataset(**self._create_dataset_parameters('val'), selection=self.selection_val)
             log.info(f'Initialized val dataset with {len(self.val)} samples.')
             self.check_min_num_samples(self.trainer.num_devices, self.batch_size, num_samples=len(self.val),
-                                       data_split='val',
+                                       data_split=self.val_folder_name,
                                        drop_last=self.drop_last)
 
         if stage == 'test':
+            self.data_dir = validate_path_for_segmentation(data_dir=self.data_dir,
+                                                           data_folder_name=self.data_folder_name,
+                                                           gt_folder_name=self.gt_folder_name,
+                                                           split_name=self.test_folder_name)
             self.test = CroppedHisDBDataset(**self._create_dataset_parameters('test'), selection=self.selection_test)
             log.info(f'Initialized test dataset with {len(self.test)} samples.')
             # self._check_min_num_samples(num_samples=len(self.test), data_split='test',

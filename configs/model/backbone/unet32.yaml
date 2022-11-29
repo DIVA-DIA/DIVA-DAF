@@ -1,0 +1,5 @@
+_target_: src.models.backbones.unet.UNet32
+num_classes: ${datamodule:num_classes}
+
+#path_to_weights: 'path/to/checkpoint' # path to the checkpoint(.pth) with surrounded with ''
+#strict: False  # if you want to load the weights in a non-strict manner (https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module.load_state_dict) (load_state_dict())

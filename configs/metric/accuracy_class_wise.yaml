@@ -1,0 +1,5 @@
+accuracy:
+    # more infos about parameters: https://torchmetrics.readthedocs.io/en/latest/references/modules.html#id3
+    _target_: torchmetrics.Accuracy
+
+    average: none
