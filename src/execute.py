@@ -8,7 +8,7 @@ import hydra
 import torch
 import wandb
 from hydra.core.hydra_config import HydraConfig
-from hydra.utils import get_original_cwd, to_absolute_path
+from hydra.utils import to_absolute_path
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import LightningModule, LightningDataModule, Callback, Trainer, plugins
 from pytorch_lightning.loggers import LightningLoggerBase
@@ -62,9 +62,12 @@ def execute(config: DictConfig) -> Optional[float]:
     metric_test = None
     if 'metric' in config:
         log.info(f"Instantiating metrics")
-        metric_train = MetricCollection({metric_name: hydra.utils.instantiate(metric) for metric_name, metric in config.metric.items()})
-        metric_val = MetricCollection({metric_name: hydra.utils.instantiate(metric) for metric_name, metric in config.metric.items()})
-        metric_test = MetricCollection({metric_name: hydra.utils.instantiate(metric) for metric_name, metric in config.metric.items()})
+        metric_train = MetricCollection(
+            {metric_name: hydra.utils.instantiate(metric) for metric_name, metric in config.metric.items()})
+        metric_val = MetricCollection(
+            {metric_name: hydra.utils.instantiate(metric) for metric_name, metric in config.metric.items()})
+        metric_test = MetricCollection(
+            {metric_name: hydra.utils.instantiate(metric) for metric_name, metric in config.metric.items()})
 
     # Init the task as lightning module
     log.info(f"Instantiating model <{config.task._target_}>")
@@ -158,6 +161,7 @@ def execute(config: DictConfig) -> Optional[float]:
         logger=logger,
     )
 
+    _clean_up_checkpoints(trainer=trainer)
     _print_best_paths(conf=config, trainer=trainer)
 
     _print_run_command(trainer=trainer)
@@ -197,7 +201,8 @@ def _load_model_part(config: DictConfig, part_name: str):
         path_to_weights = config.model.get(part_name).path_to_weights
         del config.model.get(part_name).path_to_weights
         part: LightningModule = hydra.utils.instantiate(config.model.get(part_name))
-        missing_keys, unexpected_keys = part.load_state_dict(torch.load(path_to_weights, map_location='cpu'), strict=strict)
+        missing_keys, unexpected_keys = part.load_state_dict(torch.load(path_to_weights, map_location='cpu'),
+                                                             strict=strict)
         if missing_keys:
             log.warning(f"When loading the model part {part_name} these keys where missed: \n {missing_keys}")
         if unexpected_keys:
@@ -218,6 +223,17 @@ def _load_model_part(config: DictConfig, part_name: str):
         part.eval()
 
     return part
+
+
+def _clean_up_checkpoints(trainer: Trainer):
+    best_model_path = Path(trainer.checkpoint_callback.best_model_path)
+    if not best_model_path.is_file():
+        return
+    best_epoch_path = best_model_path.parents[0]
+    checkpoint_path = best_model_path.parents[1]
+    for path in checkpoint_path.iterdir():
+        if path.is_dir() and path != best_epoch_path:
+            shutil.rmtree(path)
 
 
 def _print_best_paths(conf: DictConfig, trainer: Trainer):
@@ -277,4 +293,3 @@ def _write_current_run_dir(config: DictConfig):
     log.info(f'Writing work dir into run dir log file ({run_dir_log_file})')
     with run_dir_log_file.open('a') as f:
         f.write(f'{os.getcwd()}\n')
-

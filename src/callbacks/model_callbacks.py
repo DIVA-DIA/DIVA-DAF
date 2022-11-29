@@ -9,6 +9,7 @@ import torch
 from pytorch_lightning import Callback
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.utilities import rank_zero_only
+from pytorch_lightning.utilities.cloud_io import get_filesystem
 
 log = logging.getLogger(__name__)
 
@@ -27,9 +28,9 @@ class SaveModelStateDictAndTaskCheckpoint(ModelCheckpoint):
         self.CHECKPOINT_NAME_LAST = 'task_last'
 
     def _save_checkpoint(self, trainer: "pl.Trainer", filepath: str) -> None:
-        super()._save_checkpoint(trainer=trainer, filepath=filepath)
         if not trainer.is_global_zero:
             return
+        super()._save_checkpoint(trainer=trainer, filepath=filepath)
 
         model = trainer.lightning_module.model
         metric_candidates = self._monitor_candidates(trainer)
@@ -43,7 +44,7 @@ class SaveModelStateDictAndTaskCheckpoint(ModelCheckpoint):
             if trainer.current_epoch > 0:
                 # remove the last checkpoint folder
                 filepath_old = os.path.join(self.dirpath, f"epoch={trainer.current_epoch - 1}")
-                self._del_old_folder(filepath_old)
+                self._del_old_folder(filepath_old, trainer)
         else:
             format_backbone_filename = self.backbone_filename.split('/')[-1] + '_last'
             format_header_filename = self.header_filename.split('/')[-1] + '_last'
@@ -52,14 +53,15 @@ class SaveModelStateDictAndTaskCheckpoint(ModelCheckpoint):
         torch.save(model.header.state_dict(), os.path.join(self.dirpath, format_header_filename + '.pth'))
 
     @rank_zero_only
-    def _del_old_folder(self, filepath: str) -> None:
-        if self._fs.exists(filepath):
+    def _del_old_folder(self, filepath: str, trainer: "pl.Trainer") -> None:
+        file_system = get_filesystem(filepath)
+        if file_system.exists(filepath):
             # delete all files in directory
-            for path in self._fs.ls(filepath):
-                if self._fs.exists(path):
-                    self._fs.rm(path)
+            for path in file_system.ls(filepath):
+                if file_system.exists(path):
+                    trainer.strategy.remove_checkpoint(path)
             # delete directory
-            self._fs.rmdir(filepath)
+            file_system.rm(filepath, recursive=True)
             log.debug(f"Removed checkpoint: {filepath}")
 
 
