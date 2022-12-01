@@ -1,6 +1,6 @@
 import torch
 
-from src.models.backbones import ResNet18, ResNet34, ResNet50, ResNet101, ResNet152
+from src.models.backbones.resnet import ResNet18, ResNet34, ResNet50, ResNet101, ResNet152
 
 
 def test_res_net18():

@@ -35,7 +35,7 @@ def get_dict():
             'csv': {'_target_': 'pytorch_lightning.loggers.csv_logs.CSVLogger', 'save_dir': '.', 'name': 'csv/'}},
         'seed': 42, 'train': True, 'test': True,
         'trainer': {'_target_': 'pytorch_lightning.Trainer', 'gpus': -1, 'accelerator': 'ddp',
-                    'min_epochs': 1, 'max_epochs': 3, 'weights_summary': 'full', 'precision': 16},
+                    'min_epochs': 1, 'max_epochs': 3, 'enable_model_summary': 'full', 'precision': 16},
         'datamodule': {
             '_target_': 'src.datamodules.hisDBDataModule.DIVAHisDBDataModule.DIVAHisDBDataModuleCropped',
             'data_dir': '/net/research-hisdoc/datasets/semantic_segmentation/datasets_cropped/CB55-10-segmentation',
@@ -113,7 +113,7 @@ def test_print_config(get_dict, capsys):
         "│       accelerator: ddp\n" \
         "│       min_epochs: 1\n" \
         "│       max_epochs: 3\n" \
-        "│       weights_summary: full\n" \
+        "│       enable_model_summary: full\n" \
         "│       precision: 16\n" \
         "│       \n" \
         "├── task\n" \

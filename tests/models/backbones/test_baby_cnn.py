@@ -1,6 +1,6 @@
 import torch
 
-from src.models.backbones import CNN_basic
+from src.models.backbones.baby_cnn import CNN_basic
 
 
 def test_forward():

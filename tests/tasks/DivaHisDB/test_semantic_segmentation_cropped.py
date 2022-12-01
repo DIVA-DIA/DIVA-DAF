@@ -5,10 +5,10 @@ import pytest
 import pytorch_lightning as pl
 import torch.optim.optimizer
 from omegaconf import OmegaConf
-from pl_bolts.models.vision import UNet
 from pytorch_lightning import seed_everything, Trainer
 
 from src.datamodules.DivaHisDB.datamodule_cropped import DivaHisDBDataModuleCropped
+from src.models.backbones.unet import UNet
 from src.tasks.DivaHisDB.semantic_segmentation_cropped import SemanticSegmentationCroppedHisDB
 from src.tasks.utils.outputs import OutputKeys
 from tests.tasks.test_base_task import fake_log
@@ -79,7 +79,7 @@ def test_training_step(monkeypatch, datamodule_and_dir, task, capsys):
     data_module_cropped, data_dir_cropped = datamodule_and_dir
     trainer = Trainer()
     monkeypatch.setattr(data_module_cropped, 'trainer', trainer)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped)
     monkeypatch.setattr(task, 'log', fake_log)
     data_module_cropped.setup('fit')
@@ -94,7 +94,7 @@ def test_validation_step(monkeypatch, datamodule_and_dir, task, capsys):
     data_module_cropped, data_dir_cropped = datamodule_and_dir
     trainer = Trainer()
     monkeypatch.setattr(data_module_cropped, 'trainer', trainer)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped)
     monkeypatch.setattr(task, 'log', fake_log)
     monkeypatch.setattr(task, 'confusion_matrix_val', False)
@@ -109,7 +109,7 @@ def test_test_step(monkeypatch, datamodule_and_dir, task, capsys, tmp_path):
     data_module_cropped, data_dir_cropped = datamodule_and_dir
     trainer = Trainer()
     monkeypatch.setattr(data_module_cropped, 'trainer', trainer)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped)
     monkeypatch.setattr(task, 'log', fake_log)
     monkeypatch.setattr(task, 'confusion_matrix_val', False)
