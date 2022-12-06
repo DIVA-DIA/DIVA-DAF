@@ -29,12 +29,13 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Set up Python ${{ matrix.python-version }}
-    - uses: actions/setup-python@v2
+      uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
+
     - name: Install pip dependencies
-    - run: | 
+      run: | 
         pip install --requirement requirements.txt --upgrade --quiet --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
         pip install --requirement tests/requirements.txt --quiet
 
