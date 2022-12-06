@@ -10,7 +10,7 @@ from tests.test_data.dummy_data_histdb_new.dummy_data import data_dir_classifica
 
 def test_give_permutation():
     np.random.seed(42)
-    perm = give_permutation(rows=3, cols=2, gt_type=GT_Type.ROW_COLUMN, horizontal_shuffle=True, vertical_shuffle=False)
+    perm = give_permutation()
     assert perm[0] == 6
     assert perm[1] == [[0, 1], [3, 2], [5, 4]]
 

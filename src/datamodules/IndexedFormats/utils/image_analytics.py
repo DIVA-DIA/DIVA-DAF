@@ -13,7 +13,7 @@ from src.datamodules.utils.misc import pil_loader_gif
 
 
 def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, train_folder_name: str,
-                  get_img_gt_path_list_func, **kwargs):
+                  get_img_gt_path_list_func):
     """
     Parameters
     ----------
