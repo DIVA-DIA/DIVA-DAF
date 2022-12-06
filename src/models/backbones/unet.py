@@ -137,12 +137,13 @@ def encoding_block(in_c, out_c):
         nn.Conv2d(out_c, out_c, kernel_size=3, stride=1, padding=1),
         nn.BatchNorm2d(out_c),
         nn.ReLU(inplace=True)
-        )
+    )
     return conv
 
-class UNet16(nn.Module):
+
+class UNet_najoua(nn.Module):
     def __init__(self, num_classes=4, features=[16, 32]):
-        super(UNet16, self).__init__()
+        super(UNet_najoua, self).__init__()
         self.pool = nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2))
         self.conv1 = encoding_block(3, features[0])
         self.conv2 = encoding_block(features[0], features[0])
@@ -231,186 +232,19 @@ class UNet16(nn.Module):
         return x
 
 
-class UNet32(nn.Module):
+class UNet16(UNet_najoua):
+    def __init__(self):
+        super(UNet16, self).__init__(num_classes=4, features=[16, 32])
+
+
+class UNet32(UNet_najoua):
     def __init__(self, num_classes=4, features=[32, 64]):
-        super(UNet32, self).__init__()
-        self.pool = nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2))
-        self.conv1 = encoding_block(3, features[0])
-        self.conv2 = encoding_block(features[0], features[0])
-        self.conv3 = encoding_block(features[0], features[0])
-        self.conv4 = encoding_block(features[0], features[0])
-        self.conv5 = encoding_block(features[1], features[0])
-        self.conv6 = encoding_block(features[1], features[0])
-        self.conv7 = encoding_block(features[1], features[0])
-        self.conv8 = encoding_block(features[1], features[0])
-        self.tconv1 = nn.ConvTranspose2d(features[0], features[0], kernel_size=2, stride=2)
-        self.tconv2 = nn.ConvTranspose2d(features[0], features[0], kernel_size=2, stride=2)
-        self.tconv3 = nn.ConvTranspose2d(features[0], features[0], kernel_size=2, stride=2)
-        self.tconv4 = nn.ConvTranspose2d(features[0], features[0], kernel_size=2, stride=2)
-        self.bottleneck = encoding_block(features[0], features[0])
-        self.final_layer = nn.Conv2d(features[0], num_classes, kernel_size=1)
-
-    def forward(self, x):
-        # encoder
-        x_1 = self.conv1(x)  # to_concat
-        # print(x_1.size())
-
-        x_2 = self.pool(x_1)
-        # print(x_2.size())
-
-        x_3 = self.conv2(x_2)  # to_concat
-        # print(x_3.size())
-
-        x_4 = self.pool(x_3)
-        # print(x_4.size())
-
-        x_5 = self.conv3(x_4)  # to_concat
-        # print(x_5.size())
-
-        x_6 = self.pool(x_5)
-        # print(x_6.size())
-
-        x_7 = self.conv4(x_6)  # to_concat
-        # print(x_7.size())
-
-        x_8 = self.pool(x_7)
-        # print(x_8.size())
-
-        x_9 = self.bottleneck(x_8)
-        # print(x_9.size())
-
-        # decoder
-        x_10 = self.tconv1(x_9)
-        # print(x_10.size())
-
-        x_11 = torch.cat((x_7, x_10), dim=1)
-        # print(x_11.size())
-
-        x_12 = self.conv5(x_11)
-        # print(x_12.size())
-
-        x_13 = self.tconv2(x_12)
-        # print(x_13.size())
-
-        x_14 = torch.cat((x_5, x_13), dim=1)
-        # print(x_14.size())
-
-        x_15 = self.conv6(x_14)
-        # print(x_15.size())
-
-        x_16 = self.tconv3(x_15)
-        # print(x_16.size())
-
-        x_17 = torch.cat((x_3, x_16), dim=1)
-        # print(x_17.size())
-
-        x_18 = self.conv7(x_17)
-        # print(x_18.size())
-
-        x_19 = self.tconv4(x_18)
-        # print(x_19.size())
-
-        x_20 = torch.cat((x_1, x_19), dim=1)
-        # print(x_20.size())
-
-        x_21 = self.conv8(x_20)
-        # print(x_21.size())
-
-        x = self.final_layer(x_21)
-        # print(x.size())
-
-        return x
+        super(UNet32, self).__init__(num_classes=4, features=[32, 64])
 
 
 class UNet64(nn.Module):
-    def __init__(self, num_classes=4, features=[64, 128]):
-        super(UNet64, self).__init__()
-        self.pool = nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2))
-        self.conv1 = encoding_block(3, features[0])
-        self.conv2 = encoding_block(features[0], features[0])
-        self.conv3 = encoding_block(features[0], features[0])
-        self.conv4 = encoding_block(features[0], features[0])
-        self.conv5 = encoding_block(features[1], features[0])
-        self.conv6 = encoding_block(features[1], features[0])
-        self.conv7 = encoding_block(features[1], features[0])
-        self.conv8 = encoding_block(features[1], features[0])
-        self.tconv1 = nn.ConvTranspose2d(features[0], features[0], kernel_size=2, stride=2)
-        self.tconv2 = nn.ConvTranspose2d(features[0], features[0], kernel_size=2, stride=2)
-        self.tconv3 = nn.ConvTranspose2d(features[0], features[0], kernel_size=2, stride=2)
-        self.tconv4 = nn.ConvTranspose2d(features[0], features[0], kernel_size=2, stride=2)
-        self.bottleneck = encoding_block(features[0], features[0])
-        self.final_layer = nn.Conv2d(features[0], num_classes, kernel_size=1)
-
-    def forward(self, x):
-        # encoder
-        x_1 = self.conv1(x)  # to_concat
-        # print(x_1.size())
-
-        x_2 = self.pool(x_1)
-        # print(x_2.size())
-
-        x_3 = self.conv2(x_2)  # to_concat
-        # print(x_3.size())
-
-        x_4 = self.pool(x_3)
-        # print(x_4.size())
-
-        x_5 = self.conv3(x_4)  # to_concat
-        # print(x_5.size())
-
-        x_6 = self.pool(x_5)
-        # print(x_6.size())
-
-        x_7 = self.conv4(x_6)  # to_concat
-        # print(x_7.size())
-
-        x_8 = self.pool(x_7)
-        # print(x_8.size())
-
-        x_9 = self.bottleneck(x_8)
-        # print(x_9.size())
-
-        # decoder
-        x_10 = self.tconv1(x_9)
-        # print(x_10.size())
-
-        x_11 = torch.cat((x_7, x_10), dim=1)
-        # print(x_11.size())
-
-        x_12 = self.conv5(x_11)
-        # print(x_12.size())
-
-        x_13 = self.tconv2(x_12)
-        # print(x_13.size())
-
-        x_14 = torch.cat((x_5, x_13), dim=1)
-        # print(x_14.size())
-
-        x_15 = self.conv6(x_14)
-        # print(x_15.size())
-
-        x_16 = self.tconv3(x_15)
-        # print(x_16.size())
-
-        x_17 = torch.cat((x_3, x_16), dim=1)
-        # print(x_17.size())
-
-        x_18 = self.conv7(x_17)
-        # print(x_18.size())
-
-        x_19 = self.tconv4(x_18)
-        # print(x_19.size())
-
-        x_20 = torch.cat((x_1, x_19), dim=1)
-        # print(x_20.size())
-
-        x_21 = self.conv8(x_20)
-        # print(x_21.size())
-
-        x = self.final_layer(x_21)
-        # print(x.size())
-
-        return x
+    def __init__(self, num_classes=4, features=[32, 64]):
+        super(UNet64, self).__init__(num_classes=4, features=[64, 128])
 
 
 def one_conv1(in_c, out_c):
