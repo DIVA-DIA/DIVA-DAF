@@ -233,18 +233,18 @@ class UNet_najoua(nn.Module):
 
 
 class UNet16(UNet_najoua):
-    def __init__(self):
-        super(UNet16, self).__init__(num_classes=4, features=[16, 32])
+    def __init__(self, num_classes=4):
+        super(UNet16, self).__init__(num_classes=num_classes, features=[16, 32])
 
 
 class UNet32(UNet_najoua):
-    def __init__(self, num_classes=4, features=[32, 64]):
-        super(UNet32, self).__init__(num_classes=4, features=[32, 64])
+    def __init__(self, num_classes=4):
+        super(UNet32, self).__init__(num_classes=num_classes, features=[32, 64])
 
 
-class UNet64(nn.Module):
-    def __init__(self, num_classes=4, features=[32, 64]):
-        super(UNet64, self).__init__(num_classes=4, features=[64, 128])
+class UNet64(UNet_najoua):
+    def __init__(self, num_classes=4):
+        super(UNet64, self).__init__(num_classes=num_classes, features=[64, 128])
 
 
 def one_conv1(in_c, out_c):
@@ -261,111 +261,3 @@ def one_conv2(in_c, out_c):
         nn.ReLU(inplace=True),
     )
     return convol2
-
-
-class Adaptive_Unet(nn.Module):
-    def __init__(self, out_channels=4, features=[32, 64, 128, 256]):
-        super(Adaptive_Unet, self).__init__()
-        self.pool = nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2))
-        self.dropout = nn.Dropout(0.4)
-        self.conv_1 = one_conv1(3, 32)
-        self.conv_2 = one_conv2(32, 32)
-        self.tconv_relu = nn.ReLU(inplace=True)
-        self.conv2 = encoding_block(features[0], features[1])
-        self.conv3 = encoding_block(features[1], features[2])
-        self.conv4 = encoding_block(features[2], features[3])
-        self.conv5 = encoding_block(features[3] * 2, features[3])
-        self.conv6 = encoding_block(features[3], features[2])
-        self.conv7 = encoding_block(features[2], features[1])
-        self.conv8 = encoding_block(features[1], features[0])
-        self.tconv1 = nn.ConvTranspose2d(features[-1] * 2, features[-1], kernel_size=2, stride=2)
-        self.tconv2 = nn.ConvTranspose2d(features[-1], features[-2], kernel_size=2, stride=2)
-        self.tconv3 = nn.ConvTranspose2d(features[-2], features[-3], kernel_size=2, stride=2)
-        self.tconv4 = nn.ConvTranspose2d(features[-3], features[-4], kernel_size=2, stride=2)
-        self.bottleneck = encoding_block(features[3], features[3] * 2)
-        self.final_layer = nn.Conv2d(features[0], out_channels, kernel_size=1)
-
-    def forward(self, x):
-        # encoder
-        x_1 = self.conv_1(x)  # Convolution, ReLU 32 3×3 # To concat
-        # print(x_1.size())
-        x_1 = self.dropout(x_1)  # Dropout (0.4)
-
-        x_2 = self.conv_2(x_1)  # Convolution, ReLU 32 3×3
-        # print(x_2.size())
-
-        x_2 = self.pool(x_2)  # Maxpooling  2×2 ([1, 32, 672, 480])
-        # print(x_2.size())
-
-        x_3 = self.conv2(x_2)  # 2 conv ([1, 64, 672, 480]) # To concat
-        # print(x_3.size())
-
-        x_4 = self.pool(x_3)  # Maxpooling  2×2 ([1, 64, 336, 240])
-        # print(x_4.size())
-
-        x_5 = self.conv3(x_4)  # 2 conv ([1, 128, 336, 240]) # To concat
-        # print(x_5.size())
-
-        x_6 = self.pool(x_5)  # Maxpooling  2×2 ([1, 128, 168, 120])
-        # print(x_6.size())
-
-        x_7 = self.conv4(x_6)  # 2 conv ([1, 256, 168, 120]) # To concat
-        # print(x_7.size())
-        x_7 = self.dropout(x_7)  # Dropout (0.4)
-
-        x_8 = self.pool(x_7)  # Maxpooling  2×2 [1, 256, 84, 60])
-        # print(x_8.size())
-
-        x_9 = self.bottleneck(x_8)  # 2 conv ([1, 512, 84, 60])
-        # print(x_9.size())
-        x_9 = self.dropout(x_9)  # Dropout (0.4)
-
-        # decoder
-        x_10 = self.tconv1(x_9)  # deconv ([1, 256, 168, 120])
-        # print(x_10.size())
-
-        x_10 = self.tconv_relu(x_10)
-
-        x_11 = torch.cat((x_7, x_10), dim=1)  # ([1, 512, 168, 120])
-        # print(x_11.size())
-
-        x_12 = self.conv5(x_11)  # 2 conv ([1, 256, 168, 120])
-        # print(x_12.size())
-
-        x_13 = self.tconv2(x_12)  # deconv [1, 128, 336, 240])
-        # print(x_13.size())
-
-        x_13 = self.tconv_relu(x_13)
-
-        x_14 = torch.cat((x_5, x_13), dim=1)  # ([1, 256, 336, 240])
-        # print(x_14.size())
-
-        x_15 = self.conv6(x_14)  # 2 conv ([1, 128, 336, 240])
-        # print(x_15.size())
-
-        x_16 = self.tconv3(x_15)  # deconv [1, 64, 672, 480])
-        # print(x_16.size())
-
-        x_16 = self.tconv_relu(x_16)
-
-        x_17 = torch.cat((x_3, x_16), dim=1)  # ([1, 128, 672, 480])
-        # print(x_17.size())
-
-        x_18 = self.conv7(x_17)  # 2 conv ([1, 64, 672, 480])
-        # print(x_18.size())
-
-        x_19 = self.tconv4(x_18)  # deconv [1, 32, 1344, 960])
-        # print(x_19.size())
-
-        x_19 = self.tconv_relu(x_19)
-
-        x_20 = torch.cat((x_1, x_19), dim=1)  # ([1, 64, 1344, 960])
-        # print(x_20.size())
-
-        x_21 = self.conv8(x_20)  # 2 conv ([1, 32, 1344, 960]
-        # print(x_21.size())
-
-        x = self.final_layer(x_21)
-        # print(x.size())
-
-        return x
