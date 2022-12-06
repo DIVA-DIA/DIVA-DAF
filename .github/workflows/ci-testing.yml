@@ -54,6 +54,7 @@ jobs:
         coverage xml
 
     - name: SonarCloud Scan
+      if: success()
       uses: SonarSource/sonarcloud-github-action@master
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
