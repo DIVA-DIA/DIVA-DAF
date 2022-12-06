@@ -7,7 +7,7 @@ import numpy as np
 from src.datamodules.utils.exceptions import PathNone, PathNotDir, PathMissingSplitDir
 
 
-class GT_Type(Enum):
+class GT_type(Enum):
     CLASSIFICATION = auto()
     VECTOR = auto()
     ROW_COLUMN = auto()

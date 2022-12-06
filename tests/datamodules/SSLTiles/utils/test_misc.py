@@ -3,7 +3,7 @@ import shutil
 import numpy as np
 import pytest
 
-from src.datamodules.SSLTiles.utils.misc import give_permutation, GT_Type, validate_path_for_ssl_classification
+from src.datamodules.SSLTiles.utils.misc import give_permutation, GT_type, validate_path_for_ssl_classification
 from src.datamodules.utils.exceptions import PathNone, PathNotDir, PathMissingSplitDir
 from tests.test_data.dummy_data_histdb_new.dummy_data import data_dir_classification
 

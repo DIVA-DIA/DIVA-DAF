@@ -9,8 +9,7 @@ from torch import Tensor
 from torchvision.datasets.folder import pil_loader, has_file_allowed_extension
 from torchvision.transforms import ToTensor, ToPILImage
 
-from src.datamodules.SSLTiles.utils.misc import GT_Type, give_permutation
-from src.datamodules.SSLTiles.utils.shuffeling import shuffle_horizontal, shuffle_vertical
+from src.datamodules.SSLTiles.utils.misc import GT_type, give_permutation
 from src.datamodules.RGB.datasets.full_page_dataset import DatasetRGB
 from src.datamodules.utils.misc import ImageDimensions, selection_validation
 from src.utils import utils
@@ -22,7 +21,7 @@ log = utils.get_logger(__name__)
 class DatasetSSLTiles(DatasetRGB):
 
     def __init__(self, path: Path, data_folder_name: str, image_dims: ImageDimensions,
-                 rows: int, cols: int, horizontal_shuffle: bool, vertical_shuffle: bool, gt_type: GT_Type,
+                 rows: int, cols: int, horizontal_shuffle: bool, vertical_shuffle: bool, gt_type: GT_type,
                  selection: Optional[Union[int, List[str]]] = None, image_transform=None,
                  **kwargs):
         super().__init__(path=path, data_folder_name=data_folder_name, gt_folder_name="",
@@ -120,8 +119,7 @@ class DatasetSSLTiles(DatasetRGB):
         # if self.vertical_shuffle:
         #     shuffle_vertical(gt)
 
-        perm, gt = give_permutation(rows=self.rows, cols=self.cols, gt_type=self.gt_type,
-                                    horizontal_shuffle=self.horizontal_shuffle, vertical_shuffle=self.vertical_shuffle)
+        perm, gt = give_permutation()
         gt = np.array(gt)
 
         # put tiles together
@@ -139,7 +137,7 @@ class DatasetSSLTiles(DatasetRGB):
                 j * tile_dims.width: (j + 1) * tile_dims.width, :] = img_array[height_start:height_end,
                                                                      width_start:width_end]
 
-        if self.gt_type == GT_Type.CLASSIFICATION:
+        if self.gt_type == GT_type.CLASSIFICATION:
             gt = perm
 
         if np.isnan(np.sum(new_img_array)):

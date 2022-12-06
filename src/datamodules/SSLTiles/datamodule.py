@@ -8,7 +8,7 @@ from torchvision import transforms
 from src.datamodules.RotNet.utils.image_analytics import get_analytics_data
 from src.datamodules.RotNet.utils.misc import validate_path_for_self_supervised
 from src.datamodules.SSLTiles.datasets.dataset import DatasetSSLTiles
-from src.datamodules.SSLTiles.utils.misc import GT_Type
+from src.datamodules.SSLTiles.utils.misc import GT_type
 from src.datamodules.utils.misc import get_image_dims
 from src.datamodules.utils.wrapper_transforms import OnlyImage
 from src.datamodules.base_datamodule import AbstractDatamodule
@@ -50,11 +50,11 @@ class SSLTilesDataModule(AbstractDatamodule):
         """
         super().__init__()
 
-        if gt_type.upper() not in GT_Type.__members__:
-            raise ValueError(f'gt_type must be one of {GT_Type.__members__}')
-        self.gt_type = GT_Type[gt_type.upper()]
+        if gt_type.upper() not in GT_type.__members__:
+            raise ValueError(f'gt_type must be one of {GT_type.__members__}')
+        self.gt_type = GT_type[gt_type.upper()]
 
-        if (self.gt_type == GT_Type.VECTOR or GT_Type.CLASSIFICATION) and cols != 2 and not vertical_shuffle:
+        if (self.gt_type == GT_type.VECTOR or GT_type.CLASSIFICATION) and cols != 2 and not vertical_shuffle:
             raise ValueError(f'gt_type VECTOR requires cols=2')
 
         self.data_folder_name = data_folder_name
@@ -64,7 +64,7 @@ class SSLTilesDataModule(AbstractDatamodule):
         self.mean = analytics_data['mean']
         self.std = analytics_data['std']
         # error
-        if self.gt_type == GT_Type.CLASSIFICATION:
+        if self.gt_type == GT_type.CLASSIFICATION:
             self.class_encodings = list(range(8))
             self.num_classes = len(self.class_encodings)
         self.class_weights = torch.as_tensor([1 / self.num_classes for _ in range(self.num_classes)])
