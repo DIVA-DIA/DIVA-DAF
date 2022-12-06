@@ -141,9 +141,9 @@ def encoding_block(in_c, out_c):
     return conv
 
 
-class UNet_najoua(nn.Module):
+class UNetNajoua(nn.Module):
     def __init__(self, num_classes=4, features=[16, 32]):
-        super(UNet_najoua, self).__init__()
+        super(UNetNajoua, self).__init__()
         self.pool = nn.MaxPool2d(kernel_size=(2, 2), stride=(2, 2))
         self.conv1 = encoding_block(3, features[0])
         self.conv2 = encoding_block(features[0], features[0])
@@ -232,17 +232,17 @@ class UNet_najoua(nn.Module):
         return x
 
 
-class UNet16(UNet_najoua):
+class UNet16(UNetNajoua):
     def __init__(self, num_classes=4):
         super(UNet16, self).__init__(num_classes=num_classes, features=[16, 32])
 
 
-class UNet32(UNet_najoua):
+class UNet32(UNetNajoua):
     def __init__(self, num_classes=4):
         super(UNet32, self).__init__(num_classes=num_classes, features=[32, 64])
 
 
-class UNet64(UNet_najoua):
+class UNet64(UNetNajoua):
     def __init__(self, num_classes=4):
         super(UNet64, self).__init__(num_classes=num_classes, features=[64, 128])
 
