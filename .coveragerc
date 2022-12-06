@@ -1,5 +1,5 @@
 [run]
-source = src
+include = src/*
 omit = src/execute.py
 
 [report]

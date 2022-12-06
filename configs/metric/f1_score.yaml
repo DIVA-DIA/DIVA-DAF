@@ -1,6 +1,6 @@
 f1_score:
     # more infos about parameters: https://torchmetrics.readthedocs.io/en/latest/references/modules.html#f1
-    _target_: torchmetrics.F1Score
+    _target_: torchmetrics.classification.MulticlassF1Score
 
     average: macro
     mdmc_reduce: global

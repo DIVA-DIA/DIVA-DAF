@@ -39,7 +39,7 @@ trainer:
     strategy: 'ddp_find_unused_parameters_false'
     min_epochs: 1
     max_epochs: 100
-    weights_summary: full
+    enable_model_summary: full
     precision: 16
     check_val_every_n_epoch: 5
 
