@@ -11,7 +11,7 @@ defaults:
     - /metric:
           - hisdbiou.yaml
     - /model/backbone: unet.yaml
-    - /model/header: identity.yaml
+    - /model/header: unet_segmentation.yaml
     - /optimizer: adam.yaml
     - /callbacks:
           - check_compatibility.yaml

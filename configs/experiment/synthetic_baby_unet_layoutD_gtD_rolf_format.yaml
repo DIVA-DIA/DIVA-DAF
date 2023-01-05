@@ -12,7 +12,7 @@ defaults:
     - /metric:
           - iou.yaml
     - /model/backbone:  baby_unet.yaml
-    - /model/header:    identity.yaml
+    - /model/header:    unet_segmentation.yaml
     - /optimizer:       adam.yaml
     - /callbacks:
           - check_compatibility.yaml

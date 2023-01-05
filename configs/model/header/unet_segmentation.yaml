@@ -1,4 +1,4 @@
 _target_: src.models.headers.unet.UNetFCNHead
 
-features: 32
+features: 64
 num_classes: ${datamodule:num_classes}
