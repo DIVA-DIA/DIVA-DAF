@@ -80,7 +80,7 @@ callbacks:
 
 logger:
     wandb:
-        project: dev
+        project: icdar
         name: ${name}
         tags: ["best_model", "binary", "sauvola" , "pre-training", "unet", "dasaset1", "CB55-ssl-set", "50-epochs"]
         group: 'pre-training'
