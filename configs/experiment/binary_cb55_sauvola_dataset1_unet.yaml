@@ -1,0 +1,81 @@
+# @package _global_
+
+# to execute this experiment run:
+# python run.py +experiment=exp_example_full
+
+defaults:
+    - /mode: experiment.yaml
+    - /plugins: null
+    - /task: semantic_segmentation_RGB.yaml
+    - /loss: crossentropyloss.yaml
+    - /metric:
+          - iou.yaml
+    - /model/backbone: unet.yaml
+    - /model/header: identity.yaml
+    - /optimizer: adam.yaml
+    - /callbacks:
+          - check_compatibility.yaml
+          - model_checkpoint.yaml
+          - watch_model_wandb.yaml
+    - /logger:
+          - wandb.yaml # set logger here or use command line (e.g. `python run.py logger=wandb`)
+          - csv.yaml
+    - _self_
+
+# we override default configurations with nulls to prevent them from loading at all
+# instead we define all modules and their paths directly in this config,
+# so everything is stored in one place for more readibility
+
+name: "binary_cb55_sauvola_unet_loss_no_weights"
+
+train: True
+test: False
+predict: False
+
+trainer:
+    _target_: pytorch_lightning.Trainer
+    accelerator: 'gpu'
+    devices: -1
+    strategy: 'ddp_find_unused_parameters_false'
+    min_epochs: 1
+    max_epochs: 100
+    precision: 16
+    check_val_every_n_epoch: 1
+
+task:
+    confusion_matrix_log_every_n_epoch: 10
+    confusion_matrix_val: True
+    confusion_matrix_test: True
+
+datamodule:
+    _target_: src.datamodules.RGB.datamodule.DataModuleRGB
+
+    data_dir: /net/research-hisdoc/datasets/self-supervised/CB55/binary/sauvola/dataset_1
+    num_workers: 4
+    batch_size: 1
+    shuffle: True
+    drop_last: True
+    data_folder_name: data
+    gt_folder_name: gt
+    train_folder_name: train
+    val_folder_name: val
+
+optimizer:
+    lr: 1e-3
+    betas: [0.9, 0.999]
+    eps: 1e-5
+
+callbacks:
+    model_checkpoint:
+        monitor: "val/crossentropyloss"
+        mode: "min"
+        filename: ${checkpoint_folder_name}cb55-binary-unet
+#    watch_model
+#        log_freq: 1000
+
+logger:
+    wandb:
+        project: "icdar"
+        name: ${name}
+        tags: ["best_model", "binary", "pre-training", "unet", "dasaset1", "CB55-ssl-set", "100-epochs"]
+        group: 'pre-training'
