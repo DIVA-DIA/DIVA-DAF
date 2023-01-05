@@ -7,7 +7,9 @@ import torch.optim.optimizer
 from omegaconf import OmegaConf
 from pytorch_lightning import seed_everything, Trainer
 
+from src.models.backbone_header_model import BackboneHeaderModel
 from src.models.backbones.unet import UNet
+from src.models.headers.unet import UNetFCNHead
 from tests.datamodules.RolfFormat.datasets.test_full_page_dataset import _get_dataspecs
 from src.datamodules.RolfFormat.datamodule import DataModuleRolfFormat
 from src.tasks.RGB.semantic_segmentation import SemanticSegmentationRGB
@@ -24,8 +26,13 @@ def clear_resolvers():
 
 
 @pytest.fixture()
-def model():
-    return UNet(num_classes=6, num_layers=2, features_start=32)
+def model_header():
+    return UNetFCNHead(num_classes=6, features=32)
+
+
+@pytest.fixture()
+def model_backbone():
+    return UNet(num_layers=2, features_start=32)
 
 
 @pytest.fixture()
@@ -44,9 +51,9 @@ def datamodule_and_dir(data_dir):
 
 
 @pytest.fixture()
-def task(model, tmp_path):
-    task = SemanticSegmentationRGB(model=model,
-                                   optimizer=torch.optim.Adam(params=model.parameters()),
+def task(model_backbone, model_header, tmp_path):
+    task = SemanticSegmentationRGB(model=BackboneHeaderModel(backbone=model_backbone, header=model_header),
+                                   optimizer=torch.optim.Adam(params=model_backbone.parameters()),
                                    loss_fn=torch.nn.CrossEntropyLoss(),
                                    test_output_path=tmp_path,
                                    confusion_matrix_val=True
