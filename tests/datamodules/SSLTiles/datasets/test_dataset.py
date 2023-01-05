@@ -6,7 +6,7 @@ from torchvision.datasets.folder import pil_loader
 from torchvision.transforms import ToTensor
 
 from src.datamodules.SSLTiles.datasets.dataset import DatasetSSLTiles
-from src.datamodules.SSLTiles.utils.misc import GT_Type
+from src.datamodules.SSLTiles.utils.misc import GTType
 from src.datamodules.utils.misc import ImageDimensions
 from tests.test_data.dummy_data_histdb_new.dummy_data import data_dir
 from tests.test_data.result_data_ssltiles.result_data import result_img_2_3_horizontal, result_img_2_3_vertical, \
@@ -19,7 +19,7 @@ DATA_FOLDER_NAME = 'data'
 def dataset_train_ssl(data_dir):
     return DatasetSSLTiles(path=data_dir / 'train',
                            data_folder_name=DATA_FOLDER_NAME,
-                           gt_type=GT_Type.ROW_COLUMN,
+                           gt_type=GTType.ROW_COLUMN,
                            image_dims=ImageDimensions(width=960, height=1344),
                            rows=3, cols=2, horizontal_shuffle=True, vertical_shuffle=False)
 

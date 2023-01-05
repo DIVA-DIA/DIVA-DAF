@@ -1,6 +1,6 @@
 recall:
     # more infos about parameters: https://torchmetrics.readthedocs.io/en/latest/references/modules.html#id5
-    _target_: torchmetrics.Recall
+    _target_: torchmetrics.classification.MulticlassRecall
 
     average: none
     mdmc_reduce: global

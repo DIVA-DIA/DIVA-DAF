@@ -5,9 +5,9 @@ import pytest
 import pytorch_lightning as pl
 import torch.optim.optimizer
 from omegaconf import OmegaConf
-from pl_bolts.models.vision import UNet
 from pytorch_lightning import seed_everything, Trainer
 
+from src.models.backbones.unet import UNet
 from tests.datamodules.RolfFormat.datasets.test_full_page_dataset import _get_dataspecs
 from src.datamodules.RolfFormat.datamodule import DataModuleRolfFormat
 from src.tasks.RGB.semantic_segmentation import SemanticSegmentationRGB
@@ -85,7 +85,7 @@ def test_training_step(monkeypatch, datamodule_and_dir, task, capsys):
     data_module, data_dir = datamodule_and_dir
     trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module, 'trainer', trainer)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     monkeypatch.setattr(trainer, 'datamodule', data_module)
     monkeypatch.setattr(task, 'log', fake_log)
     data_module.setup('fit')
@@ -100,7 +100,7 @@ def test_validation_step(monkeypatch, datamodule_and_dir, task, capsys):
     data_module, data_dir = datamodule_and_dir
     trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module, 'trainer', trainer)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     monkeypatch.setattr(trainer, 'datamodule', data_module)
     monkeypatch.setattr(task, 'log', fake_log)
     monkeypatch.setattr(task, 'confusion_matrix_val', False)
@@ -115,7 +115,7 @@ def test_test_step(monkeypatch, datamodule_and_dir, task, capsys, tmp_path):
     data_module, data_dir = datamodule_and_dir
     trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module, 'trainer', trainer)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     monkeypatch.setattr(trainer, 'datamodule', data_module)
     monkeypatch.setattr(task, 'log', fake_log)
     monkeypatch.setattr(task, 'confusion_matrix_val', False)
@@ -138,7 +138,7 @@ def test_predict_step(monkeypatch, datamodule_and_dir, task, capsys, tmp_path):
     data_module, data_dir = datamodule_and_dir
     trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module, 'trainer', trainer)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     monkeypatch.setattr(task, 'predict_output_path', data_dir)
     monkeypatch.setattr(trainer, 'datamodule', data_module)
     monkeypatch.setattr(task, 'log', fake_log)
