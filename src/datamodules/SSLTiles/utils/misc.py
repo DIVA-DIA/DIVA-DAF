@@ -1,4 +1,3 @@
-import itertools
 from enum import Enum, auto
 from pathlib import Path
 
