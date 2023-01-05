@@ -45,7 +45,7 @@ def split_dataset_classification(root_folder: Path, dataset_name: str, train_spl
 
 
 def split_dataset_segmentation(codex_path: Path, gt_path: Path, output_path: Path, train_split_size: int,
-                               val_split_size: int):
+                               val_split_size: int, extension: str):
     train_folder, val_folder = _remove_existing_folder(Path(output_path))
 
     possible_codex_files = np.asarray(list(codex_path.glob('*.png')))
@@ -63,7 +63,7 @@ def split_dataset_segmentation(codex_path: Path, gt_path: Path, output_path: Pat
         _create_symlink_to(img_name_w_extension, source_folder_path=train_folder / 'data',
                            target_folder_path=codex_path)
         # create symlink to gt file
-        _create_symlink_to(Path(img_name_w_extension).stem + '.gif', source_folder_path=train_folder / 'gt',
+        _create_symlink_to(Path(img_name_w_extension).stem + extension, source_folder_path=train_folder / 'gt',
                            target_folder_path=gt_path)
 
     for img_name_w_extension in img_names[val_mask]:
@@ -71,7 +71,7 @@ def split_dataset_segmentation(codex_path: Path, gt_path: Path, output_path: Pat
         _create_symlink_to(img_name_w_extension, source_folder_path=val_folder / 'data',
                            target_folder_path=codex_path)
         # create symlink to gt file
-        _create_symlink_to(Path(img_name_w_extension).stem + '.gif', source_folder_path=val_folder / 'gt',
+        _create_symlink_to(Path(img_name_w_extension).stem + extension, source_folder_path=val_folder / 'gt',
                            target_folder_path=gt_path)
 
 
@@ -128,6 +128,8 @@ if __name__ == '__main__':
                             help='Size of the training split')
         parser.add_argument('-v', '--val_split_size', type=int, required=True,
                             help='Size of the validation split')
+        parser.add_argument('-e', '--extension', type=str, required=True,
+                            help='File extension of the gt (e.g., .png)')
 
         args = parser.parse_args()
         args_dict = args.__dict__
