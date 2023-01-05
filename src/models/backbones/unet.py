@@ -58,7 +58,7 @@ class UNet(nn.Module):
         for layer in self.layers[1: self.num_layers]:
             xi.append(layer(xi[-1]))
         # Up path
-        for i, layer in enumerate(self.layers[self.num_layers: -1]):
+        for i, layer in enumerate(self.layers[self.num_layers:]):
             xi[-1] = layer(xi[-1], xi[-2 - i])
         return xi[-1]
 
