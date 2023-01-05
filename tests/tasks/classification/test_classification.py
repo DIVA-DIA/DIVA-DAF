@@ -24,7 +24,7 @@ def clear_resolvers():
 
 
 @pytest.fixture()
-def model():
+def model_backbone():
     return torch.nn.Sequential(CNN_basic(), SingleLinear())
 
 
@@ -39,9 +39,9 @@ def datamodule_and_dir(data_dir_cropped):
 
 
 @pytest.fixture()
-def task(model, tmp_path):
-    task = Classification(model=model,
-                          optimizer=torch.optim.Adam(params=model.parameters()),
+def task(model_backbone, tmp_path):
+    task = Classification(model=model_backbone,
+                          optimizer=torch.optim.Adam(params=model_backbone.parameters()),
                           loss_fn=torch.nn.CrossEntropyLoss(),
                           confusion_matrix_val=True
                           )

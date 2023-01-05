@@ -25,7 +25,6 @@ class UNet(nn.Module):
 
     def __init__(
             self,
-            num_classes: int,
             input_channels: int = 3,
             num_layers: int = 5,
             features_start: int = 64,
@@ -49,7 +48,7 @@ class UNet(nn.Module):
             layers.append(Up(feats, feats // 2, bilinear))
             feats //= 2
 
-        layers.append(nn.Conv2d(feats, num_classes, kernel_size=1))
+        # layers.append(nn.Conv2d(feats, num_classes, kernel_size=1))
 
         self.layers = nn.ModuleList(layers)
 
@@ -59,9 +58,9 @@ class UNet(nn.Module):
         for layer in self.layers[1: self.num_layers]:
             xi.append(layer(xi[-1]))
         # Up path
-        for i, layer in enumerate(self.layers[self.num_layers: -1]):
+        for i, layer in enumerate(self.layers[self.num_layers:]):
             xi[-1] = layer(xi[-1], xi[-2 - i])
-        return self.layers[-1](xi[-1])
+        return xi[-1]
 
 
 class DoubleConv(nn.Module):
@@ -125,8 +124,8 @@ class Up(nn.Module):
 
 
 class Baby_UNet(UNet):
-    def __init__(self, num_classes: int):
-        super(Baby_UNet, self).__init__(num_layers=2, features_start=32, num_classes=num_classes)
+    def __init__(self):
+        super(Baby_UNet, self).__init__(num_layers=2, features_start=32)
 
 
 def encoding_block(in_c, out_c):
