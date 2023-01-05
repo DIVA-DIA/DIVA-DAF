@@ -97,7 +97,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--dataset_type', type=str, required=True,
                         help='Type of the dataset (classification or segmentation)')
+    parser.add_argument('-s', '--seed', type=int, required=False, default=None,
+                        help='Seed for the random generator')
     intermediate_args = parser.parse_known_args()
+    np.random.seed(intermediate_args[0].seed)
     if intermediate_args[0].dataset_type == 'classification':
         parser.add_argument('-r', '--root_folder', type=Path, required=True,
                             help='Path to the root folder of the dataset')
@@ -111,6 +114,7 @@ if __name__ == '__main__':
 
         args_dict = args.__dict__
         del args_dict['dataset_type']
+        del args_dict['seed']
         split_dataset_classification(**args_dict)
 
     if intermediate_args[0].dataset_type == 'segmentation':
@@ -128,4 +132,5 @@ if __name__ == '__main__':
         args = parser.parse_args()
         args_dict = args.__dict__
         del args_dict['dataset_type']
+        del args_dict['seed']
         split_dataset_segmentation(**args_dict)
