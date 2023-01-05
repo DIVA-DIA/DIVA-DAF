@@ -34,3 +34,13 @@ class PoolHeader(nn.Module):
     def forward(self, x):
         x = self.fc(x)
         return x
+
+
+class UNetFCNHead(nn.Module):
+    def __init__(self, num_classes: int, features: int = 64):
+        super().__init__()
+
+        self.classifier = nn.Conv2d(features, num_classes, kernel_size=1)
+
+    def forward(self, x):
+        return self.classifier(x)
