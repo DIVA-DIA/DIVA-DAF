@@ -1,1 +1,3 @@
-_target_: src.models.backbones.divanet.DivaNet
+_target_: src.models.backbones.divanet.Diva_Net
+
+out_channels: 4
