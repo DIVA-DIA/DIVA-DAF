@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from tqdm import tqdm
 import numpy as np
@@ -56,8 +57,12 @@ def split_dataset_segmentation(codex_path: Path, gt_path: Path, output_path: Pat
     val_mask = ~train_mask
     img_names = np.asarray([p.name for p in img_paths_reduced])
 
-    # iterate through all folders
+    # create json with split
+    split_dict = {"train": img_names[train_mask].tolist(), "val": img_names[val_mask].tolist()}
+    with (output_path / 'split.json').open('w') as f:
+        json.dump(split_dict, f)
 
+    # iterate through all folders
     for img_name_w_extension in img_names[train_mask]:
         # create symlink to original file
         _create_symlink_to(img_name_w_extension, source_folder_path=train_folder / 'data',
@@ -97,7 +102,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--dataset_type', type=str, required=True,
                         help='Type of the dataset (classification or segmentation)')
-    parser.add_argument('-s', '--seed', type=int, required=False, default=None,
+    parser.add_argument('-s', '--seed', type=int, required=False, default=42,
                         help='Seed for the random generator')
     intermediate_args = parser.parse_known_args()
     np.random.seed(intermediate_args[0].seed)
@@ -133,6 +138,7 @@ if __name__ == '__main__':
 
         args = parser.parse_args()
         args_dict = args.__dict__
+        (args_dict['output_path'] / f"seed_{args_dict['seed']}").touch()
         del args_dict['dataset_type']
         del args_dict['seed']
         split_dataset_segmentation(**args_dict)

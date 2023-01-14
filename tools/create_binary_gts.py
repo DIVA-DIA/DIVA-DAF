@@ -32,7 +32,7 @@ def get_binary_threshold(gray_img_array: np.ndarray, bin_algo: str):
     return threshold
 
 
-def binarize_images(img_paths: List[Path], global_output_dir: Path, bin_algo: str):
+def binarize_images(img_paths: List[Path], global_output_dir: Path, bin_algo: str, boarder_filter: int):
     output_dir_path = global_output_dir / bin_algo / "all_files" / "tmp"
     output_dir_path.mkdir(parents=True, exist_ok=True)
 
@@ -46,19 +46,22 @@ def binarize_images(img_paths: List[Path], global_output_dir: Path, bin_algo: st
         else:
             gaussian = difference_of_gaussians(img_array, 1, 40)
             mask = (1 - gaussian) > get_binary_threshold(1 - gaussian, bin_algo='otsu')
+        if boarder_filter:
+            mask[img_array < boarder_filter] = 255
         Image.fromarray(mask).save(output_dir_path / img_path.name)
 
 
 if __name__ == '__main__':
     codex_path = Path("/net/research-hisdoc/datasets/self-supervised/CB55/resized/960_1344/filtered")
-    output_path = Path("/net/research-hisdoc/datasets/self-supervised/CB55/binary")
+    output_path = Path("/net/research-hisdoc/datasets/self-supervised/CB55/binary_cleaned")
     img_files = list(codex_path.glob("*.png"))
+    boarder_filter_value = 50
 
     if not img_files:
         raise ValueError("Input path does not contain any png images")
     output_path.mkdir(parents=True, exist_ok=True)
 
-    binarize_images(img_files, output_path, bin_algo='otsu')
-    binarize_images(img_files, output_path, bin_algo='niblack')
-    binarize_images(img_files, output_path, bin_algo='sauvola')
-    binarize_images(img_files, output_path, bin_algo='gaussian')
+    # binarize_images(img_files, output_path, bin_algo='otsu')
+    # binarize_images(img_files, output_path, bin_algo='niblack')
+    binarize_images(img_files, output_path, bin_algo='sauvola', boarder_filter=boarder_filter_value)
+    # binarize_images(img_files, output_path, bin_algo='gaussian')
