@@ -10,6 +10,9 @@ defaults:
     - /loss: crossentropyloss.yaml
     - /metric:
           - iou.yaml
+          - precision.yaml
+          - recall.yaml
+          - f1_score.yaml
     - /model/backbone: unet.yaml
     - /model/header: unet_segmentation.yaml
     - /optimizer: adam.yaml
@@ -26,7 +29,7 @@ defaults:
 # instead we define all modules and their paths directly in this config,
 # so everything is stored in one place for more readibility
 
-name: "fine_tune_sauvola_cb55_AB1_train_20_unet_loss_no_weights"
+name: "fine_tune_sauvola_cb55_AB1_train_20_unet_loss_no_weights_100pt"
 
 train: True
 test: True
@@ -51,7 +54,7 @@ task:
 datamodule:
     _target_: src.datamodules.RGB.datamodule.DataModuleRGB
 
-    data_dir: /net/research-hisdoc/datasets/semantic_segmentation/datasets/CB55-splits/AB1
+    data_dir: /net/research-hisdoc/datasets/semantic_segmentation/datasets/CB55-splits/AB1_3class
     num_workers: 4
     batch_size: 1
     shuffle: True
@@ -75,14 +78,13 @@ callbacks:
 #        log_freq: 1000
 
 model:
-    backbone:
-        path_to_weights: /netscratch/experiments_lars_paul/lars/experiments/binary_cb55_sauvola_unet_loss_no_weights/2023-01-05/14-58-01/checkpoints/epoch=40/backbone.pth
     header:
+        path_to_weights: /net/research-hisdoc/model_weights/unet/headers/3cl_random_init_seed_4287204085_segmentation.pth
         features: 64
 
 logger:
     wandb:
         project: "icdar"
         name: ${name}
-        tags: ["unet", "AB1", "training-20", "4-classes", "fine-tune", "100-epochs", "no-weights", "sauvola", "binary"]
-        group: 'fine-tune'
+        tags: ["unet", "AB1", "training-20", "3-classes", "fine-tune", "200-epochs", "no-weights", "sauvola", "binary", "100-epoch-pt"]
+        group: 'fine-tune-sauvola-100-pt'

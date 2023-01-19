@@ -10,6 +10,9 @@ defaults:
     - /loss: crossentropyloss.yaml
     - /metric:
           - iou.yaml
+          - precision.yaml
+          - recall.yaml
+          - f1_score.yaml
     - /model/backbone: unet.yaml
     - /model/header: unet_segmentation.yaml
     - /optimizer: adam.yaml
@@ -26,7 +29,7 @@ defaults:
 # instead we define all modules and their paths directly in this config,
 # so everything is stored in one place for more readibility
 
-name: "binary_cb55_sauvola_unet_loss_no_weights"
+name: "binary_cb55_sauvola_unet_loss_no_weights_100epoch"
 
 train: True
 test: False
@@ -67,7 +70,6 @@ optimizer:
 
 model:
     header:
-        num_classes: 2
         features: 64
 
 callbacks:
@@ -82,5 +84,5 @@ logger:
     wandb:
         project: icdar
         name: ${name}
-        tags: ["best_model", "binary", "sauvola" , "pre-training", "unet", "dasaset1", "CB55-ssl-set", "50-epochs"]
-        group: 'pre-training'
+        tags: ["best_model", "binary", "sauvola" , "pre-training", "unet", "dasaset1", "CB55-ssl-set", "100-epochs"]
+        group: 'pre-training-100-ep'
