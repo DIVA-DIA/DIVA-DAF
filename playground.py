@@ -13,6 +13,7 @@ from src.callbacks.model_callbacks import SaveModelStateDictAndTaskCheckpoint
 from src.datamodules.RGB.datamodule import DataModuleRGB
 from src.models.backbone_header_model import BackboneHeaderModel
 from src.models.backbones.unet import UNet
+from src.models.headers.unet import UNetFCNHead
 from src.tasks.RGB.semantic_segmentation import SemanticSegmentationRGB
 
 
