@@ -6,8 +6,8 @@ if __name__ == '__main__':
     originals_codex_path = Path(
         '/net/research-hisdoc/datasets/self-supervised/CB55/resized/960_1344/filtered/')
     originals_gt_path = Path(
-        '/net/research-hisdoc/datasets/self-supervised/CB55/binary_cleaned/sauvola/rlsa_vh_3class_all_files')
-    output_root_path = Path('/net/research-hisdoc/datasets/self-supervised/CB55/binary_cleaned/sauvola/dataset_rlsa_vh_3cl_1')
+        '/net/research-hisdoc/datasets/self-supervised/CB55/binary_cleaned/sauvola/rlsa_vh_3cl_overlay_all_files')
+    output_root_path = Path('/net/research-hisdoc/datasets/self-supervised/CB55/binary_cleaned/sauvola/dataset_rlsa_vh_3cl_overlay_1')
     json_path = Path("/net/research-hisdoc/datasets/self-supervised/CB55/binary_cleaned/sauvola/dataset_1/split.json")
 
     split_names = json.load(json_path.open('r'))
