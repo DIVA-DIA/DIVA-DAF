@@ -1,6 +1,6 @@
 precision:
     # more infos about parameters: https://torchmetrics.readthedocs.io/en/latest/references/modules.html#id4
-    _target_: torchmetrics.Precision
+    _target_: torchmetrics.classification.MulticlassPrecision
 
     average: macro
     mdmc_reduce: global

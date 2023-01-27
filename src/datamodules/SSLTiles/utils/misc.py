@@ -1,4 +1,3 @@
-import itertools
 from enum import Enum, auto
 from pathlib import Path
 
@@ -7,20 +6,14 @@ import numpy as np
 from src.datamodules.utils.exceptions import PathNone, PathNotDir, PathMissingSplitDir
 
 
-class GT_Type(Enum):
+class GTType(Enum):
     CLASSIFICATION = auto()
     VECTOR = auto()
     ROW_COLUMN = auto()
     FULL_IMAGE = auto()
 
 
-def give_permutation(rows: int, cols: int, gt_type: GT_Type, horizontal_shuffle: bool = True,
-                     vertical_shuffle: bool = True):
-    gt_structure = np.arange(rows * cols).reshape((rows, cols))
-    if horizontal_shuffle:
-        perms = itertools.permutations(np.arange(rows))
-    if vertical_shuffle:
-        raise NotImplementedError("vertical_shuffle not implemented yet")
+def give_permutation():
 
     perms = [(0, [[0, 1], [2, 3], [4, 5]]),
              (1, [[1, 0], [2, 3], [4, 5]]),

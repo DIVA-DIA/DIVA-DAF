@@ -20,7 +20,7 @@ def test_check_min_num_samples_no_drop_error(caplog):
     AbstractDatamodule.check_min_num_samples(num_devices=4, batch_size1=batch_size, num_samples=num_samples,
                                              data_split=data_split,
                                              drop_last=False)
-    assert f'WARNING  src.datamodules.base_datamodule:rank_zero.py:32 ' \
+    assert f'WARNING  src.datamodules.base_datamodule:rank_zero.py:24 ' \
            f'#samples ({num_samples}) in "{data_split}" smaller than ' \
            f'#devices (4) times batch size ({batch_size}). ' \
            f'This works due to drop_last=False, however samples might occur multiple times. ' \

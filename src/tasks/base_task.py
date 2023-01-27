@@ -7,14 +7,14 @@ import numpy as np
 import pandas as pd
 import seaborn as sn
 import torch
-import torchmetrics
 import wandb
+from torchmetrics import MetricCollection
+from torchmetrics.classification import MulticlassConfusionMatrix
 from matplotlib import pyplot as plt
 from matplotlib.patches import Rectangle
 from omegaconf import OmegaConf
-from pytorch_lightning import LightningModule
+from pytorch_lightning.core.module import LightningModule
 from pytorch_lightning.trainer.states import RunningStage
-from pytorch_lightning.utilities.enums import DistributedType
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
 from torch import nn
 from torch.optim import Optimizer
@@ -54,9 +54,9 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             optimizer_kwargs: Optional[Dict[str, Any]] = None,
             scheduler: Optional[Union[Type[_LRScheduler], str, _LRScheduler]] = None,
             scheduler_kwargs: Optional[Dict[str, Any]] = None,
-            metric_train: Optional[torchmetrics.MetricCollection] = None,
-            metric_val: Optional[torchmetrics.MetricCollection] = None,
-            metric_test: Optional[torchmetrics.MetricCollection] = None,
+            metric_train: Optional[MetricCollection] = None,
+            metric_val: Optional[MetricCollection] = None,
+            metric_test: Optional[MetricCollection] = None,
             confusion_matrix_val: Optional[bool] = False,
             confusion_matrix_test: Optional[bool] = False,
             confusion_matrix_log_every_n_epoch: Optional[int] = 1,
@@ -97,10 +97,10 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
 
     def setup(self, stage: str):
         if self.confusion_matrix_val:
-            self.metric_conf_mat_val = torchmetrics.ConfusionMatrix(num_classes=self.trainer.datamodule.num_classes,
+            self.metric_conf_mat_val = MulticlassConfusionMatrix(num_classes=self.trainer.datamodule.num_classes,
                                                                     compute_on_step=False)
         if self.confusion_matrix_test:
-            self.metric_conf_mat_test = torchmetrics.ConfusionMatrix(num_classes=self.trainer.datamodule.num_classes,
+            self.metric_conf_mat_test = MulticlassConfusionMatrix(num_classes=self.trainer.datamodule.num_classes,
                                                                      compute_on_step=False)
         if self.trainer.strategy.strategy_name == 'ddp':
             batch_size = self.trainer.datamodule.batch_size

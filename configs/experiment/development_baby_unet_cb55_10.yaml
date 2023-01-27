@@ -14,7 +14,7 @@ defaults:
         - recall.yaml
         - f1_score_class_wise.yaml
     - /model/backbone: baby_unet.yaml
-    - /model/header: identity.yaml
+    - /model/header: unet_segmentation.yaml
     - /optimizer: adam.yaml
     - /callbacks:
           - check_compatibility.yaml
@@ -38,11 +38,11 @@ predict: False
 trainer:
     _target_: pytorch_lightning.Trainer
     accelerator: 'gpu'
-    devices: -1
+    devices: [1]
     strategy: 'ddp_find_unused_parameters_false'
     min_epochs: 1
     max_epochs: 3
-    weights_summary: full
+    enable_model_summary: full
     precision: 16
 
 task:

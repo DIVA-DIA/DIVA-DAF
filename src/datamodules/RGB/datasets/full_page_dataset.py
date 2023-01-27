@@ -204,8 +204,6 @@ class DatasetRGB(data.Dataset):
                    has_file_allowed_extension(path_gt_file.name, IMG_EXTENSIONS), \
                 'get_img_gt_path_list(): image file aligned with non-image file'
 
-            # assert path_data_file.stem == path_gt_file.stem, \
-            #     'get_img_gt_path_list(): mismatch between data filename and gt filename'
             paths.append((path_data_file, path_gt_file, path_data_file.stem))
 
         return paths
