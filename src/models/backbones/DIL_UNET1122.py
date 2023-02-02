@@ -3,7 +3,7 @@ from torch import nn
 
 
 class DIL_UNET1122(nn.Module):
-    def __init__(self, out_channels=2, features=[16, 32]):
+    def __init__(self, out_channels=4, features=[16, 32]):
         super(DIL_UNET1122, self).__init__()
 
         self.dil1 = dil_block(3, features[0])
