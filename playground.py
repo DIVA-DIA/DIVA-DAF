@@ -99,7 +99,7 @@ def unet_ft():
                                    metric_train=torchmetrics.JaccardIndex(num_classes=datamodule.num_classes),
                                    metric_val=torchmetrics.JaccardIndex(num_classes=datamodule.num_classes),
                                    metric_test=torchmetrics.JaccardIndex(num_classes=datamodule.num_classes))
-    callbacks = [SaveModelStateDictAndTaskCheckpoint(monitor="val/jaccardindex",
+    callbacks = [SaveModelStateDictAndTaskCheckpoint(monitor="val/jaccard_index",
                                                      save_top_k=1,
                                                      save_last=True,
                                                      mode="max",

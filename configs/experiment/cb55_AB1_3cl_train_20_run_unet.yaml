@@ -42,7 +42,7 @@ trainer:
     strategy: 'ddp_find_unused_parameters_false'
     min_epochs: 1
     max_epochs: 100
-    precision: 16
+    precision: 32
     check_val_every_n_epoch: 1
     accumulate_grad_batches: 5
 
