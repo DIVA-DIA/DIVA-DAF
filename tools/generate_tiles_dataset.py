@@ -12,7 +12,6 @@ import multiprocessing
 from datetime import datetime
 from pathlib import Path
 
-
 import numpy as np
 from PIL import Image
 from torchvision.datasets.folder import has_file_allowed_extension, pil_loader
@@ -51,7 +50,8 @@ def get_img_paths(directory):
 
 
 class TiledDatasetGenerator:
-    def __init__(self, input_path: Path, output_path: Path, rows: int, cols: int, override_existing=False):
+    def __init__(self, input_path: Path, output_path: Path, rows: int, cols: int, override_existing=False,
+                 segmentation: bool = False):
         # Init list
         self.input_path = input_path
         self.output_path = output_path
@@ -67,6 +67,7 @@ class TiledDatasetGenerator:
                                        rows=rows,
                                        cols=cols,
                                        permutations=self.permutations,
+                                       segmentation=segmentation,
                                        override_existing=override_existing,
                                        progress_title='Creating tiles')
 
@@ -87,6 +88,7 @@ class TiledDatasetGenerator:
         info_str = '\n'.join(info_list)
         print(info_str)
 
+        self.output_path.mkdir(parents=True, exist_ok=True)
         permutation_file = self.output_path / 'permutations.json'
         with open(permutation_file, 'w') as f:
             json.dump(self.permutations, f)
@@ -116,7 +118,7 @@ class TiledDatasetGenerator:
 
 
 class TileGenerator:
-    def __init__(self, input_path, output_path, rows, cols, permutations,
+    def __init__(self, input_path, output_path, rows, cols, permutations, segmentation: bool,
                  override_existing=False, progress_title=''):
         # Init list
         self.input_path = input_path
@@ -126,6 +128,7 @@ class TileGenerator:
         self.permutations = permutations
         self.override_existing = override_existing
         self.progress_title = progress_title
+        self.segmentation = segmentation
 
         # List paths to the images
         self.img_paths = get_img_paths(input_path)
@@ -150,18 +153,56 @@ class TileGenerator:
 
             pool = multiprocessing.Pool(multiprocessing.cpu_count())
 
-            parameters = zip(itertools.repeat(self.output_path), itertools.repeat(img_name),
-                             itertools.repeat(self.current_img), itertools.repeat(self.center_cropped_image),
-                             self.permutations, range(len(self.permutations)), itertools.repeat(tile_dims),
-                             itertools.repeat(self.override_existing),
-                             itertools.repeat(self.rows), itertools.repeat(self.cols))
+            if self.segmentation:
+                parameters = zip(itertools.repeat(self.output_path), itertools.repeat(img_name),
+                                 itertools.repeat(self.current_img), itertools.repeat(self.center_cropped_image),
+                                 self.permutations, range(len(self.permutations)), itertools.repeat(tile_dims),
+                                 itertools.repeat(self.override_existing),
+                                 itertools.repeat(self.rows), itertools.repeat(self.cols))
 
-            pool.starmap(func=self.create_image_by_permutation, iterable=parameters)
+                pool.starmap(func=self.create_segmentation_image_by_permutation, iterable=parameters)
+            else:
+                parameters = zip(itertools.repeat(self.output_path), itertools.repeat(img_name),
+                                 itertools.repeat(self.current_img), itertools.repeat(self.center_cropped_image),
+                                 self.permutations, range(len(self.permutations)), itertools.repeat(tile_dims),
+                                 itertools.repeat(self.override_existing),
+                                 itertools.repeat(self.rows), itertools.repeat(self.cols))
+
+                pool.starmap(func=self.create_classification_image_by_permutation, iterable=parameters)
             # for each permutation
 
     @staticmethod
-    def create_image_by_permutation(output_path, img_name, current_img, center_cropped_image, permutation,
-                                    permutation_id, tile_dims, override_existing, rows, cols):
+    def create_segmentation_image_by_permutation(output_path, img_name, current_img, center_cropped_image,
+                                                 permutation, permutation_id, tile_dims, override_existing, rows, cols):
+        dest_folder_codex = output_path / 'codex'
+        dest_folder_codex.mkdir(parents=True, exist_ok=True)
+        dest_folder_gt = output_path / 'gt'
+        dest_folder_gt.mkdir(parents=True, exist_ok=True)
+
+        img_name = Path(img_name)
+        img_name_raw = img_name.stem
+        img_name_extension = img_name.suffix
+
+        dest_codex_filename = dest_folder_codex / (str(img_name_raw) + f'_permutation_{permutation_id}' + img_name_extension)
+        dest_gt_filename = dest_folder_gt / (str(img_name_raw) + f'_permutation_{permutation_id}' + ".gif")
+
+        if not override_existing:
+            if dest_codex_filename.exists() or dest_gt_filename.exists():
+                return
+
+        img_tiled_array, gt_img_tiled = TileGenerator.tile_image(
+            current_img=current_img, center_cropped_image=center_cropped_image, permutation=permutation,
+            tile_dims=tile_dims, rows=rows, cols=cols, segmentation=True)
+
+        pil_img_tiled = Image.fromarray(img_tiled_array.astype(np.uint8))
+        pil_img_tiled.save(dest_codex_filename)
+        pil_gt_tiles = Image.fromarray(gt_img_tiled.astype(np.uint8))
+        pil_gt_tiles.save(dest_gt_filename)
+
+    @staticmethod
+    def create_classification_image_by_permutation(output_path, img_name, current_img, center_cropped_image,
+                                                   permutation, permutation_id, tile_dims, override_existing, rows,
+                                                   cols):
         dest_folder = output_path / str(permutation_id)
         dest_folder.mkdir(parents=True, exist_ok=True)
 
@@ -204,11 +245,12 @@ class TileGenerator:
         return self.current_img.crop((left, top, right, bottom))
 
     @staticmethod
-    def tile_image(current_img, center_cropped_image, permutation, tile_dims, rows, cols):
+    def tile_image(current_img, center_cropped_image, permutation, tile_dims, rows, cols, segmentation=False):
         cropped_img_array = np.array(center_cropped_image)
         current_img_array = np.array(current_img)
         permutation = np.array(permutation).reshape((rows, cols))
         new_img_array = current_img_array.copy()
+        gt_img_array = np.zeros((current_img_array.shape[0], current_img_array.shape[1]))
         width_offset = ((current_img_array.shape[1] - cropped_img_array.shape[1]) // 2)
         height_offset = ((current_img_array.shape[0] - cropped_img_array.shape[0]) // 2)
 
@@ -230,8 +272,15 @@ class TileGenerator:
                 new_img_array[height_start_ori: height_end_ori, width_start_ori: width_end_ori, :] = cropped_img_array[
                                                                                                      height_start_cropped:height_end_cropped,
                                                                                                      width_start_cropped:width_end_cropped]
+                if segmentation:
+                    cat = np.zeros((tile_dims.height, tile_dims.width))
+                    cat.fill(permutation[i, j])
+                    gt_img_array[height_start_ori: height_end_ori, width_start_ori: width_end_ori] = cat
 
-        return new_img_array
+        if segmentation:
+            return new_img_array, gt_img_array
+        else:
+            return new_img_array
 
 
 if __name__ == '__main__':
@@ -255,6 +304,10 @@ if __name__ == '__main__':
     parser.add_argument('-oe', '--override_existing',
                         help='If true overrides the images ',
                         type=bool,
+                        default=False)
+    parser.add_argument('-s', '--segmentation',
+                        help='If true the dataset is a segmentation dataset',
+                        action='store_true',
                         default=False)
     args = parser.parse_args()
     dataset_generator = TiledDatasetGenerator(**args.__dict__)
