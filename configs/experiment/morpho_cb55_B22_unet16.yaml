@@ -39,7 +39,6 @@ trainer:
     strategy: 'ddp_find_unused_parameters_false'
     min_epochs: 1
     max_epochs: 200
-    precision: 16
     check_val_every_n_epoch: 1
 
 task:

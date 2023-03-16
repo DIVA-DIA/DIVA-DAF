@@ -13,6 +13,7 @@ for j in {0..4}; do
   for i in "${!group[@]}"; do
     params_unet="experiment=synthetic_DPC_unet.yaml
           trainer.devices=[4,5,6,7]
+          trainer.max_epochs=200
           mode=ijdar.yaml
           name=PT_sem_seg_synthetic_${group[i]}_unet_loss_no_weights_200ep
           datamodule.data_dir=${dataset_path[i]}

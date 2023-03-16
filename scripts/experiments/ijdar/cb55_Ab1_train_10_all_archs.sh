@@ -2,7 +2,6 @@
 
 set -e
 
-bash scripts/experiments/cb55_Ab1_training_10_unet.sh
-bash scripts/experiments/cb55_Ab1_training_10_unet16.sh
-bash scripts/experiments/cb55_Ab1_training_10_unet32.sh
-bash scripts/experiments/cb55_Ab1_training_10_unet64.sh
+bash scripts/experiments/ijdar/cb55_Ab1_training_5_adaptive_unet.sh
+bash scripts/experiments/ijdar/cb55_Ab1_training_5_docufcn.sh
+bash scripts/experiments/ijdar/cb55_Ab1_training_5_unet16.sh

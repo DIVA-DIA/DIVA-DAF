@@ -13,7 +13,7 @@ defaults:
           - precision.yaml
           - recall.yaml
           - f1_score.yaml
-    - /model/backbone: unet16.yaml
+    - /model/backbone: doc_ufcn.yaml
     - /model/header: identity.yaml
     - /optimizer: adam.yaml
     - /callbacks:
@@ -29,7 +29,7 @@ defaults:
 # instead we define all modules and their paths directly in this config,
 # so everything is stored in one place for more readibility
 
-name: "fine_tune_cb55_AB1_train_20_unet16_loss_no_weights"
+name: "sem_seg_cb55_AB1_doc_ufcn_loss_no_weights"
 
 train: True
 test: True
@@ -41,7 +41,7 @@ trainer:
     devices: -1
     strategy: 'ddp_find_unused_parameters_false'
     min_epochs: 1
-    max_epochs: 100
+    max_epochs: 200
     check_val_every_n_epoch: 1
     accumulate_grad_batches: 5
 
@@ -72,13 +72,14 @@ callbacks:
     model_checkpoint:
         monitor: "val/jaccard_index"
         mode: "max"
-        filename: ${checkpoint_folder_name}AB1-train-20-unet16
+        filename: ${checkpoint_folder_name}AB1-train-20-unet
 #    watch_model:
 #        log_freq: 1000
 
+
 logger:
     wandb:
-        project: "ijdar_controlled"
+        project: icdar
         name: ${name}
-        tags: ["unet16", "AB1", "training-10", "4-classes", "baseline", "200-epochs", "no-weights"]
+        tags: ["unet", "AB1",  "4-classes", "baseline", "200-epochs", "no-weights"]
         group: 'baseline'

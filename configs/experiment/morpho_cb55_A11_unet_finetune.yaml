@@ -10,8 +10,8 @@ defaults:
     - /loss: crossentropyloss.yaml
     - /metric:
           - iou.yaml
-    - /model/backbone: unet.yaml
-    - /model/header: unet_segmentation.yaml
+    - /model/backbone: oldunet.yaml
+    - /model/header: identity.yaml
     - /optimizer: adam.yaml
     - /callbacks:
           - check_compatibility.yaml

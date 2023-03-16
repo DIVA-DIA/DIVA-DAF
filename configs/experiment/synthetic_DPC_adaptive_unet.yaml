@@ -10,7 +10,7 @@ defaults:
     - /loss: crossentropyloss.yaml
     - /metric:
           - iou.yaml
-    - /model/backbone: adapted_unet.yaml
+    - /model/backbone: adaptive_unet.yaml
     - /model/header: identity.yaml
     - /optimizer: adam.yaml
     - /callbacks:
@@ -26,7 +26,7 @@ defaults:
 # instead we define all modules and their paths directly in this config,
 # so everything is stored in one place for more readibility
 
-name: "sem_seg_synthetic_DPC_60_unet_loss_no_weights"
+name: "sem_seg_synthetic_SetM_adaptive_unet_loss_no_weights"
 
 train: True
 test: True
@@ -39,7 +39,6 @@ trainer:
     strategy: 'ddp_find_unused_parameters_false'
     min_epochs: 1
     max_epochs: 200
-    precision: 16
     check_val_every_n_epoch: 1
     accumulate_grad_batches: 5
 
@@ -75,7 +74,7 @@ callbacks:
 
 logger:
     wandb:
-        project: "ijdar"
+        project: "ijdar_controlled"
         name: ${name}
         tags: ["unet", "DPC-60", "4-classes", "pre-training", "200-epochs", "no-weights"]
-        group: 'DPC-60'
+        group: 'setM-adaptive-unet'

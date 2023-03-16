@@ -13,8 +13,8 @@ defaults:
           - precision.yaml
           - recall.yaml
           - f1_score.yaml
-    - /model/backbone: unet.yaml
-    - /model/header: unet_segmentation.yaml
+    - /model/backbone: oldunet.yaml
+    - /model/header: identity.yaml
     - /optimizer: adam.yaml
     - /callbacks:
           - check_compatibility.yaml
@@ -42,7 +42,6 @@ trainer:
     strategy: 'ddp_find_unused_parameters_false'
     min_epochs: 1
     max_epochs: 50
-    precision: 16
     check_val_every_n_epoch: 1
 
 task:
@@ -53,7 +52,7 @@ task:
 datamodule:
     _target_: src.datamodules.RGB.datamodule.DataModuleRGB
 
-    data_dir: /net/research-hisdoc/datasets/self-supervised/CB55/morphology_960_1344/B22_dataset_2_icdar
+    data_dir: /net/research-hisdoc/datasets/self-supervised/CB55/morphology_960_1344/B22_dataset_60
     num_workers: 4
     batch_size: 1
     shuffle: True

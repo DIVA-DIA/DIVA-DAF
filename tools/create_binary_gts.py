@@ -52,8 +52,8 @@ def binarize_images(img_paths: List[Path], global_output_dir: Path, bin_algo: st
 
 
 if __name__ == '__main__':
-    codex_path = Path("/net/research-hisdoc/datasets/self-supervised/CB55/resized/960_1344/filtered")
-    output_path = Path("/net/research-hisdoc/datasets/self-supervised/CB55/binary_cleaned")
+    codex_path = Path("/net/research-hisdoc/datasets/self-supervised/CSG18/resized/1152_1728/filtered")
+    output_path = Path("/net/research-hisdoc/datasets/self-supervised/CSG18/binary_cleaned/1152_1728")
     img_files = list(codex_path.glob("*.png"))
     boarder_filter_value = 50
 
