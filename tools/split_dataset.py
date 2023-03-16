@@ -138,7 +138,7 @@ if __name__ == '__main__':
 
         args = parser.parse_args()
         args_dict = args.__dict__
-        (args_dict['output_path'] / f"seed_{args_dict['seed']}").touch()
+        (args_dict['output_path'] / f"seed_{args_dict['seed']}.txt").touch()
         del args_dict['dataset_type']
         del args_dict['seed']
         split_dataset_segmentation(**args_dict)
