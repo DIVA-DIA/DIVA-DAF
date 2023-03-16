@@ -63,7 +63,7 @@ def split_dataset_segmentation(codex_path: Path, gt_path: Path, output_path: Pat
         json.dump(split_dict, f)
 
     # iterate through all folders
-    for img_name_w_extension in img_names[train_mask]:
+    for img_name_w_extension in tqdm(img_names[train_mask]):
         # create symlink to original file
         _create_symlink_to(img_name_w_extension, source_folder_path=train_folder / 'data',
                            target_folder_path=codex_path)
@@ -71,7 +71,7 @@ def split_dataset_segmentation(codex_path: Path, gt_path: Path, output_path: Pat
         _create_symlink_to(Path(img_name_w_extension).stem + extension, source_folder_path=train_folder / 'gt',
                            target_folder_path=gt_path)
 
-    for img_name_w_extension in img_names[val_mask]:
+    for img_name_w_extension in tqdm(img_names[val_mask]):
         # create symlink to original file
         _create_symlink_to(img_name_w_extension, source_folder_path=val_folder / 'data',
                            target_folder_path=codex_path)
@@ -138,6 +138,7 @@ if __name__ == '__main__':
 
         args = parser.parse_args()
         args_dict = args.__dict__
+        args_dict['output_path'].mkdir(parents=True, exist_ok=True)
         (args_dict['output_path'] / f"seed_{args_dict['seed']}.txt").touch()
         del args_dict['dataset_type']
         del args_dict['seed']
