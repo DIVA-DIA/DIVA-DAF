@@ -275,7 +275,7 @@ class TileGenerator:
                 if segmentation:
                     cat = np.zeros((tile_dims.height, tile_dims.width))
                     cat.fill(permutation[i, j])
-                    gt_img_array[height_start_ori: height_end_ori, width_start_ori: width_end_ori] = cat
+                    gt_img_array[height_start_ori: height_end_ori, width_start_ori: width_end_ori] = cat + 1
 
         if segmentation:
             return new_img_array, gt_img_array
