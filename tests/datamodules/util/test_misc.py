@@ -129,12 +129,12 @@ def test_find_new_filename_duplicate():
 
 @pytest.fixture
 def get_test_data_cropped_page(data_dir_cropped):
-    return sorted(list(list(list(data_dir_cropped.iterdir())[0].iterdir())[0].iterdir()))
+    return sorted(list(list(list(filter(Path.is_dir, list(data_dir_cropped.iterdir())))[0].iterdir()))[0].iterdir())
 
 
 @pytest.fixture
 def get_test_data_full_page(data_dir):
-    return sorted(list(list(list(data_dir.iterdir())[0].iterdir())[0].iterdir()))
+    return sorted(list(list(list(filter(Path.is_dir, list(data_dir.iterdir())))[0].iterdir())[0].iterdir()))
 
 
 def test_selection_validation_int_working_full_page(get_test_data_full_page):
