@@ -1,6 +1,6 @@
 import torch
 
-from src.models.backbones.unet import UNet, Baby_UNet, UNet16, UNet32, UNet64
+from src.models.backbones.unet import UNet, Baby_UNet, UNet16, UNet32, UNet64, OldUNet
 
 
 def test_unet():
@@ -8,6 +8,14 @@ def test_unet():
     model.eval()
     output_tensor = model(torch.rand(1, 3, 32, 32))
     assert output_tensor.shape == torch.Size([1, 64, 32, 32])
+    assert not output_tensor.isnan().any()
+
+
+def test_old_unet():
+    model = OldUNet(num_classes=3)
+    model.eval()
+    output_tensor = model(torch.rand(1, 3, 32, 32))
+    assert output_tensor.shape == torch.Size([1, 3, 32, 32])
     assert not output_tensor.isnan().any()
 
 
