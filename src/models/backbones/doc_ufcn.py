@@ -49,9 +49,9 @@ def decoding_block(in_c, out_c):
     return conv
 
 
-class unet_model(nn.Module):
+class Doc_ufcn(nn.Module):
     def __init__(self, out_channels=4, features=[32, 64, 128, 256]):
-        super(unet_model, self).__init__()
+        super(Doc_ufcn, self).__init__()
 
         self.dil1 = dil_block(3, features[0])
 

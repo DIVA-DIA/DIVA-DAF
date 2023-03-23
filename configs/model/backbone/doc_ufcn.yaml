@@ -1,2 +1,2 @@
-_target_: src.models.backbones.doc_ufcn.unet_model
+_target_: src.models.backbones.doc_ufcn.Doc_ufcn
 out_channels: ${datamodule:num_classes}
