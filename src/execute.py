@@ -168,7 +168,8 @@ def execute(config: DictConfig) -> Optional[float]:
         logger=logger,
     )
 
-    _clean_up_checkpoints(trainer=trainer)
+    if trainer.is_global_zero:
+        _clean_up_checkpoints(trainer=trainer)
     _print_best_paths(conf=config, trainer=trainer)
 
     _print_run_command(trainer=trainer)

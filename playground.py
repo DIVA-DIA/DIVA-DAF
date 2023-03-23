@@ -13,6 +13,7 @@ from src.callbacks.model_callbacks import SaveModelStateDictAndTaskCheckpoint
 from src.datamodules.RGB.datamodule import DataModuleRGB
 from src.models.backbone_header_model import BackboneHeaderModel
 from src.models.backbones.unet import UNet
+from src.models.headers.unet import UNetFCNHead
 from src.tasks.RGB.semantic_segmentation import SemanticSegmentationRGB
 
 
@@ -98,7 +99,7 @@ def unet_ft():
                                    metric_train=torchmetrics.JaccardIndex(num_classes=datamodule.num_classes),
                                    metric_val=torchmetrics.JaccardIndex(num_classes=datamodule.num_classes),
                                    metric_test=torchmetrics.JaccardIndex(num_classes=datamodule.num_classes))
-    callbacks = [SaveModelStateDictAndTaskCheckpoint(monitor="val/jaccardindex",
+    callbacks = [SaveModelStateDictAndTaskCheckpoint(monitor="val/jaccard_index",
                                                      save_top_k=1,
                                                      save_last=True,
                                                      mode="max",

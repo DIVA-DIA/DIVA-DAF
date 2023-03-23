@@ -1,0 +1,84 @@
+# @package _global_
+
+# to execute this experiment run:
+# python run.py +experiment=exp_example_full
+
+defaults:
+    - /mode: ijdar.yaml
+    - /plugins: null
+    - /task: semantic_segmentation_RGB.yaml
+    - /loss: crossentropyloss.yaml
+    - /metric:
+          - iou.yaml
+          - precision.yaml
+          - recall.yaml
+          - f1_score.yaml
+    - /model/backbone: adaptive_unet.yaml
+    - /model/header: identity.yaml
+    - /optimizer: adam.yaml
+    - /callbacks:
+          - check_compatibility.yaml
+          - model_checkpoint.yaml
+          - watch_model_wandb.yaml
+    - /logger:
+          - wandb.yaml # set logger here or use command line (e.g. `python run.py logger=wandb`)
+          - csv.yaml
+    - _self_
+
+# we override default configurations with nulls to prevent them from loading at all
+# instead we define all modules and their paths directly in this config,
+# so everything is stored in one place for more readibility
+
+name: "fine_tune_csg18_new_split_adaptive_unet_loss_no_weights"
+
+train: True
+test: True
+predict: False
+
+trainer:
+    _target_: pytorch_lightning.Trainer
+    accelerator: 'gpu'
+    devices: -1
+    strategy: 'ddp_find_unused_parameters_false'
+    min_epochs: 1
+    max_epochs: 100
+    check_val_every_n_epoch: 1
+    accumulate_grad_batches: 5
+
+task:
+    confusion_matrix_log_every_n_epoch: 10
+    confusion_matrix_val: True
+    confusion_matrix_test: True
+
+datamodule:
+    _target_: src.datamodules.RGB.datamodule.DataModuleRGB
+
+    data_dir: /net/research-hisdoc/datasets/semantic_segmentation/datasets/CSG18/960_1440/
+    num_workers: 4
+    batch_size: 1
+    shuffle: True
+    drop_last: True
+    data_folder_name: data
+    gt_folder_name: gt
+    train_folder_name: train
+    val_folder_name: val
+
+optimizer:
+    lr: 1e-3
+    betas: [0.9, 0.999]
+    eps: 1e-5
+
+callbacks:
+    model_checkpoint:
+        monitor: "val/jaccard_index"
+        mode: "max"
+        filename: ${checkpoint_folder_name}csg-unet
+#    watch_model:
+#        log_freq: 1000
+
+logger:
+    wandb:
+        project: "ijdar_controlled"
+        name: ${name}
+        tags: ["adaptive_unet", "csg18_new_split", "training-10", "4-classes", "baseline", "200-epochs", "no-weights"]
+        group: 'baseline'

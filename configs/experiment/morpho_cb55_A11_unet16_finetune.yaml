@@ -71,7 +71,7 @@ model:
 
 callbacks:
     model_checkpoint:
-        monitor: "val/jaccardindex"
+        monitor: "val/jaccard_index"
         mode: "max"
         filename: ${checkpoint_folder_name}cb55-train-20-full-unet
 #    watch_model:

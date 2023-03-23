@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from tqdm import tqdm
 import numpy as np
@@ -45,7 +46,7 @@ def split_dataset_classification(root_folder: Path, dataset_name: str, train_spl
 
 
 def split_dataset_segmentation(codex_path: Path, gt_path: Path, output_path: Path, train_split_size: int,
-                               val_split_size: int):
+                               val_split_size: int, extension: str):
     train_folder, val_folder = _remove_existing_folder(Path(output_path))
 
     possible_codex_files = np.asarray(list(codex_path.glob('*.png')))
@@ -56,22 +57,26 @@ def split_dataset_segmentation(codex_path: Path, gt_path: Path, output_path: Pat
     val_mask = ~train_mask
     img_names = np.asarray([p.name for p in img_paths_reduced])
 
-    # iterate through all folders
+    # create json with split
+    split_dict = {"train": img_names[train_mask].tolist(), "val": img_names[val_mask].tolist()}
+    with (output_path / 'split.json').open('w') as f:
+        json.dump(split_dict, f)
 
-    for img_name_w_extension in img_names[train_mask]:
+    # iterate through all folders
+    for img_name_w_extension in tqdm(img_names[train_mask]):
         # create symlink to original file
         _create_symlink_to(img_name_w_extension, source_folder_path=train_folder / 'data',
                            target_folder_path=codex_path)
         # create symlink to gt file
-        _create_symlink_to(Path(img_name_w_extension).stem + '.gif', source_folder_path=train_folder / 'gt',
+        _create_symlink_to(Path(img_name_w_extension).stem + extension, source_folder_path=train_folder / 'gt',
                            target_folder_path=gt_path)
 
-    for img_name_w_extension in img_names[val_mask]:
+    for img_name_w_extension in tqdm(img_names[val_mask]):
         # create symlink to original file
         _create_symlink_to(img_name_w_extension, source_folder_path=val_folder / 'data',
                            target_folder_path=codex_path)
         # create symlink to gt file
-        _create_symlink_to(Path(img_name_w_extension).stem + '.gif', source_folder_path=val_folder / 'gt',
+        _create_symlink_to(Path(img_name_w_extension).stem + extension, source_folder_path=val_folder / 'gt',
                            target_folder_path=gt_path)
 
 
@@ -97,7 +102,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--dataset_type', type=str, required=True,
                         help='Type of the dataset (classification or segmentation)')
+    parser.add_argument('-s', '--seed', type=int, required=False, default=42,
+                        help='Seed for the random generator')
     intermediate_args = parser.parse_known_args()
+    np.random.seed(intermediate_args[0].seed)
     if intermediate_args[0].dataset_type == 'classification':
         parser.add_argument('-r', '--root_folder', type=Path, required=True,
                             help='Path to the root folder of the dataset')
@@ -111,6 +119,7 @@ if __name__ == '__main__':
 
         args_dict = args.__dict__
         del args_dict['dataset_type']
+        del args_dict['seed']
         split_dataset_classification(**args_dict)
 
     if intermediate_args[0].dataset_type == 'segmentation':
@@ -124,8 +133,13 @@ if __name__ == '__main__':
                             help='Size of the training split')
         parser.add_argument('-v', '--val_split_size', type=int, required=True,
                             help='Size of the validation split')
+        parser.add_argument('-e', '--extension', type=str, required=True,
+                            help='File extension of the gt (e.g., .png)')
 
         args = parser.parse_args()
         args_dict = args.__dict__
+        args_dict['output_path'].mkdir(parents=True, exist_ok=True)
+        (args_dict['output_path'] / f"seed_{args_dict['seed']}.txt").touch()
         del args_dict['dataset_type']
+        del args_dict['seed']
         split_dataset_segmentation(**args_dict)

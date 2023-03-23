@@ -1,0 +1,12 @@
+# @package _global_
+
+experiment_mode: True
+
+run_root_dir: outputs/ijdar
+
+# name of the experiment
+name: ???
+
+hydra:
+    run:
+        dir: ${run_root_dir}/${name}/${now:%Y-%m-%d}/${now:%H-%M-%S}

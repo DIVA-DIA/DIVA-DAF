@@ -98,10 +98,10 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
     def setup(self, stage: str):
         if self.confusion_matrix_val:
             self.metric_conf_mat_val = MulticlassConfusionMatrix(num_classes=self.trainer.datamodule.num_classes,
-                                                                    compute_on_step=False)
+                                                                    compute_on_step=False, normalize='true')
         if self.confusion_matrix_test:
             self.metric_conf_mat_test = MulticlassConfusionMatrix(num_classes=self.trainer.datamodule.num_classes,
-                                                                     compute_on_step=False)
+                                                                     compute_on_step=False, normalize='true')
         if self.trainer.strategy.strategy_name == 'ddp':
             batch_size = self.trainer.datamodule.batch_size
             if stage == 'fit':
@@ -319,8 +319,8 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         fig = sn.heatmap(matrix, annot=True, annot_kws={"size": 8}, fmt="g")
         for i in range(matrix.shape[0]):
             fig.add_patch(Rectangle((i, i), 1, 1, fill=False, edgecolor='yellow', lw=3))
-        plt.ylabel('Predictions')
-        plt.xlabel('Targets')
+        plt.xlabel('Predictions')
+        plt.ylabel('Targets')
         plt.title(conf_mat_name)
         conf_mat_path = Path(os.getcwd()) / 'conf_mats' / stage
         conf_mat_path.mkdir(parents=True, exist_ok=True)

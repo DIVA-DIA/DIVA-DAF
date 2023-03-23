@@ -62,7 +62,7 @@ datamodule:
 
 callbacks:
     model_checkpoint:
-        monitor: "val/jaccardindex"
+        monitor: "val/jaccard_index"
         mode: "max"
         filename: ${checkpoint_folder_name}dev-baby-unet-indexed-data
     watch_model:

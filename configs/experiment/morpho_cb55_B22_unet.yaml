@@ -10,8 +10,11 @@ defaults:
     - /loss: crossentropyloss.yaml
     - /metric:
           - iou.yaml
-    - /model/backbone: unet.yaml
-    - /model/header: unet_segmentation.yaml
+          - precision.yaml
+          - recall.yaml
+          - f1_score.yaml
+    - /model/backbone: oldunet.yaml
+    - /model/header: identity.yaml
     - /optimizer: adam.yaml
     - /callbacks:
           - check_compatibility.yaml
@@ -26,7 +29,7 @@ defaults:
 # instead we define all modules and their paths directly in this config,
 # so everything is stored in one place for more readibility
 
-name: "morpho_cb55_B22_unet_loss_no_weights"
+name: "morpho_cb55_B22_unet_loss_no_weights_50ep"
 
 train: True
 test: False
@@ -38,8 +41,7 @@ trainer:
     devices: -1
     strategy: 'ddp_find_unused_parameters_false'
     min_epochs: 1
-    max_epochs: 200
-    precision: 16
+    max_epochs: 50
     check_val_every_n_epoch: 1
 
 task:
@@ -75,7 +77,7 @@ callbacks:
 
 logger:
     wandb:
-        project: "ijdar"
+        project: "icdar"
         name: ${name}
-        tags: ["best_model", "Morpho", "pre-training", "unet", "B22-60", "CB55-ssl-set", "200-epochs"]
-        group: 'pre-training'
+        tags: ["best_model", "Morpho", "pre-training", "unet", "B22", "B22_dataset_2_icdar", "CB55-ssl-set", "50-epochs"]
+        group: 'pre-training-morpho-b22-50-ep'
