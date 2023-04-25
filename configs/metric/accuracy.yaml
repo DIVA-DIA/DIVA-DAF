@@ -2,4 +2,5 @@ accuracy:
     # more infos about parameters: https://torchmetrics.readthedocs.io/en/latest/references/modules.html#id3
     _target_: torchmetrics.classification.MulticlassAccuracy
 
-    average: macro
+    num_classes: ${datamodule:num_classes}
+    average: micro

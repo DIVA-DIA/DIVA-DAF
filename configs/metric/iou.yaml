@@ -3,4 +3,4 @@ jaccard_index:
     _target_: torchmetrics.classification.MulticlassJaccardIndex
 
     num_classes: ${datamodule:num_classes}
-    average: macro
+    average: micro

@@ -2,6 +2,6 @@ recall:
     # more infos about parameters: https://torchmetrics.readthedocs.io/en/latest/references/modules.html#id5
     _target_: torchmetrics.classification.MulticlassRecall
 
-    average: macro
+    average: micro
     mdmc_reduce: global
     num_classes: ${datamodule:num_classes}
