@@ -214,7 +214,7 @@ class UNetNajoua(nn.Module):
         self.tconv3 = nn.ConvTranspose2d(features[0], features[0], kernel_size=2, stride=2)
         self.tconv4 = nn.ConvTranspose2d(features[0], features[0], kernel_size=2, stride=2)
         self.bottleneck = encoding_block(features[0], features[0])
-        self.final_layer = nn.Conv2d(features[0], num_classes, kernel_size=1)
+        # self.final_layer = nn.Conv2d(features[0], num_classes, kernel_size=1)
 
     def forward(self, x):
         # encoder
@@ -282,10 +282,10 @@ class UNetNajoua(nn.Module):
         x_21 = self.conv8(x_20)
         # print(x_21.size())
 
-        x = self.final_layer(x_21)
+        # x = self.final_layer(x_21)
         # print(x.size())
 
-        return x
+        return x_21
 
 
 class UNet16(UNetNajoua):
