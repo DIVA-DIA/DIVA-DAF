@@ -13,7 +13,7 @@ defaults:
           - precision.yaml
           - recall.yaml
           - f1_score.yaml
-    - /model/backbone: unet.yaml
+    - /model/backbone: unet16.yaml
     - /model/header: unet_segmentation.yaml
     - /optimizer: adam.yaml
     - /callbacks:
@@ -70,7 +70,7 @@ optimizer:
 
 model:
     header:
-        features: 64
+        features: 16
 
 callbacks:
     model_checkpoint:
