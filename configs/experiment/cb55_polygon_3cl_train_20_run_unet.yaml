@@ -13,7 +13,7 @@ defaults:
           - precision.yaml
           - recall.yaml
           - f1_score.yaml
-    - /model/backbone: unet16.yaml
+    - /model/backbone: unet.yaml
     - /model/header: unet_segmentation.yaml
     - /optimizer: adam.yaml
     - /callbacks:
@@ -49,7 +49,7 @@ trainer:
 task:
     confusion_matrix_log_every_n_epoch: 10
     confusion_matrix_val: True
-    confusion_matrix_test: True
+    confusion_matrix_test: False
 
 datamodule:
     _target_: src.datamodules.RGB.datamodule.DataModuleRGB
@@ -77,8 +77,8 @@ callbacks:
 
 model:
     header:
-        path_to_weights: /net/research-hisdoc/model_weights/unet16/header/3cl_random_init_seed_3301509166_segmentation.pth
-        features: 16
+#        path_to_weights: /net/research-hisdoc/model_weights/unet16/header/3cl_random_init_seed_3301509166_segmentation.pth
+        features: 64
 
 logger:
     wandb:
