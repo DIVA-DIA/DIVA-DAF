@@ -168,7 +168,7 @@ def execute(config: DictConfig) -> Optional[float]:
         logger=logger,
     )
 
-    if trainer.is_global_zero:
+    if trainer.is_global_zero and "every_n_epochs" not in config.callbacks.model_checkpoint:
         _clean_up_checkpoints(trainer=trainer)
     _print_best_paths(conf=config, trainer=trainer)
 
@@ -210,11 +210,11 @@ def _load_model_part(config: DictConfig, part_name: str):
         path_to_weights = config.model.get(part_name).path_to_weights
         del config.model.get(part_name).path_to_weights
         weights = torch.load(path_to_weights, map_location='cpu')
-        # prefix to remove
+        # prefix
         if "prefix" in config.model.get(part_name):
             prefix = config.model.get(part_name).prefix
             del config.model.get(part_name).prefix
-            weights = {k.replace(prefix, ''): v for k, v in weights.items()}
+            weights = {prefix + k: v for k, v in weights.items()}
         if "layers_to_load" in config.model.get(part_name):
             layers_to_load = tuple(config.model.get(part_name).layers_to_load)
             del config.model.get(part_name).layers_to_load
