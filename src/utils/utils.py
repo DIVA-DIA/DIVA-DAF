@@ -36,6 +36,7 @@ def get_logger(name=__name__, level=logging.INFO):
 log = get_logger()
 
 
+@rank_zero_only
 def check_config(config: DictConfig) -> None:
     """A couple of optional utilities, controlled by main config file.
         - check for required configs in the main config

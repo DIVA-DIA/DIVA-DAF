@@ -26,7 +26,7 @@ params_unet="experiment=synthetic_set2023-CSG_doc_ufcn.yaml
           trainer.devices=[0,1,2,3]
           trainer.max_epochs=100
           mode=ijdar.yaml
-          name=PT_sem_seg_synthetic_set2023-CSG_training-120_doc_ufcn_loss_no_weights_100ep-2
+          name=PT_sem_seg_synthetic_set2023-CSG_training-120_doc_ufcn_loss_no_weights_100ep-validation-RGB
           logger.wandb.tags=[doc_ufcn,set2022-CB,training-120,4-classes,pre-training,100-epochs,no-weights,no-init]
           logger.wandb.project=ijdar_controlled
           logger.wandb.group=set2023-CSG-pt-100ep-doc_ufcn"

@@ -47,7 +47,7 @@ def execute(config: DictConfig) -> Optional[float]:
 
     # Init Lightning model backend
     log.info(f"Instantiating backbone model <{config.model.backbone._target_}>")
-    backbone = _load_model_part(config=config, part_name='backbone')
+    backbone: LightningModule = _load_model_part(config=config, part_name='backbone')
 
     # Init Lightning model header
     log.info(f"Instantiating header model <{config.model.header._target_}>")
@@ -168,7 +168,7 @@ def execute(config: DictConfig) -> Optional[float]:
         logger=logger,
     )
 
-    if trainer.is_global_zero:
+    if trainer.is_global_zero and "every_n_epochs" not in config.callbacks.model_checkpoint:
         _clean_up_checkpoints(trainer=trainer)
     _print_best_paths(conf=config, trainer=trainer)
 
@@ -209,13 +209,20 @@ def _load_model_part(config: DictConfig, part_name: str):
         log.info(f"Loading {part_name} weights from <{config.model.get(part_name).path_to_weights}>")
         path_to_weights = config.model.get(part_name).path_to_weights
         del config.model.get(part_name).path_to_weights
-        # prefix to remove
+        weights = torch.load(path_to_weights, map_location='cpu')
+        # prefix
         if "prefix" in config.model.get(part_name):
             prefix = config.model.get(part_name).prefix
             del config.model.get(part_name).prefix
+            weights = {prefix + k: v for k, v in weights.items()}
+        if "layers_to_load" in config.model.get(part_name):
+            layers_to_load = tuple(config.model.get(part_name).layers_to_load)
+            del config.model.get(part_name).layers_to_load
+            weights = {k: v for k, v in weights.items() if k.startswith(layers_to_load)}
+            strict = False
+
         part: LightningModule = hydra.utils.instantiate(config.model.get(part_name))
-        missing_keys, unexpected_keys = part.load_state_dict(torch.load(path_to_weights, map_location='cpu'),
-                                                             strict=strict)
+        missing_keys, unexpected_keys = part.load_state_dict(weights, strict=strict)
         if missing_keys:
             log.warning(f"When loading the model part {part_name} these keys where missed: \n {missing_keys}")
         if unexpected_keys:

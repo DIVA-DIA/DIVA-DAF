@@ -21,15 +21,15 @@ def get_wandb_logger(trainer: Trainer) -> WandbLogger:
 class WatchModelWithWandb(Callback):
     """Make WandbLogger watch model at the beginning of the run."""
 
-    def __init__(self, log: str = "gradients", log_freq: int = 100):
-        self.log = log
+    def __init__(self, log_category: str = "gradients", log_freq: int = 100):
+        self.log_category = log_category
         self.log_freq = log_freq
 
     @rank_zero_only
     def on_train_start(self, trainer, pl_module):
         try:
             logger = get_wandb_logger(trainer=trainer)
-            logger.watch(model=pl_module.model, log=self.log, log_freq=self.log_freq)
+            logger.watch(model=pl_module.model, log=self.log_category, log_freq=self.log_freq)
         except ValueError as e:
             logger = utils.get_logger(__name__)
             logger.error('No wandb logger found. WatchModelWithWandb callback will not do anything.')

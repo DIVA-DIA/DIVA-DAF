@@ -60,16 +60,3 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1
-      if: always()
-      # see: https://github.com/actions/toolkit/issues/399
-      continue-on-error: true
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        file: coverage.xml
-        flags: cpu,pytest
-        name: Base-coverage
-        fail_ci_if_error: false

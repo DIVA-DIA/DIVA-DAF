@@ -54,7 +54,7 @@ task:
 datamodule:
     _target_: src.datamodules.RGB.datamodule.DataModuleRGB
 
-    data_dir: /net/research-hisdoc/datasets/semantic_segmentation/datasets/polygon_gt/CSG18
+    data_dir: /net/research-hisdoc/datasets/semantic_segmentation/datasets/polygon_gt/CSG18/960_1440
     num_workers: 4
     batch_size: 1
     shuffle: True
@@ -75,10 +75,10 @@ callbacks:
 #    watch_model:
 #        log_freq: 1000
 
-#model:
-#    header:
-#        path_to_weights: /net/research-hisdoc/model_weights/unet/headers/3cl_random_init_seed_4287204085_segmentation.pth
-#        features: 64
+model:
+    header:
+        path_to_weights: /net/research-hisdoc/model_weights/unet/headers/3cl_random_init_seed_4287204085_segmentation.pth
+        features: 64
 
 logger:
     wandb:
