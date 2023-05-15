@@ -157,7 +157,7 @@ class Unet(nn.Module):
                                                       parametric=parametric_upsampling,
                                                       use_bn=decoder_use_batchnorm))
 
-        self.final_conv = nn.Conv2d(decoder_filters[-1], num_classes, kernel_size=(1, 1))
+        # self.final_conv = nn.Conv2d(decoder_filters[-1], num_classes, kernel_size=(1, 1))
 
         if encoder_freeze:
             self.freeze_encoder()
@@ -181,7 +181,7 @@ class Unet(nn.Module):
             skip_features = features[skip_name]
             x = upsample_block(x, skip_features)
 
-        x = self.final_conv(x)
+        # x = self.final_conv(x)
         return x
 
     def forward_backbone(self, x):
