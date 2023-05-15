@@ -5,7 +5,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from src.models.backbones.resnetdd import resnet18, resnet34, resnet50, resnet101, resnet152
+from src.models.backbones.resnet import ResNet18, ResNet34, ResNet50, ResNet101, ResNet152
 
 
 def make_layer(block, in_channels, channels, num_blocks, stride=1, dilation=1):
@@ -93,17 +93,17 @@ class Bottleneck(nn.Module):
 
 
 class ResNet_Bottleneck_OS16(nn.Module):
-    def __init__(self, num_layers, pretrained=False):
+    def __init__(self, num_layers):
         super(ResNet_Bottleneck_OS16, self).__init__()
 
         if num_layers == 50:
-            resnet = resnet50(pretrained)
+            resnet = ResNet50()
 
         elif num_layers == 101:
-            resnet = resnet101(pretrained)
+            resnet = ResNet101()
 
         elif num_layers == 152:
-            resnet = resnet152(pretrained)
+            resnet = ResNet152()
         else:
             raise Exception("num_layers must be in {50, 101, 152}!")
 
@@ -123,15 +123,15 @@ class ResNet_Bottleneck_OS16(nn.Module):
 
 
 class ResNet_BasicBlock_OS16(nn.Module):
-    def __init__(self, num_layers, pretrained=False):
+    def __init__(self, num_layers):
         super(ResNet_BasicBlock_OS16, self).__init__()
 
         if num_layers == 18:
-            resnet = resnet18(pretrained)
+            resnet = ResNet18()
             num_blocks = 2
 
         elif num_layers == 34:
-            resnet = resnet34(pretrained)
+            resnet = ResNet34()
 
             num_blocks = 3
 
@@ -153,16 +153,16 @@ class ResNet_BasicBlock_OS16(nn.Module):
         return output
 
 class ResNet_BasicBlock_OS8(nn.Module):
-    def __init__(self, num_layers, pretrained=False):
+    def __init__(self, num_layers):
         super(ResNet_BasicBlock_OS8, self).__init__()
 
         if num_layers == 18:
-            resnet = resnet18(pretrained)
+            resnet = ResNet18()
             num_blocks_layer_4 = 2
             num_blocks_layer_5 = 2
 
         elif num_layers == 34:
-            resnet = resnet34(pretrained)
+            resnet = ResNet34()
             num_blocks_layer_4 = 6
             num_blocks_layer_5 = 3
 
@@ -188,28 +188,28 @@ class ResNet_BasicBlock_OS8(nn.Module):
 
 
 def ResNet18_OS16(pretrained):
-    return ResNet_BasicBlock_OS16(num_layers=18, pretrained=pretrained)
+    return ResNet_BasicBlock_OS16(num_layers=18)
 
 
 def ResNet34_OS16(pretrained):
-    return ResNet_BasicBlock_OS16(num_layers=34, pretrained=pretrained)
+    return ResNet_BasicBlock_OS16(num_layers=34)
 
 
 def ResNet50_OS16(pretrained):
-    return ResNet_Bottleneck_OS16(num_layers=50, pretrained=pretrained)
+    return ResNet_Bottleneck_OS16(num_layers=50)
 
 
 def ResNet101_OS16(pretrained):
-    return ResNet_Bottleneck_OS16(num_layers=101, pretrained=pretrained)
+    return ResNet_Bottleneck_OS16(num_layers=101)
 
 
 def ResNet152_OS16(pretrained):
-    return ResNet_Bottleneck_OS16(num_layers=152, pretrained=pretrained)
+    return ResNet_Bottleneck_OS16(num_layers=152)
 
 
 def ResNet18_OS8(pretrained):
-    return ResNet_BasicBlock_OS8(num_layers=18, pretrained=pretrained)
+    return ResNet_BasicBlock_OS8(num_layers=18)
 
 
 def ResNet34_OS8(pretrained):
-    return ResNet_BasicBlock_OS8(num_layers=34, pretrained=pretrained)
+    return ResNet_BasicBlock_OS8(num_layers=34)
