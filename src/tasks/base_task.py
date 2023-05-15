@@ -98,10 +98,10 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
     def setup(self, stage: str):
         if self.confusion_matrix_val:
             self.metric_conf_mat_val = MulticlassConfusionMatrix(num_classes=self.trainer.datamodule.num_classes,
-                                                                    compute_on_step=False, normalize='true')
+                                                                    compute_on_step=False)
         if self.confusion_matrix_test:
             self.metric_conf_mat_test = MulticlassConfusionMatrix(num_classes=self.trainer.datamodule.num_classes,
-                                                                     compute_on_step=False, normalize='true')
+                                                                     compute_on_step=False)
         if self.trainer.strategy.strategy_name == 'ddp':
             batch_size = self.trainer.datamodule.batch_size
             if stage == 'fit':
@@ -305,8 +305,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         if not np.isclose(a=expected_sum, b=matrix_sum, rtol=2.5e-7):
             log.warning(f'matrix.sum() is not close to expected_sum '
                         f'({matrix_sum} != {expected_sum}, '
-                        f'diff: {matrix_sum - expected_sum}, '
-                        f'diff_crops: {(matrix_sum - expected_sum) / pixels_per_crop})')
+                        f'diff: {matrix_sum - expected_sum}')
 
         # print(f'With all_gather: {str(len(outputs[0][OutputKeys.PREDICTION][0]))}')
         conf_mat_name = f'CM_epoch_{self.trainer.current_epoch}'
