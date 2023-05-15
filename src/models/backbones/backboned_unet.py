@@ -42,7 +42,7 @@ def get_backbone(name, pretrained=True):
     elif name == 'unet_encoder':
         backbone = UnetEncoder(3)
     else:
-        raise NotImplemented('{} backbone model is not implemented so far.'.format(name))
+        raise NotImplementedError('{} backbone model is not implemented so far.'.format(name))
 
     # specifying skip feature and output names
     if name.startswith('resnet'):
