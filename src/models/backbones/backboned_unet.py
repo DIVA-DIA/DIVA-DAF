@@ -65,7 +65,7 @@ def get_backbone(name, pretrained=True):
         feature_names = ['module1', 'module2', 'module3', 'module4']
         backbone_output = 'module5'
     else:
-        raise NotImplemented('{} backbone model is not implemented so far.'.format(name))
+        raise NotImplementedError('{} backbone model is not implemented so far.'.format(name))
 
     return backbone, feature_names, backbone_output
 
