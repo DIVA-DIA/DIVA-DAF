@@ -10,8 +10,24 @@ def test_vgg11():
     assert not output_tensor.isnan().any()
 
 
+def test_vgg11_pretrain():
+    model = vgg11(pretrained=True, num_classes=5)
+    model.eval()
+    output_tensor = model(torch.rand(1, 3, 224, 224))
+    assert output_tensor.shape == torch.Size([1, 5])
+    assert not output_tensor.isnan().any()
+
+
 def test_vgg11_bn():
     model = vgg11_bn(num_classes=5)
+    model.eval()
+    output_tensor = model(torch.rand(1, 3, 224, 224))
+    assert output_tensor.shape == torch.Size([1, 5])
+    assert not output_tensor.isnan().any()
+
+
+def test_vgg11_bn_pretrained():
+    model = vgg11_bn(pretrained=True, num_classes=5)
     model.eval()
     output_tensor = model(torch.rand(1, 3, 224, 224))
     assert output_tensor.shape == torch.Size([1, 5])
@@ -26,8 +42,24 @@ def test_vgg13():
     assert not output_tensor.isnan().any()
 
 
+def test_vgg13_pretrained():
+    model = vgg13(pretrained=True, num_classes=5)
+    model.eval()
+    output_tensor = model(torch.rand(1, 3, 224, 224))
+    assert output_tensor.shape == torch.Size([1, 5])
+    assert not output_tensor.isnan().any()
+
+
 def test_vgg13_bn():
     model = vgg13_bn(num_classes=5)
+    model.eval()
+    output_tensor = model(torch.rand(1, 3, 224, 224))
+    assert output_tensor.shape == torch.Size([1, 5])
+    assert not output_tensor.isnan().any()
+
+
+def test_vgg13_bn_pretrained():
+    model = vgg13_bn(pretrained=True, num_classes=5)
     model.eval()
     output_tensor = model(torch.rand(1, 3, 224, 224))
     assert output_tensor.shape == torch.Size([1, 5])
@@ -42,8 +74,24 @@ def test_vgg16():
     assert not output_tensor.isnan().any()
 
 
+def test_vgg16_pretrained():
+    model = vgg16(pretrained=True, num_classes=5)
+    model.eval()
+    output_tensor = model(torch.rand(1, 3, 224, 224))
+    assert output_tensor.shape == torch.Size([1, 5])
+    assert not output_tensor.isnan().any()
+
+
 def test_vgg16_bn():
     model = vgg16_bn(num_classes=5)
+    model.eval()
+    output_tensor = model(torch.rand(1, 3, 224, 224))
+    assert output_tensor.shape == torch.Size([1, 5])
+    assert not output_tensor.isnan().any()
+
+
+def test_vgg16_bn_pretrained():
+    model = vgg16_bn(pretrained=True, num_classes=5)
     model.eval()
     output_tensor = model(torch.rand(1, 3, 224, 224))
     assert output_tensor.shape == torch.Size([1, 5])
@@ -58,8 +106,24 @@ def test_vgg19():
     assert not output_tensor.isnan().any()
 
 
+def test_vgg19_pretrained():
+    model = vgg19(pretrained=True, num_classes=5)
+    model.eval()
+    output_tensor = model(torch.rand(1, 3, 224, 224))
+    assert output_tensor.shape == torch.Size([1, 5])
+    assert not output_tensor.isnan().any()
+
+
 def test_vgg19_bn():
     model = vgg19_bn(num_classes=5)
+    model.eval()
+    output_tensor = model(torch.rand(1, 3, 224, 224))
+    assert output_tensor.shape == torch.Size([1, 5])
+    assert not output_tensor.isnan().any()
+
+
+def test_vgg19_bn_pretrained():
+    model = vgg19_bn(pretrained=True, num_classes=5)
     model.eval()
     output_tensor = model(torch.rand(1, 3, 224, 224))
     assert output_tensor.shape == torch.Size([1, 5])
