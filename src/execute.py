@@ -141,6 +141,9 @@ def execute(config: DictConfig) -> Optional[float]:
                     run_config_folder_path.mkdir(exist_ok=True)
                     shutil.copyfile(RUN_CONFIG_NAME, str(run_config_folder_path / RUN_CONFIG_NAME))
 
+    # save git hash
+    _save_git_hash(trainer)
+
     if config.train:
         # Train the model
         log.info("Starting training!")
@@ -178,6 +181,21 @@ def execute(config: DictConfig) -> Optional[float]:
     optimized_metric = config.get("optimized_metric")
     if optimized_metric:
         return trainer.callback_metrics[optimized_metric]
+
+
+def _save_git_hash(trainer):
+    log.info("Saving the current git hash into the output directory!")
+    if trainer.is_global_zero:
+        import subprocess
+        from hydra.utils import get_original_cwd
+        try:
+            git_hash = subprocess.check_output(
+                ['git', '--git-dir', get_original_cwd() + '/.git', 'rev-parse', '--short', 'HEAD']).decode(
+                'ascii').strip()
+            with open('git_hash.txt', mode='w') as fp:
+                fp.write(git_hash)
+        except subprocess.CalledProcessError as e:
+            log.error(e.returncode, e.output)
 
 
 def _load_model_part(config: DictConfig, part_name: str):
