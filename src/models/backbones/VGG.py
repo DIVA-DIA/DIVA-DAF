@@ -22,10 +22,8 @@ model_urls = {
 
 class VGG(nn.Module):
 
-    def __init__(self, features, output_channels=1000, **kwargs):
+    def __init__(self, features, num_classes=1000, **kwargs):
         super(VGG, self).__init__()
-
-        self.expected_input_size = (224, 224)
 
         self.features = features
         self.classifier = nn.Sequential(
@@ -35,7 +33,7 @@ class VGG(nn.Module):
             nn.Linear(4096, 4096),
             nn.ReLU(True),
             nn.Dropout(),
-            nn.Linear(4096, output_channels),
+            nn.Linear(4096, num_classes),
         )
         self._initialize_weights()
 

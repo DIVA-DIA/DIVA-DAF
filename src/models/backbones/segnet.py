@@ -7,11 +7,9 @@ from src.models.backbones.VGG import vgg19_bn
 
 
 class SegNet(nn.Module):
-    def __init__(self, output_channels, pretrained=False, **kwargs):
+    def __init__(self, num_classes, pretrained=False, **kwargs):
         super(SegNet, self).__init__()
         vgg = vgg19_bn(pretrained=pretrained, **kwargs)
-
-        num_classes = output_channels
 
         features = list(vgg.features.children())
         self.enc1 = nn.Sequential(*features[0:7])

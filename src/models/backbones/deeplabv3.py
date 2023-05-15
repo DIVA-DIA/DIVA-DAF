@@ -21,29 +21,29 @@ CLASS_NAMES = {"deeplabv3_resnet18_os16": ResNet18_OS16,
                }
 
 
-def deeplabv3(output_channels, **kwargs):
-    return deeplabv3_builder('deeplabv3', output_channels, **kwargs)
+def deeplabv3(num_classes, **kwargs):
+    return deeplabv3_builder('deeplabv3', num_classes, **kwargs)
 
-def deeplabv3_resnet18_os16(output_channels, **kwargs):
-    return deeplabv3_builder('deeplabv3_resnet18_os16', output_channels, **kwargs)
+def deeplabv3_resnet18_os16(num_classes, **kwargs):
+    return deeplabv3_builder('deeplabv3_resnet18_os16', num_classes, **kwargs)
 
-def deeplabv3_resnet34_os16(output_channels, **kwargs):
-    return deeplabv3_builder('deeplabv3_resnet34_os16', output_channels, **kwargs)
+def deeplabv3_resnet34_os16(num_classes, **kwargs):
+    return deeplabv3_builder('deeplabv3_resnet34_os16', num_classes, **kwargs)
 
-def deeplabv3_resnet50_os16(output_channels, **kwargs):
-    return deeplabv3_builder('deeplabv3_resnet50_os16', output_channels, **kwargs)
+def deeplabv3_resnet50_os16(num_classes, **kwargs):
+    return deeplabv3_builder('deeplabv3_resnet50_os16', num_classes, **kwargs)
 
-def deeplabv3_resnet101_os16(output_channels, **kwargs):
-    return deeplabv3_builder('deeplabv3_resnet101_os16', output_channels, **kwargs)
+def deeplabv3_resnet101_os16(num_classes, **kwargs):
+    return deeplabv3_builder('deeplabv3_resnet101_os16', num_classes, **kwargs)
 
-def deeplabv3_resnet152_os16(output_channels, **kwargs):
-    return deeplabv3_builder('deeplabv3_resnet152_os16', output_channels, **kwargs)
+def deeplabv3_resnet152_os16(num_classes, **kwargs):
+    return deeplabv3_builder('deeplabv3_resnet152_os16', num_classes, **kwargs)
 
-def deeplabv3_resnet18_os8(output_channels, **kwargs):
-    return deeplabv3_builder('deeplabv3_resnet18_os8', output_channels, **kwargs)
+def deeplabv3_resnet18_os8(num_classes, **kwargs):
+    return deeplabv3_builder('deeplabv3_resnet18_os8', num_classes, **kwargs)
 
-def deeplabv3_resnet34_os8(output_channels, **kwargs):
-    return deeplabv3_builder('deeplabv3_resnet34_os8', output_channels, **kwargs)
+def deeplabv3_resnet34_os8(num_classes, **kwargs):
+    return deeplabv3_builder('deeplabv3_resnet34_os8', num_classes, **kwargs)
 
 # *********************************************************************************
 
