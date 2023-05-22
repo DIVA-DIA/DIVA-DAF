@@ -1,7 +1,5 @@
-import numpy as np
 import pytest
 import torch
-from numpy import uint8
 from omegaconf import OmegaConf
 
 from src.datamodules.DivaHisDB.datamodule_cropped import DivaHisDBDataModuleCropped

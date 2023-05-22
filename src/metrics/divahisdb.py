@@ -10,7 +10,8 @@ class HisDBIoU(Metric):
     def __init__(self, num_classes: int = None, mask_modifies_prediction: bool = True, compute_on_step: bool = True,
                  dist_sync_on_step: bool = False, process_group: Optional[Any] = None, dist_sync_fn: Callable = None,
                  ) -> None:
-        super().__init__(compute_on_step, dist_sync_on_step, process_group, dist_sync_fn)
+        super().__init__(compute_on_step=compute_on_step, dist_sync_on_step=dist_sync_on_step,
+                         process_group=process_group, dist_sync_fn=dist_sync_fn)
         self.num_classes = num_classes
         self.mask_modifies_prediction = mask_modifies_prediction
         # use state save
@@ -65,5 +66,5 @@ class HisDBIoU(Metric):
         mask = torch.bitwise_and(torch.ge(label_true, 0), torch.lt(label_true, n_class))
         hist = torch.bincount(
             torch.add(torch.mul(n_class, label_true[mask]), label_pred[mask]), minlength=n_class ** 2).reshape(n_class,
-                                                                                                              n_class)
+                                                                                                               n_class)
         return hist

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+bash scripts/experiments/fine_tune_unet16_pretrained_All_datasets.sh
+bash scripts/experiments/fine_tune_unet32_pretrained_All_datasets.sh
+bash scripts/experiments/fine_tune_unet64_pretrained_All_datasets.sh
+bash scripts/experiments/fine_tune_unet_pretrained_All_datasets.sh

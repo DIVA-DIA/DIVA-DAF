@@ -1,6 +1,6 @@
 coverage==6.0.1
-codecov==2.1.12
-pytest==6.2.3
+codecov==2.1.13
+pytest==7.2.0
 pytest-cov==3.0.0
 pytest-flake8==1.0.7
 flake8==3.9.2

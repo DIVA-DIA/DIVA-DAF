@@ -1,0 +1,90 @@
+# @package _global_
+
+# to execute this experiment run:
+# python run.py +experiment=exp_example_full
+
+defaults:
+    - /mode: experiment.yaml
+    - /plugins: null
+    - /task: semantic_segmentation_RGB.yaml
+    - /loss: crossentropyloss.yaml
+    - /metric:
+          - iou.yaml
+          - precision.yaml
+          - recall.yaml
+          - f1_score.yaml
+    - /model/backbone: unet.yaml
+    - /model/header: unet_segmentation.yaml
+    - /optimizer: adam.yaml
+    - /callbacks:
+          - check_compatibility.yaml
+          - model_checkpoint.yaml
+          - watch_model_wandb.yaml
+    - /logger:
+          - wandb.yaml # set logger here or use command line (e.g. `python run.py logger=wandb`)
+          - csv.yaml
+    - _self_
+
+# we override default configurations with nulls to prevent them from loading at all
+# instead we define all modules and their paths directly in this config,
+# so everything is stored in one place for more readibility
+
+name: "fine_tune_sauvola_cb55_AB1_train_20_unet_loss_no_weights_100pt"
+
+train: True
+test: True
+predict: False
+
+trainer:
+    _target_: pytorch_lightning.Trainer
+    accelerator: 'gpu'
+    devices: -1
+    strategy: 'ddp_find_unused_parameters_false'
+    min_epochs: 1
+    max_epochs: 100
+    precision: 16
+    check_val_every_n_epoch: 1
+    accumulate_grad_batches: 5
+
+task:
+    confusion_matrix_log_every_n_epoch: 10
+    confusion_matrix_val: True
+    confusion_matrix_test: True
+
+datamodule:
+    _target_: src.datamodules.RGB.datamodule.DataModuleRGB
+
+    data_dir: /net/research-hisdoc/datasets/semantic_segmentation/datasets/CB55-splits/AB1_3class
+    num_workers: 4
+    batch_size: 1
+    shuffle: True
+    drop_last: True
+    data_folder_name: data
+    gt_folder_name: gt
+    train_folder_name: training-20
+    val_folder_name: validation
+
+optimizer:
+    lr: 1e-3
+    betas: [0.9, 0.999]
+    eps: 1e-5
+
+callbacks:
+    model_checkpoint:
+        monitor: "val/jaccard_index"
+        mode: "max"
+        filename: ${checkpoint_folder_name}AB1-train-20-unet
+#    watch_model:
+#        log_freq: 1000
+
+model:
+    header:
+        path_to_weights: /net/research-hisdoc/model_weights/unet/headers/3cl_random_init_seed_4287204085_segmentation.pth
+        features: 64
+
+logger:
+    wandb:
+        project: "icdar"
+        name: ${name}
+        tags: ["unet", "AB1", "training-20", "3-classes", "fine-tune", "200-epochs", "no-weights", "sauvola", "binary", "100-epoch-pt"]
+        group: 'fine-tune-sauvola-100-pt'

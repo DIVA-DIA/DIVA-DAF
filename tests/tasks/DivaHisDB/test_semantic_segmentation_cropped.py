@@ -5,10 +5,12 @@ import pytest
 import pytorch_lightning as pl
 import torch.optim.optimizer
 from omegaconf import OmegaConf
-from pl_bolts.models.vision import UNet
 from pytorch_lightning import seed_everything, Trainer
 
 from src.datamodules.DivaHisDB.datamodule_cropped import DivaHisDBDataModuleCropped
+from src.models.backbone_header_model import BackboneHeaderModel
+from src.models.backbones.unet import UNet
+from src.models.headers.unet import UNetFCNHead
 from src.tasks.DivaHisDB.semantic_segmentation_cropped import SemanticSegmentationCroppedHisDB
 from src.tasks.utils.outputs import OutputKeys
 from tests.tasks.test_base_task import fake_log
@@ -23,8 +25,13 @@ def clear_resolvers():
 
 
 @pytest.fixture()
-def model():
-    return UNet(num_classes=4, num_layers=2, features_start=32)
+def model_backbone():
+    return UNet(num_layers=2, features_start=32)
+
+
+@pytest.fixture()
+def model_header():
+    return UNetFCNHead(num_classes=4, features=32)
 
 
 @pytest.fixture()
@@ -38,9 +45,9 @@ def datamodule_and_dir(data_dir_cropped):
 
 
 @pytest.fixture()
-def task(model, tmp_path):
-    task = SemanticSegmentationCroppedHisDB(model=model,
-                                            optimizer=torch.optim.Adam(params=model.parameters()),
+def task(model_backbone, model_header, tmp_path):
+    task = SemanticSegmentationCroppedHisDB(model=BackboneHeaderModel(backbone=model_backbone, header=model_header),
+                                            optimizer=torch.optim.Adam(params=model_backbone.parameters()),
                                             loss_fn=torch.nn.CrossEntropyLoss(),
                                             test_output_path=tmp_path,
                                             confusion_matrix_val=True
@@ -62,9 +69,10 @@ def test_semantic_segmentation(tmp_path, task, datamodule_and_dir, monkeypatch):
     trainer.fit(task, datamodule=data_module)
 
     results = trainer.test(datamodule=data_module)
-    print(results)
-    assert np.isclose(results[0]['test/crossentropyloss'], 1.0896027088165283, rtol=2.5e-02)
-    assert np.isclose(results[0]['test/crossentropyloss_epoch'], 1.0896027088165283, rtol=2.5e-02)
+    output_key = "test/crossentropyloss"
+    if output_key not in results[0]:
+        output_key = "test/crossentropyloss_epoch"
+    assert np.isclose(results[0][output_key], 1.1707444190979004, rtol=2.5e-02)
     assert len(list(patches_path.glob('*/*.npy'))) == len(list(test_data_patch.glob('*/*.png')))
 
 
@@ -78,7 +86,7 @@ def test_training_step(monkeypatch, datamodule_and_dir, task, capsys):
     data_module_cropped, data_dir_cropped = datamodule_and_dir
     trainer = Trainer()
     monkeypatch.setattr(data_module_cropped, 'trainer', trainer)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped)
     monkeypatch.setattr(task, 'log', fake_log)
     data_module_cropped.setup('fit')
@@ -93,7 +101,7 @@ def test_validation_step(monkeypatch, datamodule_and_dir, task, capsys):
     data_module_cropped, data_dir_cropped = datamodule_and_dir
     trainer = Trainer()
     monkeypatch.setattr(data_module_cropped, 'trainer', trainer)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped)
     monkeypatch.setattr(task, 'log', fake_log)
     monkeypatch.setattr(task, 'confusion_matrix_val', False)
@@ -108,7 +116,7 @@ def test_test_step(monkeypatch, datamodule_and_dir, task, capsys, tmp_path):
     data_module_cropped, data_dir_cropped = datamodule_and_dir
     trainer = Trainer()
     monkeypatch.setattr(data_module_cropped, 'trainer', trainer)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped)
     monkeypatch.setattr(task, 'log', fake_log)
     monkeypatch.setattr(task, 'confusion_matrix_val', False)

@@ -1,0 +1,2 @@
+_target_: src.models.backbones.segnet.SegNet
+output_channels: ${datamodule:num_classes}

@@ -13,7 +13,7 @@ min_epochs: 1
 max_epochs: 3
 
 # prints
-weights_summary: full
+enable_model_summary: full
 profiler: null
 
 # all parameters below are set to Lightning defaults

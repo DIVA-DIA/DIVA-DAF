@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, OrderedDict
 
 from torch import nn
 
@@ -10,10 +10,10 @@ class ResNetFCNHead(nn.Sequential):
     resnet50, 101, 152 = 2048
     """
 
-    def __init__(self, in_channels, num_classes, output_dims: Tuple[int, int] = (256, 256)):
+    def __init__(self, in_channels: int, num_classes: int, output_dims: Tuple[int, int]):
         self.output_dims = output_dims
         if len(self.output_dims) > 2:
-            self.output_dims = output_dims[-2:]
+            self.output_dims = self.output_dims[-2:]
         inter_channels = in_channels // 4
         layers = [
             nn.Conv2d(in_channels=in_channels, out_channels=inter_channels, kernel_size=(3, 3), padding=(1, 1),
@@ -26,7 +26,7 @@ class ResNetFCNHead(nn.Sequential):
 
         super(ResNetFCNHead, self).__init__(*layers)
 
-    def forward(self, input):
-        x = super(ResNetFCNHead, self).forward(input)
+    def forward(self, x):
+        x = super(ResNetFCNHead, self).forward(x)
         x = nn.functional.interpolate(x, size=self.output_dims, mode="bilinear", align_corners=False)
         return x

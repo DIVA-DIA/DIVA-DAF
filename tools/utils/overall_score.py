@@ -52,10 +52,10 @@ def clean_result_list(results: List[Any]):
 
 
 if __name__ == '__main__':
-    write_stats(path=Path('.'), results=[[0.97789, [b'Mean IU (Jaccard index) = 0.97789\n',
-                                                    b'EM=1.00 HS=1.00 IU=0.98,1.00[1.00|0.99|0.94|0.99] F1=0.99,1.00[1.00|0.99|0.97|0.99] P=1.00,1.00[1.00|1.00|0.99|1.00] R=0.98,1.00[1.00|0.99|0.94|0.99]Freq:[0.84|0.06|0.01|0.09]\n',
-                                                    b'Visualization image written in: /Users/voegtlil/Desktop/test/output/../eval_output_test/output_e-codices_fmb-cb-0055_0098v_max.visualization.png\n']],
-                                         [0.97789, [b'Mean IU (Jaccard index) = 0.97789\n',
-                                                    b'EM=1.00 HS=1.00 IU=0.98,1.00[1.00|0.99|0.94|0.99] F1=0.99,1.00[1.00|0.99|0.97|0.99] P=1.00,1.00[1.00|1.00|0.99|1.00] R=0.98,1.00[1.00|0.99|0.94|0.99]Freq:[0.84|0.06|0.01|0.09]\n',
-                                                    b'Visualization image written in: /Users/voegtlil/Desktop/test/output/../eval_output_test/output_e-codices_fmb-cb-0055_0098v_max.visualization.png\n']]],
+    write_stats(results=[[0.97789, [b'Mean IU (Jaccard index) = 0.97789\n',
+                                    b'EM=1.00 HS=1.00 IU=0.98,1.00[1.00|0.99|0.94|0.99] F1=0.99,1.00[1.00|0.99|0.97|0.99] P=1.00,1.00[1.00|1.00|0.99|1.00] R=0.98,1.00[1.00|0.99|0.94|0.99]Freq:[0.84|0.06|0.01|0.09]\n',
+                                    b'Visualization image written in: /Users/voegtlil/Desktop/test/output/../eval_output_test/output_e-codices_fmb-cb-0055_0098v_max.visualization.png\n']],
+                         [0.97789, [b'Mean IU (Jaccard index) = 0.97789\n',
+                                    b'EM=1.00 HS=1.00 IU=0.98,1.00[1.00|0.99|0.94|0.99] F1=0.99,1.00[1.00|0.99|0.97|0.99] P=1.00,1.00[1.00|1.00|0.99|1.00] R=0.98,1.00[1.00|0.99|0.94|0.99]Freq:[0.84|0.06|0.01|0.09]\n',
+                                    b'Visualization image written in: /Users/voegtlil/Desktop/test/output/../eval_output_test/output_e-codices_fmb-cb-0055_0098v_max.visualization.png\n']]],
                 errors=[], score=-1)

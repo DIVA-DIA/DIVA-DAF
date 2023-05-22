@@ -19,6 +19,7 @@ log = utils.get_logger(__name__)
 
 class DataModuleCroppedRGB(AbstractDatamodule):
     def __init__(self, data_dir: str, data_folder_name: str, gt_folder_name: str,
+                 train_folder_name: str = 'train', val_folder_name: str = 'val', test_folder_name: str = 'test',
                  selection_train: Optional[Union[int, List[str]]] = None,
                  selection_val: Optional[Union[int, List[str]]] = None,
                  selection_test: Optional[Union[int, List[str]]] = None,
@@ -26,12 +27,16 @@ class DataModuleCroppedRGB(AbstractDatamodule):
                  shuffle: bool = True, drop_last: bool = True):
         super().__init__()
 
+        self.train_folder_name = train_folder_name
+        self.val_folder_name = val_folder_name
+        self.test_folder_name = test_folder_name
         self.data_folder_name = data_folder_name
         self.gt_folder_name = gt_folder_name
 
         analytics_data, analytics_gt = get_analytics(input_path=Path(data_dir),
                                                      data_folder_name=self.data_folder_name,
                                                      gt_folder_name=self.gt_folder_name,
+                                                     train_folder_name=self.train_folder_name,
                                                      get_img_gt_path_list_func=CroppedDatasetRGB.get_gt_data_paths)
 
         self.mean = analytics_data['mean']
@@ -52,8 +57,7 @@ class DataModuleCroppedRGB(AbstractDatamodule):
         self.shuffle = shuffle
         self.drop_last = drop_last
 
-        self.data_dir = validate_path_for_segmentation(data_dir=data_dir, data_folder_name=self.data_folder_name,
-                                                       gt_folder_name=self.gt_folder_name)
+        self.data_dir = data_dir
 
         self.selection_train = selection_train
         self.selection_val = selection_val
@@ -67,39 +71,38 @@ class DataModuleCroppedRGB(AbstractDatamodule):
     def setup(self, stage: Optional[str] = None):
         super().setup()
         if stage == 'fit' or stage is None:
-            self.train = CroppedDatasetRGB(**self._create_dataset_parameters('train'), selection=self.selection_train)
+            self.data_dir = validate_path_for_segmentation(data_dir=self.data_dir,
+                                                           data_folder_name=self.data_folder_name,
+                                                           gt_folder_name=self.gt_folder_name,
+                                                           split_name=self.train_folder_name)
+            self.train = CroppedDatasetRGB(**self._create_dataset_parameters(self.train_folder_name),
+                                           selection=self.selection_train)
             log.info(f'Initialized train dataset with {len(self.train)} samples.')
-            self._check_min_num_samples(num_samples=len(self.train), data_split='train',
-                                        drop_last=self.drop_last)
+            self.check_min_num_samples(self.trainer.num_devices, self.batch_size, num_samples=len(self.train),
+                                       data_split=self.train_folder_name,
+                                       drop_last=self.drop_last)
 
-            self.val = CroppedDatasetRGB(**self._create_dataset_parameters('val'), selection=self.selection_val)
+            self.data_dir = validate_path_for_segmentation(data_dir=self.data_dir,
+                                                           data_folder_name=self.data_folder_name,
+                                                           gt_folder_name=self.gt_folder_name,
+                                                           split_name=self.val_folder_name)
+            self.val = CroppedDatasetRGB(**self._create_dataset_parameters(self.val_folder_name),
+                                         selection=self.selection_val)
             log.info(f'Initialized val dataset with {len(self.val)} samples.')
-            self._check_min_num_samples(num_samples=len(self.val), data_split='val',
-                                        drop_last=self.drop_last)
+            self.check_min_num_samples(self.trainer.num_devices, self.batch_size, num_samples=len(self.val),
+                                       data_split=self.val_folder_name,
+                                       drop_last=self.drop_last)
 
         if stage == 'test':
-            self.test = CroppedDatasetRGB(**self._create_dataset_parameters('test'), selection=self.selection_test)
+            self.data_dir = validate_path_for_segmentation(data_dir=self.data_dir,
+                                                           data_folder_name=self.data_folder_name,
+                                                           gt_folder_name=self.gt_folder_name,
+                                                           split_name=self.test_folder_name)
+            self.test = CroppedDatasetRGB(**self._create_dataset_parameters(self.test_folder_name),
+                                          selection=self.selection_test)
             log.info(f'Initialized test dataset with {len(self.test)} samples.')
             # self._check_min_num_samples(num_samples=len(self.test), data_split='test',
             #                             drop_last=False)
-
-    def _check_min_num_samples(self, num_samples: int, data_split: str, drop_last: bool):
-        num_processes = self.trainer.num_processes
-        batch_size = self.batch_size
-        if drop_last:
-            if num_samples < (self.trainer.num_processes * self.batch_size):
-                log.error(
-                    f'#samples ({num_samples}) in "{data_split}" smaller than '
-                    f'#processes({num_processes}) times batch size ({batch_size}). '
-                    f'This only works if drop_last is false!')
-                raise ValueError()
-        else:
-            if num_samples < (self.trainer.num_processes * self.batch_size):
-                log.warning(
-                    f'#samples ({num_samples}) in "{data_split}" smaller than '
-                    f'#processes ({num_processes}) times batch size ({batch_size}). '
-                    f'This works due to drop_last=False, however samples might occur multiple times. '
-                    f'Check if this behavior is intended!')
 
     def train_dataloader(self, *args, **kwargs) -> DataLoader:
         return DataLoader(self.train,

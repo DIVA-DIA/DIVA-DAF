@@ -9,9 +9,10 @@ defaults:
     - /task:            semantic_segmentation_RGB.yaml
     - /datamodule:      rolf_format_dev.yaml
     - /loss:            crossentropyloss.yaml
-    - /metric:          iou.yaml
+    - /metric:
+          - iou.yaml
     - /model/backbone:  baby_unet.yaml
-    - /model/header:    identity.yaml
+    - /model/header:    unet_segmentation.yaml
     - /optimizer:       adam.yaml
     - /callbacks:
           - check_compatibility.yaml
@@ -39,7 +40,7 @@ trainer:
     strategy: 'ddp_find_unused_parameters_false'
     min_epochs: 1
     max_epochs: 2
-    weights_summary: full
+    enable_model_summary: full
     precision: 16
 
 task:

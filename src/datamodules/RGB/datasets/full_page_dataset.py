@@ -13,7 +13,7 @@ from torch import is_tensor
 from torchvision.datasets.folder import pil_loader, has_file_allowed_extension
 from torchvision.transforms import ToTensor
 
-from src.datamodules.utils.misc import ImageDimensions, get_output_file_list
+from src.datamodules.utils.misc import ImageDimensions, get_output_file_list, selection_validation
 from src.utils import utils
 
 IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm', '.gif')
@@ -145,7 +145,7 @@ class DatasetRGB(data.Dataset):
 
         if not is_tensor(img):
             img = ToTensor()(img)
-        if not is_tensor(gt):
+        if not is_tensor(gt) and gt is not None:
             gt = ToTensor()(gt)
 
         if self.target_transform is not None:
@@ -184,32 +184,7 @@ class DatasetRGB(data.Dataset):
 
         # check the selection parameter
         if selection:
-            if isinstance(selection, int):
-                if selection < 0:
-                    msg = f'Parameter "selection" is a negative integer ({selection}). ' \
-                          f'Negative values are not supported!'
-                    log.error(msg)
-                    raise ValueError(msg)
-
-                elif selection == 0:
-                    selection = None
-
-                elif selection > len(files_in_data_root):
-                    msg = f'Parameter "selection" is larger ({selection}) than ' \
-                          f'number of files ({len(files_in_data_root)}).'
-                    log.error(msg)
-                    raise ValueError(msg)
-
-            elif isinstance(selection, ListConfig) or isinstance(selection, list):
-                if not all(x in [f.stem for f in files_in_data_root] for x in selection):
-                    msg = f'Parameter "selection" contains a non-existing file names.)'
-                    log.error(msg)
-                    raise ValueError(msg)
-
-            else:
-                msg = f'Parameter "selection" exists, but it is of unsupported type ({type(selection)})'
-                log.error(msg)
-                raise TypeError(msg)
+            selection = selection_validation(files_in_data_root, selection, full_page=True)
 
         counter = 0  # Counter for subdirectories, needed for selection parameter
 
@@ -229,8 +204,6 @@ class DatasetRGB(data.Dataset):
                    has_file_allowed_extension(path_gt_file.name, IMG_EXTENSIONS), \
                 'get_img_gt_path_list(): image file aligned with non-image file'
 
-            assert path_data_file.stem == path_gt_file.stem, \
-                'get_img_gt_path_list(): mismatch between data filename and gt filename'
             paths.append((path_data_file, path_gt_file, path_data_file.stem))
 
         return paths

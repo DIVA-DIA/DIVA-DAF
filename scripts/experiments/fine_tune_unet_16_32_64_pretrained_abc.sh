@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+#bash scripts/experiments/fine_tune_unet16_pretrained_SetA.sh
+#bash scripts/experiments/fine_tune_unet16_pretrained_SetB.sh
+#bash scripts/experiments/fine_tune_unet16_pretrained_SetC.sh
+
+bash scripts/experiments/fine_tune_unet32_pretrained_SetA.sh
+bash scripts/experiments/fine_tune_unet32_pretrained_SetB.sh
+bash scripts/experiments/fine_tune_unet32_pretrained_SetC.sh
+
+bash scripts/experiments/fine_tune_unet64_pretrained_SetA.sh
+bash scripts/experiments/fine_tune_unet64_pretrained_SetB.sh
+bash scripts/experiments/fine_tune_unet64_pretrained_SetC.sh
+
+bash scripts/experiments/fine_tune_unet_pretrained_SetA.sh
+bash scripts/experiments/fine_tune_unet_pretrained_SetB.sh
+bash scripts/experiments/fine_tune_unet_pretrained_SetC.sh

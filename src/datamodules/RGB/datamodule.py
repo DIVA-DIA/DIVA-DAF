@@ -5,12 +5,12 @@ import torch
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from src.datamodules.RGB.datasets.full_page_dataset import DatasetRGB, ImageDimensions
+from src.datamodules.RGB.datasets.full_page_dataset import DatasetRGB
 from src.datamodules.RGB.utils.image_analytics import get_analytics
 from src.datamodules.RGB.utils.single_transform import IntegerEncoding
 from src.datamodules.base_datamodule import AbstractDatamodule
 from src.datamodules.utils.dataset_predict import DatasetPredict
-from src.datamodules.utils.misc import validate_path_for_segmentation
+from src.datamodules.utils.misc import validate_path_for_segmentation, ImageDimensions
 from src.datamodules.utils.wrapper_transforms import OnlyImage, OnlyTarget
 from src.utils import utils
 
@@ -19,6 +19,7 @@ log = utils.get_logger(__name__)
 
 class DataModuleRGB(AbstractDatamodule):
     def __init__(self, data_dir: str, data_folder_name: str, gt_folder_name: str,
+                 train_folder_name: str = 'train', val_folder_name: str = 'val', test_folder_name: str = 'test',
                  pred_file_path_list: List[str] = None,
                  selection_train: Optional[Union[int, List[str]]] = None,
                  selection_val: Optional[Union[int, List[str]]] = None,
@@ -27,6 +28,9 @@ class DataModuleRGB(AbstractDatamodule):
                  shuffle: bool = True, drop_last: bool = True):
         super().__init__()
 
+        self.train_folder_name = train_folder_name
+        self.val_folder_name = val_folder_name
+        self.test_folder_name = test_folder_name
         self.data_folder_name = data_folder_name
         self.gt_folder_name = gt_folder_name
 
@@ -36,10 +40,11 @@ class DataModuleRGB(AbstractDatamodule):
         analytics_data, analytics_gt = get_analytics(input_path=Path(data_dir),
                                                      data_folder_name=self.data_folder_name,
                                                      gt_folder_name=self.gt_folder_name,
+                                                     train_folder_name=self.train_folder_name,
                                                      get_img_gt_path_list_func=DatasetRGB.get_img_gt_path_list)
 
         self.image_dims = ImageDimensions(width=analytics_data['width'], height=analytics_data['height'])
-        self.dims = (3, self.image_dims.width, self.image_dims.height)
+        self.dims = (3, self.image_dims.height, self.image_dims.width)
 
         self.mean = analytics_data['mean']
         self.std = analytics_data['std']
@@ -59,8 +64,7 @@ class DataModuleRGB(AbstractDatamodule):
         self.shuffle = shuffle
         self.drop_last = drop_last
 
-        self.data_dir = validate_path_for_segmentation(data_dir=data_dir, data_folder_name=self.data_folder_name,
-                                                       gt_folder_name=self.gt_folder_name)
+        self.data_dir = data_dir
 
         self.selection_train = selection_train
         self.selection_val = selection_val
@@ -81,26 +85,40 @@ class DataModuleRGB(AbstractDatamodule):
                           'gt_folder_name': self.gt_folder_name}
 
         if stage == 'fit' or stage is None:
-            self.train = DatasetRGB(path=self.data_dir / 'train',
+            self.data_dir = validate_path_for_segmentation(data_dir=self.data_dir,
+                                                           data_folder_name=self.data_folder_name,
+                                                           gt_folder_name=self.gt_folder_name,
+                                                           split_name=self.train_folder_name)
+            self.train = DatasetRGB(path=self.data_dir / self.train_folder_name,
                                     selection=self.selection_train,
                                     is_test=False,
                                     **dataset_kwargs,
                                     **common_kwargs)
             log.info(f'Initialized train dataset with {len(self.train)} samples.')
-            self._check_min_num_samples(num_samples=len(self.train), data_split='train',
-                                        drop_last=self.drop_last)
+            self.check_min_num_samples(self.trainer.num_devices, self.batch_size, num_samples=len(self.train),
+                                       data_split=self.train_folder_name,
+                                       drop_last=self.drop_last)
 
-            self.val = DatasetRGB(path=self.data_dir / 'val',
+            self.data_dir = validate_path_for_segmentation(data_dir=self.data_dir,
+                                                           data_folder_name=self.data_folder_name,
+                                                           gt_folder_name=self.gt_folder_name,
+                                                           split_name=self.val_folder_name)
+            self.val = DatasetRGB(path=self.data_dir / self.val_folder_name,
                                   selection=self.selection_val,
                                   is_test=False,
                                   **dataset_kwargs,
                                   **common_kwargs)
             log.info(f'Initialized val dataset with {len(self.val)} samples.')
-            self._check_min_num_samples(num_samples=len(self.val), data_split='val',
-                                        drop_last=self.drop_last)
+            self.check_min_num_samples(self.trainer.num_devices, self.batch_size, num_samples=len(self.val),
+                                       data_split=self.val_folder_name,
+                                       drop_last=self.drop_last)
 
         if stage == 'test':
-            self.test = DatasetRGB(path=self.data_dir / 'test',
+            self.data_dir = validate_path_for_segmentation(data_dir=self.data_dir,
+                                                           data_folder_name=self.data_folder_name,
+                                                           gt_folder_name=self.gt_folder_name,
+                                                           split_name=self.test_folder_name)
+            self.test = DatasetRGB(path=self.data_dir / self.test_folder_name,
                                    selection=self.selection_test,
                                    is_test=True,
                                    **dataset_kwargs,
@@ -112,24 +130,6 @@ class DataModuleRGB(AbstractDatamodule):
                                           is_test=False,
                                           **common_kwargs)
             log.info(f'Initialized predict dataset with {len(self.predict)} samples.')
-
-    def _check_min_num_samples(self, num_samples: int, data_split: str, drop_last: bool):
-        num_processes = self.trainer.num_processes
-        batch_size = self.batch_size
-        if drop_last:
-            if num_samples < (self.trainer.num_processes * self.batch_size):
-                log.error(
-                    f'#samples ({num_samples}) in "{data_split}" smaller than '
-                    f'#processes({num_processes}) times batch size ({batch_size}). '
-                    f'This only works if drop_last is false!')
-                raise ValueError()
-        else:
-            if num_samples < (self.trainer.num_processes * self.batch_size):
-                log.warning(
-                    f'#samples ({num_samples}) in "{data_split}" smaller than '
-                    f'#processes ({num_processes}) times batch size ({batch_size}). '
-                    f'This works due to drop_last=False, however samples might occur multiple times. '
-                    f'Check if this behavior is intended!')
 
     def train_dataloader(self, *args, **kwargs) -> DataLoader:
         return DataLoader(self.train,

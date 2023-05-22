@@ -15,7 +15,7 @@ from PIL import Image
 from src.datamodules.utils.image_analytics import compute_mean_std
 
 
-def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, get_gt_data_paths_func, **kwargs):
+def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, get_gt_data_paths_func):
     """
     Parameters
     ----------
@@ -58,7 +58,7 @@ def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, 
         file_names_gt = np.asarray([str(item[1]) for item in gt_data_path_list])
 
         if missing_analytics_data:
-            mean, std = compute_mean_std(file_names=file_names_data, **kwargs)
+            mean, std = compute_mean_std(file_names=file_names_data)
             analytics_data = {'mean': mean.tolist(),
                               'std': std.tolist()}
             # save json
@@ -75,8 +75,7 @@ def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, 
             # Measure weights for class balancing
             logging.info(f'Measuring class weights')
             # create a list with all gt file paths
-            class_weights, class_encodings = _get_class_frequencies_weights_segmentation_hisdb(gt_images=file_names_gt,
-                                                                                               **kwargs)
+            class_weights, class_encodings = _get_class_frequencies_weights_segmentation_hisdb(gt_images=file_names_gt)
             analytics_gt = {'class_weights': class_weights.tolist(),
                             'class_encodings': class_encodings.tolist()}
             # save json
@@ -145,7 +144,7 @@ def get_class_weights(input_folder, workers=4, **kwargs):
     return class_weights
 
 
-def _get_class_frequencies_weights_segmentation_hisdb(gt_images, **kwargs):
+def _get_class_frequencies_weights_segmentation_hisdb(gt_images: np.ndarray):
     """
     Get the weights proportional to the inverse of their class frequencies.
     The vector sums up to 1
@@ -181,6 +180,3 @@ def _get_class_frequencies_weights_segmentation_hisdb(gt_images, **kwargs):
     # Normalize vector to sum up to 1.0 (in case the Loss function does not do it)
     return (1 / num_samples_per_class) / ((1 / num_samples_per_class).sum()), classes
 
-
-if __name__ == '__main__':
-    print(get_analytics(input_path=Path('tests/dummy_data/dummy_dataset')))

@@ -143,3 +143,6 @@ dmypy.json
 /data/
 logs/
 wandb/
+
+# output folder for the experiments
+outputs/

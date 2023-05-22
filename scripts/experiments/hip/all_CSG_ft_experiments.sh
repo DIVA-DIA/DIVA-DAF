@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -e
+
+bash scripts/experiments/hip/fine_tune_sauvola_csg18_polygon_10_20_30_40_50.sh
+bash scripts/experiments/hip/fine_tune_sauvola_csg18_polygon_60_70_80_90_100.sh
+bash scripts/experiments/hip/fine_tune_sauvola_csg863_polygon_10_20_30_40_50.sh
+bash scripts/experiments/hip/fine_tune_sauvola_rlsa_csg18_polygon_10_20_30_40_50.sh
+bash scripts/experiments/hip/fine_tune_sauvola_rlsa_csg863_polygon_10_20_30_40_50.sh
+bash scripts/experiments/hip/fine_tune_sauvola_rlsa_new_3cl_csg18_863_polygon_50.sh

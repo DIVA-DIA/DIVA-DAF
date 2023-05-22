@@ -1,3 +1,4 @@
-_target_: src.metrics.divahisdb.HisDBIoU
+hisdb_miou:
+    _target_: src.metrics.divahisdb.HisDBIoU
 
-num_classes: ${datamodule:num_classes}
+    num_classes: ${datamodule:num_classes}

@@ -5,13 +5,15 @@ import pytest
 import torch
 import torchmetrics
 from omegaconf import OmegaConf
-from pl_bolts.models.vision import UNet
 from pytorch_lightning import Trainer, seed_everything
 from pytorch_lightning.trainer.states import TrainerState, RunningStage
 from torch.nn import Identity, CrossEntropyLoss
-from torchmetrics import Precision
+from torchmetrics import MetricCollection
+from torchmetrics.classification import MulticlassPrecision
 
 from src.models.backbone_header_model import BackboneHeaderModel
+from src.models.backbones.unet import UNet
+from src.models.headers.unet import UNetFCNHead
 from src.tasks.base_task import AbstractTask
 from src.tasks.utils.outputs import OutputKeys
 from tests.test_data.dummy_data_hisdb.dummy_data import data_dir_cropped
@@ -25,8 +27,13 @@ def clear_resolvers():
 
 
 @pytest.fixture()
-def model():
-    return UNet(num_classes=4, num_layers=2, features_start=32)
+def model_backbone():
+    return UNet(num_layers=2, features_start=32)
+
+
+@pytest.fixture()
+def model_header():
+    return UNetFCNHead(num_classes=4, features=32)
 
 
 def test_to_loss_format():
@@ -44,35 +51,35 @@ def test_to_metrics_format():
 def test__get_current_metric_fail(monkeypatch):
     task = AbstractTask()
     trainer = Trainer(accelerator='cpu', strategy='ddp')
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     assert task._get_current_metric() == {}
 
 
 def test__get_current_metric_train(monkeypatch):
-    metric = Precision()
+    metric = MetricCollection(MulticlassPrecision(num_classes=4))
     task = AbstractTask(metric_train=metric)
     trainer = Trainer(accelerator='cpu', strategy='ddp')
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     state = TrainerState(stage=RunningStage.TRAINING)
     monkeypatch.setattr(trainer, 'state', state)
-    assert dict(task._get_current_metric().items()) == {'precision': Precision()}
+    assert dict(task._get_current_metric().items()) == {'MulticlassPrecision': MulticlassPrecision(num_classes=4)}
 
 
 def test__get_current_metric_test(monkeypatch):
-    metric = Precision()
+    metric = MetricCollection(MulticlassPrecision(num_classes=4))
     task = AbstractTask(metric_test=metric)
     trainer = Trainer(accelerator='cpu', strategy='ddp')
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     state = TrainerState(stage=RunningStage.TESTING)
     monkeypatch.setattr(trainer, 'state', state)
-    assert dict(task._get_current_metric().items()) == {'precision': Precision()}
+    assert dict(task._get_current_metric().items()) == {'MulticlassPrecision': MulticlassPrecision(num_classes=4)}
 
 
 def test_setup_warning(monkeypatch, data_module_cropped_hisdb, caplog):
     stage = 'something'
     task = AbstractTask()
     trainer = Trainer(accelerator='cpu', strategy='ddp')
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
 
     task.setup(stage)
@@ -88,7 +95,7 @@ def test_setup_test(monkeypatch, data_module_cropped_hisdb):
     trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     data_module_cropped_hisdb.setup(stage)
     task.setup(stage)
     assert not hasattr(task, 'metric_conf_mat_val')
@@ -102,7 +109,7 @@ def test_setup_predict(monkeypatch, data_module_cropped_hisdb):
     trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     data_module_cropped_hisdb.setup(stage)
     task.setup(stage)
     assert not hasattr(task, 'metric_conf_mat_val')
@@ -115,7 +122,7 @@ def test_setup_fit(monkeypatch, data_module_cropped_hisdb):
     trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     data_module_cropped_hisdb.setup(stage)
     task.setup(stage)
     assert not hasattr(task, 'metric_conf_mat_val')
@@ -125,39 +132,39 @@ def test_setup_fit(monkeypatch, data_module_cropped_hisdb):
 def test_setup_conf_mats(monkeypatch, data_module_cropped_hisdb):
     task = AbstractTask(confusion_matrix_val=True, confusion_matrix_test=True)
     trainer = Trainer(accelerator='cpu', strategy='ddp')
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
     task.setup(stage='')
     assert task.confusion_matrix_val is not None
-    assert isinstance(task.metric_conf_mat_val, torchmetrics.ConfusionMatrix)
+    assert isinstance(task.metric_conf_mat_val, torchmetrics.classification.MulticlassConfusionMatrix)
     assert task.confusion_matrix_test is not None
-    assert isinstance(task.metric_conf_mat_test, torchmetrics.ConfusionMatrix)
+    assert isinstance(task.metric_conf_mat_test, torchmetrics.classification.MulticlassConfusionMatrix)
 
 
-def test_step(monkeypatch, data_module_cropped_hisdb, model):
+def test_step(monkeypatch, data_module_cropped_hisdb, model_backbone, model_header):
     # setup
-    task = AbstractTask(model=BackboneHeaderModel(backbone=model, header=Identity()),
+    task = AbstractTask(model=BackboneHeaderModel(backbone=model_backbone, header=model_header),
                         loss_fn=CrossEntropyLoss())
     trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
     data_module_cropped_hisdb.setup('fit')
 
     img, gt, _ = data_module_cropped_hisdb.train[0]
     output = task.step(batch=(img[None, :], gt[None, :]), batch_idx=0)
-    assert output[OutputKeys.LOSS].item() == 1.4348618984222412
+    assert torch.isclose(output[OutputKeys.LOSS], torch.tensor(1.4348618984222412).type_as(output[OutputKeys.LOSS]))
     assert torch.equal(output[OutputKeys.TARGET], gt[None, :])
     assert output[OutputKeys.PREDICTION].shape == torch.Size([1, 4, 256, 256])
 
 
-def test__create_conf_mat_test_error(monkeypatch, data_module_cropped_hisdb, model, tmp_path):
+def test__create_conf_mat_test_error(monkeypatch, data_module_cropped_hisdb, model_backbone, model_header, tmp_path):
     # setup
-    task = AbstractTask(model=BackboneHeaderModel(backbone=model, header=Identity()),
+    task = AbstractTask(model=BackboneHeaderModel(backbone=model_backbone, header=model_header),
                         loss_fn=CrossEntropyLoss(), confusion_matrix_test=True)
     trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
     data_module_cropped_hisdb.setup('test')
     task.setup('test')
@@ -173,13 +180,13 @@ def test__create_conf_mat_test_error(monkeypatch, data_module_cropped_hisdb, mod
         task._create_conf_mat(matrix=hist, stage='something')
 
 
-def test__create_conf_mat_test(monkeypatch, data_module_cropped_hisdb, model, tmp_path):
+def test__create_conf_mat_test(monkeypatch, data_module_cropped_hisdb, model_backbone, model_header, tmp_path):
     # setup
-    task = AbstractTask(model=BackboneHeaderModel(backbone=model, header=Identity()),
+    task = AbstractTask(model=BackboneHeaderModel(backbone=model_backbone, header=model_header),
                         loss_fn=CrossEntropyLoss(), confusion_matrix_test=True)
     trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
     data_module_cropped_hisdb.setup('test')
     task.setup('test')
@@ -197,14 +204,14 @@ def test__create_conf_mat_test(monkeypatch, data_module_cropped_hisdb, model, tm
     assert (tmp_path / 'conf_mats' / 'test' / 'CM_epoch_0.txt').exists()
 
 
-def test__create_conf_mat_val_not_drop_last(monkeypatch, data_module_cropped_hisdb, model, tmp_path):
+def test__create_conf_mat_val_not_drop_last(monkeypatch, data_module_cropped_hisdb, model_backbone, model_header, tmp_path):
     # setup
-    task = AbstractTask(model=BackboneHeaderModel(backbone=model, header=Identity()),
+    task = AbstractTask(model=BackboneHeaderModel(backbone=model_backbone, header=model_header),
                         loss_fn=CrossEntropyLoss(), confusion_matrix_test=True)
     trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
     monkeypatch.setattr(data_module_cropped_hisdb, 'drop_last', False)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
     data_module_cropped_hisdb.setup('fit')
     task.setup('fit')
@@ -222,13 +229,13 @@ def test__create_conf_mat_val_not_drop_last(monkeypatch, data_module_cropped_his
     assert (tmp_path / 'conf_mats' / 'val' / 'CM_epoch_0.txt').exists()
 
 
-def test__create_conf_mat_val_drop_last(monkeypatch, data_module_cropped_hisdb, model, tmp_path):
+def test__create_conf_mat_val_drop_last(monkeypatch, data_module_cropped_hisdb, model_backbone,model_header, tmp_path):
     # setup
-    task = AbstractTask(model=BackboneHeaderModel(backbone=model, header=Identity()),
+    task = AbstractTask(model=BackboneHeaderModel(backbone=model_backbone, header=model_header),
                         loss_fn=CrossEntropyLoss(), confusion_matrix_test=True)
     trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
     data_module_cropped_hisdb.setup('fit')
     task.setup('fit')
@@ -246,12 +253,12 @@ def test__create_conf_mat_val_drop_last(monkeypatch, data_module_cropped_hisdb, 
     assert (tmp_path / 'conf_mats' / 'val' / 'CM_epoch_0.txt').exists()
 
 
-def test_forward(monkeypatch, model, data_module_cropped_hisdb):
-    task = AbstractTask(model=BackboneHeaderModel(backbone=model, header=Identity()),
+def test_forward(monkeypatch, model_backbone, model_header, data_module_cropped_hisdb):
+    task = AbstractTask(model=BackboneHeaderModel(backbone=model_backbone, header=model_header),
                         loss_fn=CrossEntropyLoss())
     trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
     data_module_cropped_hisdb.setup('fit')
 
@@ -261,12 +268,12 @@ def test_forward(monkeypatch, model, data_module_cropped_hisdb):
     assert out.ndim == 4
 
 
-def test_training_step(monkeypatch, model, data_module_cropped_hisdb, capsys):
-    task = AbstractTask(model=BackboneHeaderModel(backbone=model, header=Identity()),
+def test_training_step(monkeypatch, model_backbone,model_header, data_module_cropped_hisdb, capsys):
+    task = AbstractTask(model=BackboneHeaderModel(backbone=model_backbone, header=model_header),
                         loss_fn=CrossEntropyLoss())
     trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
     monkeypatch.setattr(task, 'log', fake_log)
     data_module_cropped_hisdb.setup('fit')
@@ -279,12 +286,12 @@ def test_training_step(monkeypatch, model, data_module_cropped_hisdb, capsys):
     assert output[OutputKeys.PREDICTION].shape == torch.Size([1, 4, 256, 256])
 
 
-def test_validation_step(monkeypatch, model, data_module_cropped_hisdb, capsys):
-    task = AbstractTask(model=BackboneHeaderModel(backbone=model, header=Identity()),
+def test_validation_step(monkeypatch, model_backbone, model_header, data_module_cropped_hisdb, capsys):
+    task = AbstractTask(model=BackboneHeaderModel(backbone=model_backbone, header=model_header),
                         loss_fn=CrossEntropyLoss())
     trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
     monkeypatch.setattr(task, 'log', fake_log)
     data_module_cropped_hisdb.setup('fit')
@@ -297,12 +304,12 @@ def test_validation_step(monkeypatch, model, data_module_cropped_hisdb, capsys):
     assert output[OutputKeys.PREDICTION].shape == torch.Size([1, 4, 256, 256])
 
 
-def test_test_step(monkeypatch, model, data_module_cropped_hisdb, capsys):
-    task = AbstractTask(model=BackboneHeaderModel(backbone=model, header=Identity()),
+def test_test_step(monkeypatch, model_backbone, model_header, data_module_cropped_hisdb, capsys):
+    task = AbstractTask(model=BackboneHeaderModel(backbone=model_backbone, header=model_header),
                         loss_fn=CrossEntropyLoss())
     trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
     monkeypatch.setattr(task, 'log', fake_log)
     data_module_cropped_hisdb.setup('test')
@@ -315,12 +322,12 @@ def test_test_step(monkeypatch, model, data_module_cropped_hisdb, capsys):
     assert output[OutputKeys.PREDICTION].shape == torch.Size([1, 4, 256, 256])
 
 
-def test_predict_step(monkeypatch, model, data_module_cropped_hisdb, capsys):
-    task = AbstractTask(model=BackboneHeaderModel(backbone=model, header=Identity()),
+def test_predict_step(monkeypatch, model_backbone, model_header, data_module_cropped_hisdb, capsys):
+    task = AbstractTask(model=BackboneHeaderModel(backbone=model_backbone, header=model_header),
                         loss_fn=CrossEntropyLoss())
     trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module_cropped_hisdb, 'trainer', trainer)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     monkeypatch.setattr(trainer, 'datamodule', data_module_cropped_hisdb)
     data_module_cropped_hisdb.setup('test')
 

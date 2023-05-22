@@ -36,6 +36,7 @@ def get_logger(name=__name__, level=logging.INFO):
 log = get_logger()
 
 
+@rank_zero_only
 def check_config(config: DictConfig) -> None:
     """A couple of optional utilities, controlled by main config file.
         - check for required configs in the main config
@@ -157,10 +158,6 @@ def print_config(
     rich.print(tree)
 
 
-def empty(*args, **kwargs):
-    pass
-
-
 @rank_zero_only
 def log_hyperparameters(
         config: DictConfig,
@@ -199,6 +196,10 @@ def log_hyperparameters(
     # disable logging any more hyperparameters for all loggers
     # (this is just a trick to prevent trainer from logging hparams of model, since we already did that above)
     trainer.logger.log_hyperparams = empty
+
+
+def empty(*args, **kwargs):
+    pass
 
 
 def finish(

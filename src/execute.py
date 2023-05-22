@@ -8,11 +8,12 @@ import hydra
 import torch
 import wandb
 from hydra.core.hydra_config import HydraConfig
-from hydra.utils import get_original_cwd, to_absolute_path
+from hydra.utils import to_absolute_path
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning import LightningModule, LightningDataModule, Callback, Trainer, plugins
 from pytorch_lightning.loggers import LightningLoggerBase
 from pytorch_lightning.utilities import rank_zero_only
+from torchmetrics import MetricCollection
 
 from src.models.backbone_header_model import BackboneHeaderModel
 from src.utils import utils
@@ -38,16 +39,23 @@ def execute(config: DictConfig) -> Optional[float]:
     log.info(f"Instantiating datamodule <{config.datamodule._target_}>")
     datamodule: LightningDataModule = hydra.utils.instantiate(config.datamodule)
 
+    output_layer_backbone = None
+    if 'output_layer' in config.model.backbone:
+        output_layer_backbone = config.model.backbone.output_layer
+        del config.model.backbone.output_layer
+        log.info(f"Take output layer <{output_layer_backbone}> from backbone")
+
     # Init Lightning model backend
     log.info(f"Instantiating backbone model <{config.model.backbone._target_}>")
-    backbone = _load_model_part(config=config, part_name='backbone')
+    backbone: LightningModule = _load_model_part(config=config, part_name='backbone')
 
     # Init Lightning model header
     log.info(f"Instantiating header model <{config.model.header._target_}>")
     header: LightningModule = _load_model_part(config=config, part_name='header')
 
     # container model
-    model: BackboneHeaderModel = BackboneHeaderModel(backbone=backbone, header=header)
+    model: BackboneHeaderModel = BackboneHeaderModel(backbone=backbone, header=header,
+                                                     backbone_output_layer=output_layer_backbone)
 
     # Init optimizer
     log.info(f"Instantiating optimizer <{config.optimizer._target_}>")
@@ -60,10 +68,13 @@ def execute(config: DictConfig) -> Optional[float]:
     metric_val = None
     metric_test = None
     if 'metric' in config:
-        log.info(f"Instantiating metric<{config.metric._target_}>")
-        metric_train = hydra.utils.instantiate(config.metric)
-        metric_val = hydra.utils.instantiate(config.metric)
-        metric_test = hydra.utils.instantiate(config.metric)
+        log.info(f"Instantiating metrics")
+        metric_train = MetricCollection(
+            {metric_name: hydra.utils.instantiate(metric) for metric_name, metric in config.metric.items()})
+        metric_val = MetricCollection(
+            {metric_name: hydra.utils.instantiate(metric) for metric_name, metric in config.metric.items()})
+        metric_test = MetricCollection(
+            {metric_name: hydra.utils.instantiate(metric) for metric_name, metric in config.metric.items()})
 
     # Init the task as lightning module
     log.info(f"Instantiating model <{config.task._target_}>")
@@ -130,6 +141,9 @@ def execute(config: DictConfig) -> Optional[float]:
                     run_config_folder_path.mkdir(exist_ok=True)
                     shutil.copyfile(RUN_CONFIG_NAME, str(run_config_folder_path / RUN_CONFIG_NAME))
 
+    # save git hash
+    _save_git_hash(trainer)
+
     if config.train:
         # Train the model
         log.info("Starting training!")
@@ -157,6 +171,8 @@ def execute(config: DictConfig) -> Optional[float]:
         logger=logger,
     )
 
+    if trainer.is_global_zero and "every_n_epochs" not in config.callbacks.model_checkpoint:
+        _clean_up_checkpoints(trainer=trainer)
     _print_best_paths(conf=config, trainer=trainer)
 
     _print_run_command(trainer=trainer)
@@ -165,6 +181,21 @@ def execute(config: DictConfig) -> Optional[float]:
     optimized_metric = config.get("optimized_metric")
     if optimized_metric:
         return trainer.callback_metrics[optimized_metric]
+
+
+def _save_git_hash(trainer):
+    log.info("Saving the current git hash into the output directory!")
+    if trainer.is_global_zero:
+        import subprocess
+        from hydra.utils import get_original_cwd
+        try:
+            git_hash = subprocess.check_output(
+                ['git', '--git-dir', get_original_cwd() + '/.git', 'rev-parse', '--short', 'HEAD']).decode(
+                'ascii').strip()
+            with open('git_hash.txt', mode='w') as fp:
+                fp.write(git_hash)
+        except subprocess.CalledProcessError as e:
+            log.error(e.returncode, e.output)
 
 
 def _load_model_part(config: DictConfig, part_name: str):
@@ -181,6 +212,7 @@ def _load_model_part(config: DictConfig, part_name: str):
 
     freeze = False
     strict = True
+    # TODO: make it remove a prefix from the loaded weights
     if 'strict' in config.model.get(part_name):
         log.info(f"The model part {part_name} will be loaded with strict={config.model.get(part_name).strict}")
         strict = config.model.get(part_name).strict
@@ -195,8 +227,20 @@ def _load_model_part(config: DictConfig, part_name: str):
         log.info(f"Loading {part_name} weights from <{config.model.get(part_name).path_to_weights}>")
         path_to_weights = config.model.get(part_name).path_to_weights
         del config.model.get(part_name).path_to_weights
+        weights = torch.load(path_to_weights, map_location='cpu')
+        # prefix
+        if "prefix" in config.model.get(part_name):
+            prefix = config.model.get(part_name).prefix
+            del config.model.get(part_name).prefix
+            weights = {prefix + k: v for k, v in weights.items()}
+        if "layers_to_load" in config.model.get(part_name):
+            layers_to_load = tuple(config.model.get(part_name).layers_to_load)
+            del config.model.get(part_name).layers_to_load
+            weights = {k: v for k, v in weights.items() if k.startswith(layers_to_load)}
+            strict = False
+
         part: LightningModule = hydra.utils.instantiate(config.model.get(part_name))
-        missing_keys, unexpected_keys = part.load_state_dict(torch.load(path_to_weights, map_location='cpu'), strict=strict)
+        missing_keys, unexpected_keys = part.load_state_dict(weights, strict=strict)
         if missing_keys:
             log.warning(f"When loading the model part {part_name} these keys where missed: \n {missing_keys}")
         if unexpected_keys:
@@ -217,6 +261,17 @@ def _load_model_part(config: DictConfig, part_name: str):
         part.eval()
 
     return part
+
+
+def _clean_up_checkpoints(trainer: Trainer):
+    best_model_path = Path(trainer.checkpoint_callback.best_model_path)
+    if not best_model_path.is_file():
+        return
+    best_epoch_path = best_model_path.parents[0]
+    checkpoint_path = best_model_path.parents[1]
+    for path in checkpoint_path.iterdir():
+        if path.is_dir() and path != best_epoch_path:
+            shutil.rmtree(path)
 
 
 def _print_best_paths(conf: DictConfig, trainer: Trainer):
@@ -276,4 +331,3 @@ def _write_current_run_dir(config: DictConfig):
     log.info(f'Writing work dir into run dir log file ({run_dir_log_file})')
     with run_dir_log_file.open('a') as f:
         f.write(f'{os.getcwd()}\n')
-

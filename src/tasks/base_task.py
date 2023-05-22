@@ -7,14 +7,14 @@ import numpy as np
 import pandas as pd
 import seaborn as sn
 import torch
-import torchmetrics
 import wandb
+from torchmetrics import MetricCollection
+from torchmetrics.classification import MulticlassConfusionMatrix
 from matplotlib import pyplot as plt
 from matplotlib.patches import Rectangle
 from omegaconf import OmegaConf
-from pytorch_lightning import LightningModule
+from pytorch_lightning.core.module import LightningModule
 from pytorch_lightning.trainer.states import RunningStage
-from pytorch_lightning.utilities.enums import DistributedType
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
 from torch import nn
 from torch.optim import Optimizer
@@ -54,9 +54,9 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             optimizer_kwargs: Optional[Dict[str, Any]] = None,
             scheduler: Optional[Union[Type[_LRScheduler], str, _LRScheduler]] = None,
             scheduler_kwargs: Optional[Dict[str, Any]] = None,
-            metric_train: Optional[torchmetrics.Metric] = None,
-            metric_val: Optional[torchmetrics.Metric] = None,
-            metric_test: Optional[torchmetrics.Metric] = None,
+            metric_train: Optional[MetricCollection] = None,
+            metric_val: Optional[MetricCollection] = None,
+            metric_test: Optional[MetricCollection] = None,
             confusion_matrix_val: Optional[bool] = False,
             confusion_matrix_test: Optional[bool] = False,
             confusion_matrix_log_every_n_epoch: Optional[int] = 1,
@@ -84,25 +84,25 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         self.optimizer_kwargs = optimizer_kwargs or {}
         self.scheduler_kwargs = scheduler_kwargs or {}
 
-        self.metric_train = nn.ModuleDict({} if metric_train is None else get_callable_dict(metric_train))
-        self.metric_val = nn.ModuleDict({} if metric_val is None else get_callable_dict(metric_val))
-        self.metric_test = nn.ModuleDict({} if metric_test is None else get_callable_dict(metric_test))
+        self.metric_train = nn.ModuleDict({}) if metric_train is None else metric_train
+        self.metric_val = nn.ModuleDict({}) if metric_val is None else metric_val
+        self.metric_test = nn.ModuleDict({}) if metric_test is None else metric_test
         self.confusion_matrix_val = confusion_matrix_val
         self.confusion_matrix_test = confusion_matrix_test
         self.confusion_matrix_log_every_n_epoch = confusion_matrix_log_every_n_epoch
         self.lr = lr
         self.test_output_path = Path(test_output_path)
         self.predict_output_path = Path(predict_output_path)
-        self.save_hyperparameters()
+        # self.save_hyperparameters()
 
     def setup(self, stage: str):
         if self.confusion_matrix_val:
-            self.metric_conf_mat_val = torchmetrics.ConfusionMatrix(num_classes=self.trainer.datamodule.num_classes,
+            self.metric_conf_mat_val = MulticlassConfusionMatrix(num_classes=self.trainer.datamodule.num_classes,
                                                                     compute_on_step=False)
         if self.confusion_matrix_test:
-            self.metric_conf_mat_test = torchmetrics.ConfusionMatrix(num_classes=self.trainer.datamodule.num_classes,
+            self.metric_conf_mat_test = MulticlassConfusionMatrix(num_classes=self.trainer.datamodule.num_classes,
                                                                      compute_on_step=False)
-        if self.trainer.training_type_plugin.distributed_backend == DistributedType.DDP:
+        if self.trainer.strategy.strategy_name == 'ddp':
             batch_size = self.trainer.datamodule.batch_size
             if stage == 'fit':
                 num_samples = len(self.trainer.datamodule.train)
@@ -147,6 +147,8 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             metric_kwargs = {}
         x, y = batch
         y_hat = self(x)
+        if isinstance(y_hat, Dict):
+            y_hat = y_hat['out']
         output = {OutputKeys.PREDICTION: y_hat}
         y_hat = self.to_loss_format(output[OutputKeys.PREDICTION])
         losses = {name: l_fn(y_hat, y) for name, l_fn in self.loss_fn.items()}
@@ -155,17 +157,10 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         current_metric = self._get_current_metric()
 
         for name, metric in current_metric.items():
-            if isinstance(metric, torchmetrics.Metric):
-                if name in metric_kwargs:
-                    metric(y_hat, y, **metric_kwargs[name])
-                else:
-                    metric(y_hat, y)
-                logs[name] = metric  # log the metric itself if it is of type Metric
+            if name in metric_kwargs:
+                logs[name] = metric(y_hat, y, **metric_kwargs[name])
             else:
-                if name in metric_kwargs:
-                    logs[name] = metric(y_hat, y, **metric_kwargs[name])
-                else:
-                    logs[name] = metric(y_hat, y)
+                logs[name] = metric(y_hat, y)
         logs.update(losses)
         if len(losses.values()) > 1:
             logs["total_loss"] = sum(losses.values())
@@ -198,18 +193,16 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
 
     def training_step(self, batch: Any, batch_idx: int, **kwargs) -> Any:
         output = self.step(batch=batch, batch_idx=batch_idx, **kwargs)
-        for key, value in output[OutputKeys.LOG].items():
-            self.log(f"train/{key}", value, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
+        self._log_metrics_and_loss(output, phase='train')
         return output
 
     def validation_step(self, batch: Any, batch_idx: int, **kwargs) -> None:
         output = self.step(batch=batch, batch_idx=batch_idx, **kwargs)
-        if self.trainer.state.stage != RunningStage.SANITY_CHECKING \
-                and self.confusion_matrix_val \
-                and (self.trainer.current_epoch + 1) % self.confusion_matrix_log_every_n_epoch == 0:
+        if self.trainer.state.stage == RunningStage.SANITY_CHECKING:
+            return output
+        self._log_metrics_and_loss(output, phase='val')
+        if self.confusion_matrix_val and (self.trainer.current_epoch + 1) % self.confusion_matrix_log_every_n_epoch == 0:
             self.metric_conf_mat_val(preds=output[OutputKeys.PREDICTION], target=output[OutputKeys.TARGET])
-        for key, value in output[OutputKeys.LOG].items():
-            self.log(f"val/{key}", value, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
         return output
 
     def validation_epoch_end(self, outputs: Any) -> None:
@@ -229,8 +222,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         output = self.step(batch=batch, batch_idx=batch_idx, **kwargs)
         if self.confusion_matrix_test:
             self.metric_conf_mat_test(preds=output[OutputKeys.PREDICTION], target=output[OutputKeys.TARGET])
-        for key, value in output[OutputKeys.LOG].items():
-            self.log(f"test/{key}", value, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
+        self._log_metrics_and_loss(output, phase='test')
         return output
 
     def test_epoch_end(self, outputs: Any) -> None:
@@ -277,10 +269,18 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             return self.metric_test
         return {}
 
+    def _log_metrics_and_loss(self, output: Dict[str, Any], phase: str) -> None:
+        for key, value in output[OutputKeys.LOG].items():
+            if value.dim() != 0 and len(value) != 1:
+                for i, v in enumerate(value):
+                    self.log(f"{phase}/{key}_c_{i}", v, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
+            else:
+                self.log(f"{phase}/{key}", value, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
+
     def _create_conf_mat(self, matrix: np.ndarray, stage: str = 'val'):
         # verify sum of conf mat entries
         pixels_per_crop = self.trainer.datamodule.dims[1] * self.trainer.datamodule.dims[2]
-        num_processes = self.trainer.num_processes
+        num_processes = self.trainer.num_devices
         if stage == 'val':
             dataloader = self.trainer.val_dataloaders[0]
         elif stage == 'test':
@@ -305,8 +305,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         if not np.isclose(a=expected_sum, b=matrix_sum, rtol=2.5e-7):
             log.warning(f'matrix.sum() is not close to expected_sum '
                         f'({matrix_sum} != {expected_sum}, '
-                        f'diff: {matrix_sum - expected_sum}, '
-                        f'diff_crops: {(matrix_sum - expected_sum) / pixels_per_crop})')
+                        f'diff: {matrix_sum - expected_sum}')
 
         # print(f'With all_gather: {str(len(outputs[0][OutputKeys.PREDICTION][0]))}')
         conf_mat_name = f'CM_epoch_{self.trainer.current_epoch}'

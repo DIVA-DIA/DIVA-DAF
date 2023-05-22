@@ -35,7 +35,7 @@ def get_dict():
             'csv': {'_target_': 'pytorch_lightning.loggers.csv_logs.CSVLogger', 'save_dir': '.', 'name': 'csv/'}},
         'seed': 42, 'train': True, 'test': True,
         'trainer': {'_target_': 'pytorch_lightning.Trainer', 'gpus': -1, 'accelerator': 'ddp',
-                    'min_epochs': 1, 'max_epochs': 3, 'weights_summary': 'full', 'precision': 16},
+                    'min_epochs': 1, 'max_epochs': 3, 'enable_model_summary': 'full', 'precision': 16},
         'datamodule': {
             '_target_': 'src.datamodules.hisDBDataModule.DIVAHisDBDataModule.DIVAHisDBDataModuleCropped',
             'data_dir': '/net/research-hisdoc/datasets/semantic_segmentation/datasets_cropped/CB55-10-segmentation',
@@ -106,108 +106,119 @@ def test_print_config(get_dict, capsys):
         "predict"
     ))
     expected_result = \
-        "⚙ CONFIG                                                                        \n" \
-        "├── trainer                                                                     \n" \
-        "│   └── _target_: pytorch_lightning.Trainer                                     \n" \
-        "│       gpus: -1                                                                \n" \
-        "│       accelerator: ddp                                                        \n" \
-        "│       min_epochs: 1                                                           \n" \
-        "│       max_epochs: 3                                                           \n" \
-        "│       weights_summary: full                                                   \n" \
-        "│       precision: 16                                                           \n" \
-        "├── task                                                                        \n" \
+        "⚙ CONFIG\n" \
+        "├── trainer\n" \
+        "│   └── _target_: pytorch_lightning.Trainer\n" \
+        "│       gpus: -1\n" \
+        "│       accelerator: ddp\n" \
+        "│       min_epochs: 1\n" \
+        "│       max_epochs: 3\n" \
+        "│       enable_model_summary: full\n" \
+        "│       precision: 16\n" \
+        "│       \n" \
+        "├── task\n" \
         "│   └── _target_: src.tasks.semantic_segmentation.semantic_segmentation.Semantic\n" \
-        "│       confusion_matrix_log_every_n_epoch: 1                                   \n" \
-        "│       confusion_matrix_val: true                                              \n" \
-        "│       confusion_matrix_test: true                                             \n" \
-        "├── model                                                                       \n" \
-        "│   └── backbone:                                                               \n" \
-        "│         _target_: pl_bolts.models.vision.UNet                                 \n" \
-        "│         num_classes: '5'                                                      \n" \
-        "│         num_layers: 2                                                         \n" \
-        "│         features_start: 32                                                    \n" \
-        "│       header:                                                                 \n" \
-        "│         _target_: torch.nn.Identity                                           \n" \
-        "├── optimizer                                                                   \n" \
-        "│   └── _target_: torch.optim.Adam                                              \n" \
-        "│       lr: 0.001                                                               \n" \
-        "│       betas:                                                                  \n" \
-        "│       - 0.9                                                                   \n" \
-        "│       - 0.999                                                                 \n" \
-        "│       eps: 1.0e-08                                                            \n" \
-        "│       weight_decay: 0                                                         \n" \
-        "│       amsgrad: false                                                          \n" \
-        "├── datamodule                                                                  \n" \
+        "│       confusion_matrix_log_every_n_epoch: 1\n" \
+        "│       confusion_matrix_val: true\n" \
+        "│       confusion_matrix_test: true\n" \
+        "│       \n" \
+        "├── model\n" \
+        "│   └── backbone:\n" \
+        "│         _target_: pl_bolts.models.vision.UNet\n" \
+        "│         num_classes: '5'\n" \
+        "│         num_layers: 2\n" \
+        "│         features_start: 32\n" \
+        "│       header:\n" \
+        "│         _target_: torch.nn.Identity\n" \
+        "│       \n" \
+        "├── optimizer\n" \
+        "│   └── _target_: torch.optim.Adam\n" \
+        "│       lr: 0.001\n" \
+        "│       betas:\n" \
+        "│       - 0.9\n" \
+        "│       - 0.999\n" \
+        "│       eps: 1.0e-08\n" \
+        "│       weight_decay: 0\n" \
+        "│       amsgrad: false\n" \
+        "│       \n" \
+        "├── datamodule\n" \
         "│   └── _target_: src.datamodules.hisDBDataModule.DIVAHisDBDataModule.DIVAHisDBD\n" \
         "│       data_dir: /net/research-hisdoc/datasets/semantic_segmentation/datasets_c\n" \
-        "│       crop_size: 256                                                          \n" \
-        "│       num_workers: 4                                                          \n" \
-        "│       batch_size: 16                                                          \n" \
-        "│       shuffle: true                                                           \n" \
-        "│       drop_last: true                                                         \n" \
-        "├── callbacks                                                                   \n" \
-        "│   └── check_backbone_header_compatibility:                                    \n" \
+        "│       crop_size: 256\n" \
+        "│       num_workers: 4\n" \
+        "│       batch_size: 16\n" \
+        "│       shuffle: true\n" \
+        "│       drop_last: true\n" \
+        "│       \n" \
+        "├── callbacks\n" \
+        "│   └── check_backbone_header_compatibility:\n" \
         "│         _target_: src.callbacks.model_callbacks.CheckBackboneHeaderCompatibili\n" \
-        "│       model_checkpoint:                                                       \n" \
+        "│       model_checkpoint:\n" \
         "│         _target_: src.callbacks.model_callbacks.SaveModelStateDictAndTaskCheck\n" \
-        "│         monitor: val/crossentropyloss                                         \n" \
-        "│         save_top_k: 1                                                         \n" \
-        "│         save_last: true                                                       \n" \
-        "│         mode: min                                                             \n" \
-        "│         verbose: false                                                        \n" \
-        "│         dirpath: checkpoints/                                                 \n" \
-        "│         filename: dev-baby-unet-cb55-10                                       \n" \
-        "│         backbone_filename: backbone                                           \n" \
-        "│         header_filename: header                                               \n" \
-        "│       watch_model:                                                            \n" \
-        "│         _target_: src.callbacks.wandb_callbacks.WatchModelWithWandb           \n" \
-        "│         log: all                                                              \n" \
-        "│         log_freq: 1                                                           \n" \
-        "├── loss                                                                        \n" \
-        "│   └── _target_: torch.nn.CrossEntropyLoss                                     \n" \
-        "├── metric                                                                      \n" \
-        "│   └── _target_: src.metrics.divahisdb.HisDBIoU                                \n" \
-        "│       num_classes: '5'                                                        \n" \
-        "├── logger                                                                      \n" \
-        "│   └── wandb:                                                                  \n" \
-        "│         _target_: pytorch_lightning.loggers.wandb.WandbLogger                 \n" \
-        "│         project: unsupervised                                                 \n" \
-        "│         name: dev-baby-unet-cb55-10                                           \n" \
-        "│         offline: false                                                        \n" \
-        "│         job_type: train                                                       \n" \
-        "│         group: dev-runs                                                       \n" \
-        "│         tags:                                                                 \n" \
-        "│         - best_model                                                          \n" \
-        "│         - USL                                                                 \n" \
-        "│         save_dir: .                                                           \n" \
-        "│         log_model: false                                                      \n" \
-        "│         notes: Testing                                                        \n" \
-        "│       csv:                                                                    \n" \
-        "│         _target_: pytorch_lightning.loggers.csv_logs.CSVLogger                \n" \
-        "│         save_dir: .                                                           \n" \
-        "│         name: csv/                                                            \n" \
-        "├── seed                                                                        \n" \
-        "│   └── 42                                                                      \n" \
-        "├── train                                                                       \n" \
-        "│   └── True                                                                    \n" \
-        "├── test                                                                        \n" \
-        "│   └── True                                                                    \n" \
-        "├── predict                                                                     \n" \
-        "│   └── None                                                                    \n" \
-        "├── checkpoint_folder_name                                                      \n" \
-        "│   └── {epoch}/                                                                \n" \
-        "├── debug                                                                       \n" \
-        "│   └── False                                                                   \n" \
-        "├── disable_warnings                                                            \n" \
-        "│   └── True                                                                    \n" \
-        "├── plugins                                                                     \n" \
-        "│   └── ddp_plugin:                                                             \n" \
-        "│         _target_: pytorch_lightning.plugins.DDPPlugin                         \n" \
-        "│         find_unused_parameters: false                                         \n" \
-        "├── print_config                                                                \n" \
-        "│   └── True                                                                    \n" \
-        "├── save_config                                                                 \n" \
-        "│   └── True                                                                    \n" \
-        "└── work_dir                                                                    \n" \
-        "    └── .                                                                       \n"
-    assert capsys.readouterr().out == expected_result
+        "│         monitor: val/crossentropyloss\n" \
+        "│         save_top_k: 1\n" \
+        "│         save_last: true\n" \
+        "│         mode: min\n" \
+        "│         verbose: false\n" \
+        "│         dirpath: checkpoints/\n" \
+        "│         filename: dev-baby-unet-cb55-10\n" \
+        "│         backbone_filename: backbone\n" \
+        "│         header_filename: header\n" \
+        "│       watch_model:\n" \
+        "│         _target_: src.callbacks.wandb_callbacks.WatchModelWithWandb\n" \
+        "│         log: all\n" \
+        "│         log_freq: 1\n" \
+        "│       \n" \
+        "├── loss\n" \
+        "│   └── _target_: torch.nn.CrossEntropyLoss\n" \
+        "│       \n" \
+        "├── metric\n" \
+        "│   └── _target_: src.metrics.divahisdb.HisDBIoU\n" \
+        "│       num_classes: '5'\n" \
+        "│       \n" \
+        "├── logger\n" \
+        "│   └── wandb:\n" \
+        "│         _target_: pytorch_lightning.loggers.wandb.WandbLogger\n" \
+        "│         project: unsupervised\n" \
+        "│         name: dev-baby-unet-cb55-10\n" \
+        "│         offline: false\n" \
+        "│         job_type: train\n" \
+        "│         group: dev-runs\n" \
+        "│         tags:\n" \
+        "│         - best_model\n" \
+        "│         - USL\n" \
+        "│         save_dir: .\n" \
+        "│         log_model: false\n" \
+        "│         notes: Testing\n" \
+        "│       csv:\n" \
+        "│         _target_: pytorch_lightning.loggers.csv_logs.CSVLogger\n" \
+        "│         save_dir: .\n" \
+        "│         name: csv/\n" \
+        "│       \n" \
+        "├── seed\n" \
+        "│   └── 42\n" \
+        "├── train\n" \
+        "│   └── True\n" \
+        "├── test\n" \
+        "│   └── True\n" \
+        "├── predict\n" \
+        "│   └── None\n" \
+        "├── checkpoint_folder_name\n" \
+        "│   └── {epoch}/\n" \
+        "├── debug\n" \
+        "│   └── False\n" \
+        "├── disable_warnings\n" \
+        "│   └── True\n" \
+        "├── plugins\n" \
+        "│   └── ddp_plugin:\n" \
+        "│         _target_: pytorch_lightning.plugins.DDPPlugin\n" \
+        "│         find_unused_parameters: false\n" \
+        "│       \n" \
+        "├── print_config\n" \
+        "│   └── True\n" \
+        "├── save_config\n" \
+        "│   └── True\n" \
+        "└── work_dir\n" \
+        "    └── .\n"
+    caps = capsys.readouterr()
+    assert caps.out == expected_result

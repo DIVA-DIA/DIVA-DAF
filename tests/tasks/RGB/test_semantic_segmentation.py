@@ -5,9 +5,11 @@ import pytest
 import pytorch_lightning as pl
 import torch.optim.optimizer
 from omegaconf import OmegaConf
-from pl_bolts.models.vision import UNet
 from pytorch_lightning import seed_everything, Trainer
 
+from src.models.backbone_header_model import BackboneHeaderModel
+from src.models.backbones.unet import UNet
+from src.models.headers.unet import UNetFCNHead
 from tests.datamodules.RolfFormat.datasets.test_full_page_dataset import _get_dataspecs
 from src.datamodules.RolfFormat.datamodule import DataModuleRolfFormat
 from src.tasks.RGB.semantic_segmentation import SemanticSegmentationRGB
@@ -24,8 +26,13 @@ def clear_resolvers():
 
 
 @pytest.fixture()
-def model():
-    return UNet(num_classes=6, num_layers=2, features_start=32)
+def model_header():
+    return UNetFCNHead(num_classes=6, features=32)
+
+
+@pytest.fixture()
+def model_backbone():
+    return UNet(num_layers=2, features_start=32)
 
 
 @pytest.fixture()
@@ -44,9 +51,9 @@ def datamodule_and_dir(data_dir):
 
 
 @pytest.fixture()
-def task(model, tmp_path):
-    task = SemanticSegmentationRGB(model=model,
-                                   optimizer=torch.optim.Adam(params=model.parameters()),
+def task(model_backbone, model_header, tmp_path):
+    task = SemanticSegmentationRGB(model=BackboneHeaderModel(backbone=model_backbone, header=model_header),
+                                   optimizer=torch.optim.Adam(params=model_backbone.parameters()),
                                    loss_fn=torch.nn.CrossEntropyLoss(),
                                    test_output_path=tmp_path,
                                    confusion_matrix_val=True
@@ -68,9 +75,10 @@ def test_semantic_segmentation(tmp_path, task, datamodule_and_dir, monkeypatch):
     trainer.fit(task, datamodule=data_module)
 
     results = trainer.test(datamodule=data_module)
-    print(results)
-    assert np.isclose(results[0]['test/crossentropyloss'], 1.861278772354126, rtol=2.5e-02)
-    assert np.isclose(results[0]['test/crossentropyloss_epoch'], 1.861278772354126, rtol=2.5e-02)
+    output_key = "test/crossentropyloss"
+    if output_key not in results[0]:
+        output_key = "test/crossentropyloss_epoch"
+    assert np.isclose(results[0][output_key], 1.861278772354126, rtol=2.5e-02)
     assert len(list(patches_path.glob('*/*.npy'))) == len(list(test_data_patch.glob('*/*.png')))
 
 
@@ -84,7 +92,7 @@ def test_training_step(monkeypatch, datamodule_and_dir, task, capsys):
     data_module, data_dir = datamodule_and_dir
     trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module, 'trainer', trainer)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     monkeypatch.setattr(trainer, 'datamodule', data_module)
     monkeypatch.setattr(task, 'log', fake_log)
     data_module.setup('fit')
@@ -99,7 +107,7 @@ def test_validation_step(monkeypatch, datamodule_and_dir, task, capsys):
     data_module, data_dir = datamodule_and_dir
     trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module, 'trainer', trainer)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     monkeypatch.setattr(trainer, 'datamodule', data_module)
     monkeypatch.setattr(task, 'log', fake_log)
     monkeypatch.setattr(task, 'confusion_matrix_val', False)
@@ -114,7 +122,7 @@ def test_test_step(monkeypatch, datamodule_and_dir, task, capsys, tmp_path):
     data_module, data_dir = datamodule_and_dir
     trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module, 'trainer', trainer)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     monkeypatch.setattr(trainer, 'datamodule', data_module)
     monkeypatch.setattr(task, 'log', fake_log)
     monkeypatch.setattr(task, 'confusion_matrix_val', False)
@@ -137,7 +145,7 @@ def test_predict_step(monkeypatch, datamodule_and_dir, task, capsys, tmp_path):
     data_module, data_dir = datamodule_and_dir
     trainer = Trainer(accelerator='cpu', strategy='ddp')
     monkeypatch.setattr(data_module, 'trainer', trainer)
-    monkeypatch.setattr(task, 'trainer', trainer)
+    task.trainer = trainer
     monkeypatch.setattr(task, 'predict_output_path', data_dir)
     monkeypatch.setattr(trainer, 'datamodule', data_module)
     monkeypatch.setattr(task, 'log', fake_log)

@@ -1,4 +1,6 @@
-# more infos about parameters: https://torchmetrics.readthedocs.io/en/latest/references/modules.html#iou
-_target_: torchmetrics.IoU
+jaccard_index:
+    # more infos about parameters: https://torchmetrics.readthedocs.io/en/latest/references/modules.html#iou
+    _target_: torchmetrics.classification.MulticlassJaccardIndex
 
-num_classes: ${datamodule:num_classes}
+    num_classes: ${datamodule:num_classes}
+    average: macro

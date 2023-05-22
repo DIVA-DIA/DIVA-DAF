@@ -52,7 +52,7 @@ class SemanticSegmentationCroppedRGB(AbstractTask):
             confusion_matrix_test=confusion_matrix_test,
             confusion_matrix_log_every_n_epoch=confusion_matrix_log_every_n_epoch,
         )
-        self.save_hyperparameters()
+        # self.save_hyperparameters()
 
     def setup(self, stage: str) -> None:
         super().setup(stage)
