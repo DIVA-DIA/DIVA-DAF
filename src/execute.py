@@ -32,9 +32,6 @@ def execute(config: DictConfig) -> Optional[float]:
         Optional[float]: Metric score for hyperparameter optimization.
     """
 
-    # Write current run dir into outputs/run_dir_paths.txt
-    _write_current_run_dir(config)
-
     # Init Lightning datamodule
     log.info(f"Instantiating datamodule <{config.datamodule._target_}>")
     datamodule: LightningDataModule = hydra.utils.instantiate(config.datamodule)
@@ -154,10 +151,14 @@ def execute(config: DictConfig) -> Optional[float]:
         log.info("Starting testing!")
         results = trainer.test(model=task, datamodule=datamodule)
         log.info(f'Test output: {results}')
+        # Write current run dir into outputs/run_dir_paths.txt
+        _write_current_run_dir(config=config)
 
     if config.predict:
         log.info("Starting prediction!")
         trainer.predict(model=task, datamodule=datamodule)
+        # Write current run dir into outputs/run_dir_paths.txt
+        _write_current_run_dir(config=config)
 
     # Make sure everything closed properly
     log.info("Finalizing!")
@@ -326,8 +327,8 @@ def _print_run_command(trainer: Trainer):
 @rank_zero_only
 def _write_current_run_dir(config: DictConfig):
     run_dir_log_filename = 'run_dir_log.txt'
-    run_dir_log_file = Path(to_absolute_path(config['run_root_dir'])) / run_dir_log_filename
+    run_dir_log_file = Path(to_absolute_path(config['run_root_dir'])) / config['name'] / run_dir_log_filename
     run_dir_log_file = run_dir_log_file.resolve()
     log.info(f'Writing work dir into run dir log file ({run_dir_log_file})')
     with run_dir_log_file.open('a') as f:
-        f.write(f'{os.getcwd()}\n')
+        f.write(f'{Path(os.getcwd())}\n')
