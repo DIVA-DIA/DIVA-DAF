@@ -11,20 +11,16 @@ def compute_mean_std(file_names: np.ndarray, inmem=False, workers=8):
     """
     Computes mean and std of all images present at target folder.
 
-    Parameters
-    ----------
-    input_folder : String (path)
-        Path to the dataset folder (see above for details)
-    inmem : Boolean
+    :param file_names: String (path). List of the file names of the images
+    :param inmem: Boolean
         Specifies whether is should be computed i nan online of offline fashion.
-    workers : int
+    :param workers: int
         Number of workers to use for the mean/std computation
 
-    Returns
-    -------
-    mean : float
+
+    :returns: mean : float
         Mean value of all pixels of the images in the input folder
-    std : float
+    :returns: std : float
         Standard deviation of all pixels of the images in the input folder
     """
     file_names_np = np.array(list(map(str, file_names)))
@@ -40,15 +36,15 @@ def _cms_online(file_names, workers=4):
 
     Parameters
     ----------
-    file_names : List of String
+    :param file_names: List of String
         List of file names of the dataset
-    workers : int
+    :param workers: int
         Number of workers to use for the mean/std computation
 
-    Returns
-    -------
-    mean : double
-    std : double
+    :returns: mean : float
+        Mean value of all pixels of the images in the input folder
+    :returns: std : float
+        Standard deviation of all pixels of the images in the input folder
     """
     logging.info('Begin computing the mean')
 
@@ -79,12 +75,31 @@ def _cms_online(file_names, workers=4):
 
 
 def _return_mean(image_path):
+    """
+    Computes mean of a single image
+
+    :param image_path: String (path)
+        Path to the image
+    :returns: mean : float
+        Mean value of all pixels of the image
+    """
     img = np.array(Image.open(image_path).convert('RGB'))
     mean = np.array([np.mean(img[:, :, 0]), np.mean(img[:, :, 1]), np.mean(img[:, :, 2])]) / 255.0
     return mean
 
 
 def _return_std(image_path, mean):
+    """
+    Computes image_classification deviation of a single image
+
+    :param image_path: String (path)
+        Path to the image
+    :param mean: float
+        Mean value of all pixels of the image
+
+    :returns: std : float
+        Standard deviation of all pixels of the image
+    """
     img = np.array(Image.open(image_path).convert('RGB')) / 255.0
     m2 = np.square(np.array([img[:, :, 0] - mean[0], img[:, :, 1] - mean[1], img[:, :, 2] - mean[2]]))
     return np.sum(np.sum(m2, axis=1), 1), m2.size / 3.0
@@ -97,12 +112,13 @@ def _cms_inmem(file_names):
 
     Parameters
     ----------
-    file_names: List of String
+    :param file_names: List of String
         List of file names of the dataset
-    Returns
-    -------
-    mean : double
-    std : double
+
+    :returns: mean : float
+        Mean value of all pixels of the images in the input folder
+    :returns: std : float
+        Standard deviation of all pixels of the images in the input folder
     """
     img = np.zeros([file_names.size] + list(np.array(Image.open(file_names[0]).convert('RGB')).shape))
 

@@ -9,6 +9,12 @@ dotenv.load_dotenv(override=True)
 
 @hydra.main(config_path="configs/", config_name="config.yaml")
 def main(config: DictConfig):
+    """
+    Main entry point of the program. Starts the training or testing/prediction process.
+    Also loads the hydra config and prints it.
+
+    :param config: The configuration object
+    """
 
     # Imports should be nested inside @hydra.main to optimize tab completion
     # Read more here: https://github.com/facebookresearch/hydra/issues/934

@@ -6,18 +6,15 @@ def merge_patches(patch, coordinates, full_output):
     This function merges the patch into the full output image
     Overlapping values are resolved by taking the max.
 
-    Parameters
-    ----------
-    patch: numpy matrix of size [#classes x crop_size x crop_size]
+    :param patch: numpy matrix of size [#classes x crop_size x crop_size]
         a patch from the larger image
-    coordinates: tuple of ints
+    :param coordinates: tuple of ints
         top left coordinates of the patch within the larger image for all patches in a batch
-    full_output: numpy matrix of size [#C x H x W]
+    :param full_output: numpy matrix of size [#C x H x W]
         output image at full size
-    Returns
-    -------
-    full_output: numpy matrix [#C x Htot x Wtot]
+    :returns: full_output: numpy matrix [#C x Htot x Wtot]
     """
+
     assert len(full_output.shape) == 3
     assert full_output.size != 0
 

@@ -6,12 +6,9 @@ class OnlyImage(object):
 
     def __init__(self, transform: Callable):
         """Initialize the transformation with the transformation to be called.
-        Could be a compose.
+        Could be a Compose.
 
-        Parameters
-        ----------
-        transform : torchvision.transforms.transforms
-            Transformation to wrap
+        :param transform: torchvision.transforms.transforms
         """
         self.transform = transform
 
@@ -24,12 +21,9 @@ class OnlyTarget(object):
 
     def __init__(self, transform: Callable):
         """Initialize the transformation with the transformation to be called.
-        Could be a compose.
+        Could be a Compose.
 
-        Parameters
-        ----------
-        transform : torchvision.transforms.transforms
-            Transformation to wrap
+        :param transform: torchvision.transforms.transforms
         """
         self.transform = transform
 
