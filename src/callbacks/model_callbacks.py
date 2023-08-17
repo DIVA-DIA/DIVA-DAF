@@ -25,9 +25,8 @@ class SaveModelStateDictAndTaskCheckpoint(ModelCheckpoint):
     def __init__(self, backbone_filename: Optional[str] = 'backbone', header_filename: Optional[str] = 'header',
                  **kwargs):
         """
-        Args:
-            backbone_filename: Filename of the backbone checkpoint
-            header_filename: Filename of the header checkpoint
+        :param backbone_filename: Filename of the backbone checkpoint
+        :param header_filename: Filename of the header checkpoint
         """
         super(SaveModelStateDictAndTaskCheckpoint, self).__init__(**kwargs)
         self.backbone_filename = backbone_filename
@@ -40,9 +39,8 @@ class SaveModelStateDictAndTaskCheckpoint(ModelCheckpoint):
         The name of the folder ist the epoch the checkpoint was created on.
 
         The task checkpoint is saved as task_last.pth if it is the last checkpoint and as task_epoch=x.pth otherwise.
-        Args:
-            trainer: The trainer object
-            filepath: The filepath of the model state dict
+        :param trainer: The trainer object
+        :param filepath: The filepath of the model state dict
         """
         if not trainer.is_global_zero:
             return
@@ -73,9 +71,8 @@ class SaveModelStateDictAndTaskCheckpoint(ModelCheckpoint):
         """
         Deletes the old folder of the last checkpoint if the current epoch is better based on the monitor metric.
 
-        Args:
-            filepath: The filepath of the old folder
-            trainer: The trainer object
+        :param filepath: The filepath of the old folder
+        :param trainer: The trainer object
         """
         file_system = get_filesystem(filepath)
         if file_system.exists(filepath):
