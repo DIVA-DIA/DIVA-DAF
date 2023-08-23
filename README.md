@@ -137,12 +137,21 @@ In the case you are using a full-page dataset be aware that the selection list i
     
 ### Cite us
 ```
-@misc{vögtlin2022divadaf,
-      title={DIVA-DAF: A Deep Learning Framework for Historical Document Image Analysis}, 
-      author={Lars Vögtlin and Paul Maergner and Rolf Ingold},
-      year={2022},
-      eprint={2201.08295},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV}
+@inproceedings{vogtlin2023DIVADAFDeepLearning,
+  author       = {Lars V{\"{o}}gtlin and
+                  Anna Scius{-}Bertrand and
+                  Paul Maergner and
+                  Andreas Fischer and
+                  Rolf Ingold},
+  title        = {{DIVA-DAF:} {A} Deep Learning Framework for Historical Document Image
+                  Analysis},
+  booktitle    = {Proceedings of the 7th International Workshop on Historical Document
+                  Imaging and Processing, HIP@ICDAR 2023, San Jose, CA, USA, August
+                  25-26, 2023},
+  pages        = {61--66},
+  publisher    = {{ACM}},
+  year         = {2023},
+  url          = {https://doi.org/10.1145/3604951.3605511},
+  doi          = {10.1145/3604951.3605511}
 }
 ```
