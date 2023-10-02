@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import List, Tuple, Union, Optional
 
 import torch.utils.data as data
+from torch import Tensor
 from omegaconf import ListConfig
 from torch import is_tensor
 from torchvision.datasets.folder import pil_loader, has_file_allowed_extension
@@ -22,7 +23,8 @@ log = utils.get_logger(__name__)
 
 
 class CroppedHisDBDataset(data.Dataset):
-    """A generic data loader where the images are arranged in this way: ::
+    """
+    A generic data loader where the images are arranged in this way: ::
 
         root/gt/xxx.png
         root/gt/xxy.png
@@ -31,29 +33,31 @@ class CroppedHisDBDataset(data.Dataset):
         root/data/xxx.png
         root/data/xxy.png
         root/data/xxz.png
+
+    :param path: Path to the dataset
+    :type path: Path
+    :param data_folder_name: name of the folder that contains the original images
+    :type data_folder_name: str
+    :param gt_folder_name: name of the folder that contains the ground truth images
+    :type gt_folder_name: str
+    :param selection: filtering of the dataset, can be an integer or a list of strings
+    :type selection: Union[int, List[str], None]
+    :param is_test: if True, :meth:`__getitem__` will return the index of the image
+    :type is_test: bool
+    :param image_transform: transformation that is applied to the image
+    :type image_transform: callable
+    :param target_transform: transformation that is applied to the target
+    :type target_transform: callable
+    :param twin_transform: transformation that is applied to both image and target
+    :type twin_transform: callable
     """
 
     def __init__(self, path: Path, data_folder_name: str, gt_folder_name: str,
-                 selection: Optional[Union[int, List[str]]] = None,
-                 is_test=False, image_transform=None, target_transform=None, twin_transform=None,
-                 **kwargs):
-        """
-        Parameters
-        ----------
-        path : string
-            Path to dataset folder (train / val / test)
-        classes :
-        workers : int
-        imgs_in_memory :
-        crops_per_image : int
-        crop_size : int
-        image_transform : callable
-        target_transform : callable
-        twin_transform : callable
-        loader : callable
-            A function to load an image given its path.
+                 selection: Optional[Union[int, List[str], None]] = None,
+                 is_test=False, image_transform=None, target_transform=None, twin_transform=None) -> None:
         """
 
+        """
         self.path = path
         self.data_folder_name = data_folder_name
         self.gt_folder_name = gt_folder_name
@@ -75,7 +79,7 @@ class CroppedHisDBDataset(data.Dataset):
             raise RuntimeError("Found 0 images in subfolders of: {} \n Supported image extensions are: {}".format(
                 path, ",".join(IMG_EXTENSIONS)))
 
-    def __len__(self):
+    def __len__(self) -> int:
         """
         This function returns the length of an epoch so the data loader knows when to stop.
         The length is different during train/val and test, because we process the whole image during testing,
@@ -83,45 +87,39 @@ class CroppedHisDBDataset(data.Dataset):
         """
         return self.num_samples
 
-    def __getitem__(self, index):
+    def __getitem__(self, index) -> Tuple[Tensor, Tensor, Tensor, int]:
         if self.is_test:
             return self._get_test_items(index=index)
         else:
             return self._get_train_val_items(index=index)
 
-    def _get_train_val_items(self, index):
+    def _get_train_val_items(self, index) -> Tuple[Tensor, Tensor, Tensor, int]:
         data_img, gt_img = self._load_data_and_gt(index=index)
         img, gt, boundary_mask = self._apply_transformation(data_img, gt_img)
         return img, gt, boundary_mask
 
-    def _get_test_items(self, index):
+    def _get_test_items(self, index) -> Tuple[Tensor, Tensor, Tensor, int]:
         data_img, gt_img = self._load_data_and_gt(index=index)
         img, gt, boundary_mask = self._apply_transformation(data_img, gt_img)
         return img, gt, boundary_mask, index
 
-    def _load_data_and_gt(self, index):
+    def _load_data_and_gt(self, index) -> Tuple[Tensor, Tensor]:
         data_img = pil_loader(self.img_paths_per_page[index][0])
         gt_img = pil_loader(self.img_paths_per_page[index][1])
 
         return data_img, gt_img
 
-    def _apply_transformation(self, img, gt):
+    def _apply_transformation(self, img, gt) -> Tuple[Tensor, Tensor, Tensor]:
         """
         Applies the transformations that have been defined in the setup (setup.py). If no transformations
         have been defined, the PIL image is returned instead.
 
-        Parameters
-        ----------
-        img: PIL image
-            image data
-        gt: PIL image
-            ground truth image
-        coordinates: tuple (int, int)
-            coordinates where the sliding window should be cropped
-        Returns
-        -------
-        tuple
-            img and gt after transformations
+        :param img: Original image to apply transformation on
+        :type img: PIL image
+        :param gt: Ground truth image to apply transformation on
+        :type gt: PIL image
+        :return: transformed image and gt
+        :rtype: tuple
         """
         if self.twin_transform is not None and not self.is_test:
             img, gt = self.twin_transform(img, gt)
@@ -152,10 +150,16 @@ class CroppedHisDBDataset(data.Dataset):
         directory/gt/ORIGINAL_FILENAME/FILE_NAME_X_Y.png
 
 
-        :param directory:
-        :param selection:
-        :return: tuple
-            (path_data_file, path_gt_file, original_image_name, (x, y))
+        :param gt_folder_name: name of the folder that contains the ground truth images
+        :type gt_folder_name: str
+        :param data_folder_name: name of the folder that contains the original images
+        :type data_folder_name: str
+        :param directory: root folder path of the dataset
+        :type directory: Path
+        :param selection: filtering of the dataset, can be an integer or a list of strings
+        :type selection: Union[int, List[str]]
+        :return: tuple containing the path to the gt and image that belong together with the original filename and the crop name
+        :rtype: List[Tuple[Path, Path, str, str, Tuple[int, int]]]
         """
         paths = []
         directory = directory.expanduser()
@@ -199,7 +203,7 @@ class CroppedHisDBDataset(data.Dataset):
                                                     sorted(path_gt_subdir.iterdir())):
                 assert has_file_allowed_extension(path_data_file.name, IMG_EXTENSIONS) == \
                        has_file_allowed_extension(path_gt_file.name, IMG_EXTENSIONS), \
-                       'get_img_gt_path_list(): image file aligned with non-image file'
+                    'get_img_gt_path_list(): image file aligned with non-image file'
 
                 if has_file_allowed_extension(path_data_file.name, IMG_EXTENSIONS) and \
                         has_file_allowed_extension(path_gt_file.name, IMG_EXTENSIONS):

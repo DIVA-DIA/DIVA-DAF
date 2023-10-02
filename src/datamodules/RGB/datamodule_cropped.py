@@ -18,6 +18,9 @@ log = utils.get_logger(__name__)
 
 
 class DataModuleCroppedRGB(AbstractDatamodule):
+    """
+
+    """
     def __init__(self, data_dir: str, data_folder_name: str, gt_folder_name: str,
                  train_folder_name: str = 'train', val_folder_name: str = 'val', test_folder_name: str = 'test',
                  selection_train: Optional[Union[int, List[str]]] = None,

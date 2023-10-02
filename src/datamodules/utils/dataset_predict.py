@@ -16,7 +16,7 @@ log = utils.get_logger(__name__)
 
 class DatasetPredict(data.Dataset):
     """
-    Dataset class for the prediction of the test set.
+    Dataset class for the prediction of the test set. It takes a folder of images and creates the prediction of these images.
     """
 
     def __init__(self, image_path_list: List[str], image_dims: ImageDimensions,
@@ -102,5 +102,3 @@ class DatasetPredict(data.Dataset):
                 if path not in output_list:
                     output_list.append(Path(s))
         return output_list
-
-

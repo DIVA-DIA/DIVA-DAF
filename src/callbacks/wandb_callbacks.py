@@ -32,11 +32,13 @@ class WatchModelWithWandb(Callback):
     """
     Make WandbLogger watch model at the beginning of the run.
 
-    :param log_category: Category of the model to log ("gradients", "parameters", "all", or None).
-    :param log_freq: How often to log the model.
+    :param log_category: Category of the model to log ("gradients", "parameters", "all", or None). Default: "gradients".
+    :type log_category: str
+    :param log_freq: How often to log the model. Default: 100.
+    :type log_freq: int
     """
 
-    def __init__(self, log_category: str = "gradients", log_freq: int = 100):
+    def __init__(self, log_category: str = "gradients", log_freq: int = 100) -> None:
         self.log_category = log_category
         self.log_freq = log_freq
 

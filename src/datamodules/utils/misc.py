@@ -214,12 +214,14 @@ def get_image_dims(data_gt_path_list) -> ImageDimensions:
     return image_dims
 
 
-def pil_loader_gif(path: Path):
+def pil_loader_gif(path: Path) -> Image:
     """
     Loads a gif image using PIL.
 
     :param path: Path to the image
-    :returns: PIL image
+    :type path: Path
+    :returns: Image loaded in palette mode
+    :rtype: Image
     """
     with open(path, "rb") as f:
         gt_img = Image.open(f)

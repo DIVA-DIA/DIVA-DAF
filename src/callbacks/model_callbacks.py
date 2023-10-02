@@ -20,13 +20,17 @@ class SaveModelStateDictAndTaskCheckpoint(ModelCheckpoint):
     It produces a file for each the encoder and the header.
     The encoder file is named after the backbone_filename and the header file after the header_filename.
     The backbone_filename and the header_filename can be specified in the constructor.
+
+    :param backbone_filename: Filename of the backbone checkpoint
+    :type backbone_filename: str, optional
+    :param header_filename: Filename of the header checkpoint
+    :type header_filename: str, optional
     """
 
     def __init__(self, backbone_filename: Optional[str] = 'backbone', header_filename: Optional[str] = 'header',
                  **kwargs):
         """
-        :param backbone_filename: Filename of the backbone checkpoint
-        :param header_filename: Filename of the header checkpoint
+        Constructor of the SaveModelStateDictAndTaskCheckpoint class.
         """
         super(SaveModelStateDictAndTaskCheckpoint, self).__init__(**kwargs)
         self.backbone_filename = backbone_filename
@@ -40,7 +44,9 @@ class SaveModelStateDictAndTaskCheckpoint(ModelCheckpoint):
 
         The task checkpoint is saved as task_last.pth if it is the last checkpoint and as task_epoch=x.pth otherwise.
         :param trainer: The trainer object
+        :type trainer: pl.Trainer
         :param filepath: The filepath of the model state dict
+        :type filepath: str
         """
         if not trainer.is_global_zero:
             return
@@ -72,7 +78,9 @@ class SaveModelStateDictAndTaskCheckpoint(ModelCheckpoint):
         Deletes the old folder of the last checkpoint if the current epoch is better based on the monitor metric.
 
         :param filepath: The filepath of the old folder
+        :type filepath: str
         :param trainer: The trainer object
+        :type trainer: pl.Trainer
         """
         file_system = get_filesystem(filepath)
         if file_system.exists(filepath):

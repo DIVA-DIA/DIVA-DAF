@@ -3,6 +3,7 @@ import errno
 import json
 import logging
 from pathlib import Path
+from typing import Dict, Any, Tuple
 
 import numpy as np
 # Torch related stuff
@@ -13,14 +14,21 @@ from src.datamodules.utils.misc import pil_loader_gif
 
 
 def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, train_folder_name: str,
-                  get_img_gt_path_list_func):
+                  get_img_gt_path_list_func) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
-    Parameters
-    ----------
-    input_path: Path to dataset
-
-    Returns
-    -------
+    Get the analytics for the dataset. If the analytics file is not present, it will be computed and saved.
+    :param input_path: Path to the root of the dataset
+    :type input_path: Path
+    :param data_folder_name: Name of the folder containing the data
+    :type data_folder_name: str
+    :param gt_folder_name: Name of the folder containing the ground truth
+    :type gt_folder_name: str
+    :param train_folder_name: Name of the folder containing the training data
+    :type train_folder_name: str
+    :param get_img_gt_path_list_func: Function to get the list of image and ground truth paths
+    :type get_img_gt_path_list_func: Callable[[Path, str, str], List[Tuple[Path, Path]]]
+    :return: Tuple of analytics for the data and ground truth
+    :rtype: Tuple[Dict[str, Any], Dict[str, Any]]
     """
     expected_keys_data = ['mean', 'std', 'width', 'height']
     expected_keys_gt = ['class_weights', 'class_encodings']
@@ -64,12 +72,20 @@ def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, 
     return analytics_data, analytics_gt
 
 
-def _get_and_save_gt_analytics(analytics_path_gt, file_names_gt):
+def _get_and_save_gt_analytics(analytics_path_gt: Path, file_names_gt: np.ndarray) -> Dict[str, Any]:
+    """
+    Get the analytics for the ground truth. If the analytics file is not present, it will be computed and saved.
+    :param analytics_path_gt: Path to the analytics file
+    :type analytics_path_gt: Path
+    :param file_names_gt: names of the files in the training set
+    :type file_names_gt: np.ndarray
+    :return: The analytics for the ground truth
+    :rtype: Dict[str, Any]
+    """
     # Measure weights for class balancing
     logging.info(f'Measuring class weights')
     # create a list with all gt file paths
-    class_weights, class_encodings = _get_class_frequencies_weights_segmentation_indexed(
-        gt_images=file_names_gt)
+    class_weights, class_encodings = _get_class_frequencies_weights_segmentation_indexed(gt_images=file_names_gt)
     analytics_gt = {'class_weights': class_weights,
                     'class_encodings': class_encodings}
     # save json
@@ -84,7 +100,14 @@ def _get_and_save_gt_analytics(analytics_path_gt, file_names_gt):
     return analytics_gt
 
 
-def _get_and_save_data_analytics(analytics_path_data, file_names_data):
+def _get_and_save_data_analytics(analytics_path_data: Path, file_names_data: np.ndarray) -> Dict[str, Any]:
+    """
+    Get the analytics for the data. If the analytics file is not present, it will be computed and saved.
+    :param analytics_path_data: Path to the analytics file
+    :param file_names_data: names of the files in the training set
+    :return: The analytics for the data
+    :rtype: Dict[str, Any]
+    """
     mean, std = compute_mean_std(file_names=file_names_data)
     img = Image.open(file_names_data[0]).convert('RGB')
     analytics_data = {'mean': mean.tolist(),
@@ -103,22 +126,16 @@ def _get_and_save_data_analytics(analytics_path_data, file_names_data):
     return analytics_data
 
 
-def _get_class_frequencies_weights_segmentation_indexed(gt_images: np.ndarray):
+def _get_class_frequencies_weights_segmentation_indexed(gt_images: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     """
     Get the weights proportional to the inverse of their class frequencies.
     The vector sums up to 1
 
-    Parameters
-    ----------
-    gt_images: ndarray of Paths
-        Path to all ground truth images, which contain the pixel-wise label
-    workers: int
-        Number of workers to use for the mean/std computation
+    :param gt_images: Path to all ground truth images, which contain the pixel-wise label
+    :type gt_images: np.ndarray
 
-    Returns
-    -------
-    ndarray[double] of size (num_classes) and ints the classes are represented as
-        The weights vector as a 1D array normalized (sum up to 1)
+    :return: The weights vector as a 1D array normalized (sum up to 1)
+    :rtype: np.ndarray
     """
     logging.info('Begin computing class frequencies weights')
 
@@ -143,4 +160,3 @@ def _get_class_frequencies_weights_segmentation_indexed(gt_images: np.ndarray):
     # Normalize vector to sum up to 1.0 (in case the Loss function does not do it)
     class_weights = (1 / num_samples_per_class)  # / ((1 / num_samples_per_class).sum())
     return class_weights.tolist(), classes.tolist()
-
