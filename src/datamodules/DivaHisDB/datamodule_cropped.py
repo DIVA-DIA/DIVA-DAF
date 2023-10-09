@@ -226,6 +226,7 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
         """
         Returns the original filename of the crop and its coordinate based on the index.
         You can just use this during testing!
+
         :param index: index of the crop
         :type index: int
         :return: filename, x, y

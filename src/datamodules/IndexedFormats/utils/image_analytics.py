@@ -17,6 +17,11 @@ def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, 
                   get_img_gt_path_list_func: callable, inmem: bool = False, workers: int = 8) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     Get the analytics for the dataset. If the analytics file is not present, it will be computed and saved.
+
+    :param workers:  Number of workers to calculate the mean and std
+    :type workers: int
+    :param inmem:  Load the images in memory or load them separately
+    :type inmem: bool
     :param input_path: Path to the root of the dataset
     :type input_path: Path
     :param data_folder_name: Name of the folder containing the data
@@ -75,6 +80,7 @@ def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, 
 def _get_and_save_gt_analytics(analytics_path_gt: Path, file_names_gt: np.ndarray) -> Dict[str, Any]:
     """
     Get the analytics for the ground truth. If the analytics file is not present, it will be computed and saved.
+
     :param analytics_path_gt: Path to the analytics file
     :type analytics_path_gt: Path
     :param file_names_gt: names of the files in the training set
@@ -103,6 +109,7 @@ def _get_and_save_gt_analytics(analytics_path_gt: Path, file_names_gt: np.ndarra
 def _get_and_save_data_analytics(analytics_path_data: Path, file_names_data: np.ndarray, inmem: bool, workers: int) -> Dict[str, Any]:
     """
     Get the analytics for the data. If the analytics file is not present, it will be computed and saved.
+
     :param analytics_path_data: Path to the analytics file
     :param file_names_data: names of the files in the training set
     :return: The analytics for the data
@@ -133,7 +140,6 @@ def _get_class_frequencies_weights_segmentation_indexed(gt_images: np.ndarray) -
 
     :param gt_images: Path to all ground truth images, which contain the pixel-wise label
     :type gt_images: np.ndarray
-
     :return: The weights vector as a 1D array normalized (sum up to 1)
     :rtype: np.ndarray
     """

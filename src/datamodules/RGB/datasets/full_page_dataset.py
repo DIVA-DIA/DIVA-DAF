@@ -104,6 +104,7 @@ class DatasetRGB(data.Dataset):
         This function returns the data and the ground truth for a given index. If the dataset is used for testing,
         the index is used to get the image and the ground truth. If the dataset is used for training or validation,
         the index is used to get the coordinates where the sliding window should be cropped.
+
         :param index: index of the image
         :type index: int
         :return: the item at the given index
@@ -117,6 +118,7 @@ class DatasetRGB(data.Dataset):
     def _get_train_val_items(self, index: int) -> Tuple[Tensor, Tensor]:
         """
         This function returns the data and the ground truth for a given index.
+
         :param index: index of the image
         :type index: int
         :return: the item at the given index
@@ -131,6 +133,7 @@ class DatasetRGB(data.Dataset):
     def _get_test_items(self, index: int) -> Tuple[Tensor, Tensor, int]:
         """
         This function returns the data and the ground truth for a given index. Additionally, the index is returned.
+
         :param index: index of the image
         :type index: int
         :return: the item at the given index
@@ -145,6 +148,7 @@ class DatasetRGB(data.Dataset):
     def _load_data_and_gt(self, index: int) -> Tuple[Image.Image, Image.Image]:
         """
         This function loads the data and the ground truth for a given index.
+
         :param index: index of the image
         :type index: int
         :return: the item at the given index

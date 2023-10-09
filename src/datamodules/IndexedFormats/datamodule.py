@@ -229,6 +229,7 @@ class DataModuleIndexed(AbstractDatamodule):
         """
         Returns the original filename of the doc image.
         You can just use this during testing!
+
         :param index: index of the image
         :type index: int
         :raise ValueError: if the method is called during training
@@ -243,7 +244,8 @@ class DataModuleIndexed(AbstractDatamodule):
     def get_output_filename_predict(self, index: int) -> str:
         """
         Returns the original filename of the doc image.
-        You can just use this during testing!
+        You can just use this during prediction!
+
         :param index: index of the image
         :type index: int
         :raise ValueError: if the method is called during training

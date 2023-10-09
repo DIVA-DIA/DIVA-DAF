@@ -9,6 +9,7 @@ from sklearn.preprocessing import OneHotEncoder
 def gt_to_int_encoding(matrix: torch.Tensor, class_encodings: List[int]) -> torch.Tensor:
     """
     Convert ground truth tensor to integer encoded matrix
+
     :param matrix: Image as a tensor of size [C x H x W] (BGR)
     :type matrix: torch.Tensor
     :param class_encodings: class encoding so which class (index) has what value (element)

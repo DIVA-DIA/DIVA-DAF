@@ -35,8 +35,6 @@ def output_to_class_encodings(output, class_encodings, perform_argmax=True):
     """
     This function converts the output prediction matrix to an image like it was provided in the ground truth
 
-    Parameters
-    -------
     :param output: output prediction of the network for a full-size image, where #C is the number of classes
     :type output: np.array of size [#C x H x W]
     :param class_encodings: Contains the range of encoded classes

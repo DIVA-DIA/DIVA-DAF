@@ -21,6 +21,7 @@ def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, 
         -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     Get the analytics for the dataset. If the analytics file is not present, it will be computed and saved.
+
     :param input_path: Path to the root of the dataset
     :type input_path: Path
     :param data_folder_name: Name of the folder containing the data
@@ -109,7 +110,6 @@ def get_class_weights(input_folder, workers=4) -> List[float]:
     :type input_folder: Path
     :param workers: Number of workers to use for the mean/std computation
     :type workers: int
-
     :return: The weights vector as a 1D array normalized (sum up to 1)
     :rtype: List[float]
     """

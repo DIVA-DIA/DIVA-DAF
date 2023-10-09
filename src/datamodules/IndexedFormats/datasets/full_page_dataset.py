@@ -105,6 +105,14 @@ class DatasetIndexed(data.Dataset):
             return img, gt
 
     def _load_data_and_gt(self, index: int) -> Tuple[Image.Image, Image.Image]:
+        """
+        Load the data and the ground truth.
+
+        :param index: Index of the image
+        :type index: int
+        :return: Data and ground truth as PIL Image
+        :rtype: Tuple[Image.Image, Image.Image]
+        """
         data_img = pil_loader(str(self.img_gt_path_list[index][0]))
         gt_img = pil_loader_gif(self.img_gt_path_list[index][1])
 
@@ -116,6 +124,7 @@ class DatasetIndexed(data.Dataset):
     def _apply_transformation(self, img: Image, gt: Image) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Apply transformations to the image and the ground truth.
+
         :param img: Original image
         :type img: Image
         :param gt: Ground truth as an image

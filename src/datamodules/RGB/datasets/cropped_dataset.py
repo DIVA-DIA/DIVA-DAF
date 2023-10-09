@@ -99,6 +99,7 @@ class CroppedDatasetRGB(data.Dataset):
         """
         Returns the image and the ground truth image at the given index. If transformations have been defined,
         they are applied here.
+
         :param index: index of the image to return
         :type index: int
         :return: The image and the corresponding ground truth image with transformations applied
@@ -112,6 +113,7 @@ class CroppedDatasetRGB(data.Dataset):
         """
         Returns the image and the ground truth image at the given index for testing. If transformations have been defined,
         they are applied here. Additionally, to the :method: `_get_train_val_items`, the index of the image is returned.
+
         :param index: index of the image to return
         :type index: int
         :return: The image and the corresponding ground truth image with transformations applied
@@ -124,6 +126,7 @@ class CroppedDatasetRGB(data.Dataset):
     def _load_data_and_gt(self, index: int) -> Tuple[Image.Image, Image.Image]:
         """
         Loads the image and the ground truth image at the given index.
+
         :param index: index of the image to return
         :type index: int
         :return: The image and the corresponding ground truth image

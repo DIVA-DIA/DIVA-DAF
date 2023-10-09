@@ -24,40 +24,39 @@ class DataModuleRGB(AbstractDatamodule):
     but it can not consist of cropped images. If you want to work with cropped images use class: `DataModuleCroppedRGB`.
 
     The structure of the folder should be as follows:
-
-    data_dir
-    ├── data_folder_name
-    │   ├── train_folder_name
-    │   │   ├── image1.png
-    │   │   ├── image2.png
-    │   │   ├── ...
-    │   │   └── imageN.png
-    │   ├── val_folder_name
-    │   │   ├── image1.png
-    │   │   ├── image2.png
-    │   │   ├── ...
-    │   │   └── imageN.png
-    │   └── test_folder_name
-    │       ├── image1.png
-    │       ├── image2.png
-    │       ├── ...
-    │       └── imageN.png
-    └── gt_folder_name
-        ├── train_folder_name
-        │   ├── image1.png
-        │   ├── image2.png
-        │   ├── ...
-        │   └── imageN.png
-        ├── val_folder_name
-        │   ├── image1.png
-        │   ├── image2.png
-        │   ├── ...
-        │   └── imageN.png
-        └── test_folder_name
-            ├── image1.png
-            ├── image2.png
-            ├── ...
-            └── imageN.png
+        data_dir
+        ├── data_folder_name
+        │   ├── train_folder_name
+        │   │   ├── image1.png
+        │   │   ├── image2.png
+        │   │   ├── ...
+        │   │   └── imageN.png
+        │   ├── val_folder_name
+        │   │   ├── image1.png
+        │   │   ├── image2.png
+        │   │   ├── ...
+        │   │   └── imageN.png
+        │   └── test_folder_name
+        │       ├── image1.png
+        │       ├── image2.png
+        │       ├── ...
+        │       └── imageN.png
+        └── gt_folder_name
+            ├── train_folder_name
+            │   ├── image1.png
+            │   ├── image2.png
+            │   ├── ...
+            │   └── imageN.png
+            ├── val_folder_name
+            │   ├── image1.png
+            │   ├── image2.png
+            │   ├── ...
+            │   └── imageN.png
+            └── test_folder_name
+                ├── image1.png
+                ├── image2.png
+                ├── ...
+                └── imageN.png
 
     :param data_dir: Path to the dataset folder.
     :type data_dir: str
@@ -240,6 +239,7 @@ class DataModuleRGB(AbstractDatamodule):
         """
         Returns the original filename of the doc image.
         You can just use this during testing!
+
         :param index: index of the sample
         :type index: int
         :return: original filename of the doc image
@@ -254,6 +254,7 @@ class DataModuleRGB(AbstractDatamodule):
         """
         Returns the original filename of the doc image.
         You can just use this during testing!
+
         :param index: index of the sample
         :type index: int
         :return: original filename of the doc image
