@@ -57,7 +57,7 @@ class CroppedDatasetRGB(data.Dataset):
                  is_test: bool = False, image_transform: callable = None, target_transform: callable = None,
                  twin_transform: callable = None):
         """
-        Constructor method for the class :class: `CroppedDatasetRGB`.
+        Constructor method for the class: `CroppedDatasetRGB`.
         """
 
         self.path = path

@@ -21,7 +21,7 @@ class DataModuleRGB(AbstractDatamodule):
     """
     The data module for a dataset where the classes of the ground truth are encoded as colors in the image.
     This data module expects full sized images. This does not mean, that the image needs to be in the original resolution
-    but it can not consist of cropped images. If you want to work with cropped images use :class: `DataModuleCroppedRGB`.
+    but it can not consist of cropped images. If you want to work with cropped images use class: `DataModuleCroppedRGB`.
 
     The structure of the folder should be as follows:
 
@@ -98,7 +98,7 @@ class DataModuleRGB(AbstractDatamodule):
                  num_workers: int = 4, batch_size: int = 8,
                  shuffle: bool = True, drop_last: bool = True):
         """
-        Constructor of the :class: `DataModuleRGB`.
+        Constructor of the class: `DataModuleRGB`.
         """
         super().__init__()
 

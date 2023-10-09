@@ -21,9 +21,9 @@ class DataModuleCroppedRGB(AbstractDatamodule):
     """
     The data module for a dataset where the classes of the ground truth are encoded as colors in the image.
     This data module expects cropped with a specific structure. The cropping can be done with the script
-    :class: `tools/generate_cropped_dataset.py`. If you do not use the script, make sure that the images are cropped
+    class: `tools/generate_cropped_dataset.py`. If you do not use the script, make sure that the images are cropped
     and named in the same way as the script does.
-    If you want to work with un-cropped images use :class: `DataModuleRGB`.
+    If you want to work with un-cropped images use class: `DataModuleRGB`.
 
     The structure of the folder should be as follows:
 
@@ -97,7 +97,7 @@ class DataModuleCroppedRGB(AbstractDatamodule):
                  crop_size: int = 256, num_workers: int = 4, batch_size: int = 8,
                  shuffle: bool = True, drop_last: bool = True):
         """
-        Constructor method for the class :class: `DataModuleCroppedRGB`.
+        Constructor method for the class: `DataModuleCroppedRGB`.
         """
         super().__init__()
 
