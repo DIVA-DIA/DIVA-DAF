@@ -4,6 +4,7 @@ import json
 import logging
 import os
 from pathlib import Path
+from typing import Tuple, Dict, Any, List, Union
 
 import numpy as np
 # Torch related stuff
@@ -17,15 +18,28 @@ from src.datamodules.utils.image_analytics import compute_mean_std
 
 
 def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, train_folder_name: str,
-                  get_img_gt_path_list_func, **kwargs):
+                  get_img_gt_path_list_func: callable, inmem: bool = False, workers: int = 8) \
+        -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
-    Parameters
-    ----------
-    input_path: Path to dataset
+    Get the analytics for the dataset. If the analytics file is not complete, it will be computed and saved.
 
-    Returns
-    -------
+    :param workers: The amount of workers to use for the mean/std computation
+    :type workers: int
+    :param inmem: If the dataset should be loaded fully into memory
+    :type inmem: bool
+    :param input_path: Path to the dataset folder
+    :type input_path: Path
+    :param data_folder_name: Name of the folder that contains the data
+    :type data_folder_name: str
+    :param gt_folder_name: Name of the folder that contains the ground truth
+    :type gt_folder_name: str
+    :param train_folder_name: Name of the folder that contains the training data
+    :type train_folder_name: str
+    :param get_img_gt_path_list_func: Function that returns a list of tuples with the image and gt path
+    :type get_img_gt_path_list_func: callable
+    :return:
     """
+
     expected_keys_data = ['mean', 'std', 'width', 'height']
     expected_keys_gt = ['class_weights', 'class_encodings']
 
@@ -60,7 +74,7 @@ def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, 
         file_names_gt = np.asarray([str(item[1]) for item in img_gt_path_list])
 
         if missing_analytics_data:
-            mean, std = compute_mean_std(file_names=file_names_data, **kwargs)
+            mean, std = compute_mean_std(file_names=file_names_data, inmem=inmem, workers=workers)
             img = Image.open(file_names_data[0]).convert('RGB')
 
             analytics_data = {'mean': mean.tolist(),
@@ -81,8 +95,7 @@ def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, 
             # Measure weights for class balancing
             logging.info(f'Measuring class weights')
             # create a list with all gt file paths
-            class_weights, class_encodings = _get_class_frequencies_weights_segmentation(gt_images=file_names_gt,
-                                                                                         **kwargs)
+            class_weights, class_encodings = _get_class_frequencies_weights_segmentation(gt_images=file_names_gt)
             analytics_gt = {'class_weights': class_weights,
                             'class_encodings': class_encodings}
             # save json
@@ -98,22 +111,18 @@ def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, 
     return analytics_data, analytics_gt
 
 
-def get_class_weights(input_folder, workers=4, **kwargs):
+def get_class_weights(input_folder: Path, workers=4) -> np.ndarray:
     """
     Get the weights proportional to the inverse of their class frequencies.
     The vector sums up to 1
 
-    Parameters
-    ----------
-    input_folder : String (path)
-        Path to the dataset folder (see above for details)
-    workers : int
-        Number of workers to use for the mean/std computation
+    :param input_folder: Path to the dataset folder (see above for details)
+    :type input_folder: Path
+    :param workers: Number of workers to use for the mean/std computation
+    :type workers: int
+    :return: The weights vector as a 1D array normalized (sum up to 1)
+    :rtype: ndarray[double]
 
-    Returns
-    -------
-    ndarray[double] of size (num_classes)
-        The weights vector as a 1D array normalized (sum up to 1)
     """
     # Sanity check on the folder
     if not os.path.isdir(input_folder):
@@ -151,22 +160,15 @@ def get_class_weights(input_folder, workers=4, **kwargs):
     return class_weights
 
 
-def _get_class_frequencies_weights_segmentation(gt_images, **kwargs):
+def _get_class_frequencies_weights_segmentation(gt_images: Union[np.ndarray, List[str]]) -> Tuple[np.ndarray, List[int]]:
     """
     Get the weights proportional to the inverse of their class frequencies.
     The vector sums up to 1
 
-    Parameters
-    ----------
-    gt_images: list of strings
-        Path to all ground truth images, which contain the pixel-wise label
-    workers: int
-        Number of workers to use for the mean/std computation
-
-    Returns
-    -------
-    ndarray[double] of size (num_classes) and ints the classes are represented as
-        The weights vector as a 1D array normalized (sum up to 1)
+    :param gt_images: Path to all ground truth images, which contain the pixel-wise label
+    :type gt_images: List[str]
+    :return: The weights vector as a 1D array normalized (sum up to 1)
+    :rtype: Tuple[np.ndarray, List[int]]
     """
     logging.info('Begin computing class frequencies weights')
 

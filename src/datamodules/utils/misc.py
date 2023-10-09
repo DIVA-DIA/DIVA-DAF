@@ -37,7 +37,7 @@ def _get_argmax(output: Union[torch.Tensor, np.ndarray], dim=1):
     return output
 
 
-def validate_path_for_segmentation(data_dir, data_folder_name: str, gt_folder_name: str,
+def validate_path_for_segmentation(data_dir: str, data_folder_name: str, gt_folder_name: str,
                                    split_name: Union[str, List[str]]) -> Path:
     """
     Checks if the data_dir folder has the following structure:

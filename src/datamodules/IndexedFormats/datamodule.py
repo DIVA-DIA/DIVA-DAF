@@ -21,13 +21,39 @@ class DataModuleIndexed(AbstractDatamodule):
     DataModule for datasets where the ground truth is in an index file format encoded (e.g., GIF, TIF).
     The folder structure is as follows:
 
-        root/data/xxx.png
-        root/data/xxy.png
-        root/data/xxz.png
-
-        root/gt/xxx.gif
-        root/gt/xxy.gif
-        root/gt/xxz.gif
+    data_dir
+    ├── data_folder_name
+    │   ├── train_folder_name
+    │   │   ├── image1.png
+    │   │   ├── image2.png
+    │   │   ├── ...
+    │   │   └── imageN.png
+    │   ├── val_folder_name
+    │   │   ├── image1.png
+    │   │   ├── image2.png
+    │   │   ├── ...
+    │   │   └── imageN.png
+    │   └── test_folder_name
+    │       ├── image1.png
+    │       ├── image2.png
+    │       ├── ...
+    │       └── imageN.png
+    └── gt_folder_name
+        ├── train_folder_name
+        │   ├── image1.png
+        │   ├── image2.png
+        │   ├── ...
+        │   └── imageN.png
+        ├── val_folder_name
+        │   ├── image1.png
+        │   ├── image2.png
+        │   ├── ...
+        │   └── imageN.png
+        └── test_folder_name
+            ├── image1.png
+            ├── image2.png
+            ├── ...
+            └── imageN.png
 
     :param data_dir: Path to dataset folder (train / val / test)
     :type data_dir: Path
@@ -105,7 +131,7 @@ class DataModuleIndexed(AbstractDatamodule):
         self.shuffle = shuffle
         self.drop_last = drop_last
 
-        self.data_dir = data_dir
+        self.data_dir = Path(data_dir)
 
         self.selection_train = selection_train
         self.selection_val = selection_val

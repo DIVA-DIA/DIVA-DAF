@@ -5,11 +5,12 @@ Load a dataset of historic documents by specifying the folder where its located.
 from dataclasses import dataclass
 # Utils
 from pathlib import Path
-from typing import List, Tuple, Union, Optional
+from typing import List, Tuple, Union, Optional, Any
 
 import torch.utils.data as data
 from omegaconf import ListConfig
-from torch import is_tensor
+from PIL import Image
+from torch import is_tensor, Tensor
 from torchvision.datasets.folder import pil_loader, has_file_allowed_extension
 from torchvision.transforms import ToTensor
 
@@ -31,28 +32,36 @@ class DatasetRGB(data.Dataset):
         root/data/xxx.png
         root/data/xxy.png
         root/data/xxz.png
+
+        :param path: path to the dataset
+        :type path: Path
+        :param data_folder_name: name of the folder where the data is located
+        :type data_folder_name: str
+        :param gt_folder_name: name of the folder where the ground truth is located
+        :type gt_folder_name: str
+        :param image_dims: dimensions of the image
+        :type image_dims: ImageDimensions
+        :param selection: selection of the data, can be an int or a list of strings
+        :type selection: Optional[Union[int, List[str]]]
+        :param is_test: flag to indicate if the dataset is used for testing
+        :type is_test: bool, optional
+        :param image_transform: image transformation
+        :type image_transform: callable, optional
+        :param target_transform: target transformation
+        :type target_transform: callable, optional
+        :param twin_transform: twin transformation
+        :type twin_transform: callable, optional
     """
 
     def __init__(self, path: Path, data_folder_name: str, gt_folder_name: str,
                  image_dims: ImageDimensions,
                  selection: Optional[Union[int, List[str]]] = None,
-                 is_test=False, image_transform=None, target_transform=None, twin_transform=None,
+                 is_test: bool = False, image_transform: callable = None, target_transform: callable = None,
+                 twin_transform: callable = None,
                  **kwargs):
         """
-        Parameters
-        ----------
-        path : string
-            Path to dataset folder (train / val / test)
-        classes :
-        workers : int
-        imgs_in_memory :
-        crops_per_image : int
-        crop_size : int
-        image_transform : callable
-        target_transform : callable
-        twin_transform : callable
-        loader : callable
-            A function to load an image given its path.
+
+
         """
 
         self.path = path
@@ -90,26 +99,57 @@ class DatasetRGB(data.Dataset):
         """
         return self.num_samples
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int) -> Union[Tuple[Tensor, Tensor], Tuple[Tensor, Tensor, str]]:
+        """
+        This function returns the data and the ground truth for a given index. If the dataset is used for testing,
+        the index is used to get the image and the ground truth. If the dataset is used for training or validation,
+        the index is used to get the coordinates where the sliding window should be cropped.
+        :param index: index of the image
+        :type index: int
+        :return: the item at the given index
+        :rtype: Union[Tuple[Tensor, Tensor], Tuple[Tensor, Tensor, str]]
+        """
         if self.is_test:
             return self._get_test_items(index=index)
         else:
             return self._get_train_val_items(index=index)
 
-    def _get_train_val_items(self, index):
+    def _get_train_val_items(self, index: int) -> Tuple[Tensor, Tensor]:
+        """
+        This function returns the data and the ground truth for a given index.
+        :param index: index of the image
+        :type index: int
+        :return: the item at the given index
+        :rtype: Tuple[Tensor, Tensor]
+        """
+
         data_img, gt_img = self._load_data_and_gt(index=index)
         img, gt = self._apply_transformation(data_img, gt_img)
         assert img.shape[-2:] == gt.shape[-2:]
         return img, gt
 
-    def _get_test_items(self, index):
+    def _get_test_items(self, index: int) -> Tuple[Tensor, Tensor, int]:
+        """
+        This function returns the data and the ground truth for a given index. Additionally, the index is returned.
+        :param index: index of the image
+        :type index: int
+        :return: the item at the given index
+        :rtype: Tuple[Tensor, Tensor, str]
+        """
         data_img, gt_img = self._load_data_and_gt(index=index)
         img, gt = self._apply_transformation(data_img, gt_img)
         assert img.shape[-2:] == gt.shape[-2:]
 
         return img, gt, index
 
-    def _load_data_and_gt(self, index):
+    def _load_data_and_gt(self, index: int) -> Tuple[Image.Image, Image.Image]:
+        """
+        This function loads the data and the ground truth for a given index.
+        :param index: index of the image
+        :type index: int
+        :return: the item at the given index
+        :rtype: Tuple[Image.Image, Image.Image]
+        """
         data_img = pil_loader(self.img_gt_path_list[index][0])
         gt_img = pil_loader(self.img_gt_path_list[index][1])
 
@@ -118,23 +158,18 @@ class DatasetRGB(data.Dataset):
 
         return data_img, gt_img
 
-    def _apply_transformation(self, img, gt):
+    def _apply_transformation(self, img: Union[Tensor, Image.Image], gt: Union[Tensor, Image.Image]) \
+            -> Tuple[Tensor, Tensor]:
         """
         Applies the transformations that have been defined in the setup (setup.py). If no transformations
         have been defined, the PIL image is returned instead.
 
-        Parameters
-        ----------
-        img: PIL image
-            image data
-        gt: PIL image
-            ground truth image
-        coordinates: tuple (int, int)
-            coordinates where the sliding window should be cropped
-        Returns
-        -------
-        tuple
-            img and gt after transformations
+        :param img: Original image
+        :type img: Union[Tensor, Image.Image]
+        :param gt: Corresponding ground truth image
+        :type gt: Union[Tensor, Image.Image]
+        :return: Transformed image and ground truth
+        :rtype: Tuple[Tensor, Tensor]
         """
         if self.twin_transform is not None and not self.is_test:
             img, gt = self.twin_transform(img, gt)
@@ -156,19 +191,25 @@ class DatasetRGB(data.Dataset):
     @staticmethod
     def get_img_gt_path_list(directory: Path, data_folder_name: str, gt_folder_name: str,
                              selection: Optional[Union[int, List[str]]] = None) \
-            -> List[Tuple[Path, Path, str]]:
+            -> List[Tuple[Any, Any, Any]]:
         """
+        Returns a list of tuples that contain the path to the gt and image that belong together.
+
         Structure of the folder
 
-        directory/data/FILE_NAME.png
-        directory/gt/FILE_NAME.png
+        directory/data/ORIGINAL_FILENAME/FILE_NAME_X_Y.png
+        directory/gt/ORIGINAL_FILENAME/FILE_NAME_X_Y.png
 
-        :param directory:
-        :param data_folder_name:
-        :param gt_folder_name:
-        :param selection:
-        :return: tuple
-            (path_data_file, path_gt_file)
+        :param directory: Path to dataset folder (train / val / test)
+        :type directory: Path
+        :param data_folder_name: name of the folder that contains the data
+        :type data_folder_name: str
+        :param gt_folder_name: name of the folder that contains the ground truth
+        :type gt_folder_name: str
+        :param selection: selection of the data, defaults to None
+        :type selection: Optional[Union[int, List[str]]], optional
+        :return: List of tuples that contain the path to the gt and image that belong together
+        :rtype: List[Tuple[Any, Any, str, Any]]
         """
         paths = []
         directory = directory.expanduser()

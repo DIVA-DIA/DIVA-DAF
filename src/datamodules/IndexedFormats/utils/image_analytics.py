@@ -14,7 +14,7 @@ from src.datamodules.utils.misc import pil_loader_gif
 
 
 def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, train_folder_name: str,
-                  get_img_gt_path_list_func) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+                  get_img_gt_path_list_func: callable, inmem: bool = False, workers: int = 8) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     Get the analytics for the dataset. If the analytics file is not present, it will be computed and saved.
     :param input_path: Path to the root of the dataset
@@ -64,7 +64,7 @@ def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, 
         file_names_gt = np.asarray([str(item[1]) for item in img_gt_path_list])
 
         if missing_analytics_data:
-            analytics_data = _get_and_save_data_analytics(analytics_path_data, file_names_data)
+            analytics_data = _get_and_save_data_analytics(analytics_path_data, file_names_data, inmem=inmem, workers=workers)
 
         if missing_analytics_gt:
             analytics_gt = _get_and_save_gt_analytics(analytics_path_gt, file_names_gt)
@@ -100,7 +100,7 @@ def _get_and_save_gt_analytics(analytics_path_gt: Path, file_names_gt: np.ndarra
     return analytics_gt
 
 
-def _get_and_save_data_analytics(analytics_path_data: Path, file_names_data: np.ndarray) -> Dict[str, Any]:
+def _get_and_save_data_analytics(analytics_path_data: Path, file_names_data: np.ndarray, inmem: bool, workers: int) -> Dict[str, Any]:
     """
     Get the analytics for the data. If the analytics file is not present, it will be computed and saved.
     :param analytics_path_data: Path to the analytics file
@@ -108,7 +108,7 @@ def _get_and_save_data_analytics(analytics_path_data: Path, file_names_data: np.
     :return: The analytics for the data
     :rtype: Dict[str, Any]
     """
-    mean, std = compute_mean_std(file_names=file_names_data)
+    mean, std = compute_mean_std(file_names=file_names_data, inmem=inmem, workers=workers)
     img = Image.open(file_names_data[0]).convert('RGB')
     analytics_data = {'mean': mean.tolist(),
                       'std': std.tolist(),

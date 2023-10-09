@@ -34,21 +34,70 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
     Blue = 0b...1000 | 0b...0100 = 0b...1100 = 0x00000C : main text body + decoration
     Blue = 0b...0010 | 0b...0100 = 0b...0110 = 0x000006 : comment + decoration
 
+    The structure of the folder should be as follows:
 
-    :param data_dir:
-    :param data_folder_name:
-    :param gt_folder_name:
-    :param train_folder_name:
-    :param val_folder_name:
-    :param test_folder_name:
-    :param selection_train:
-    :param selection_val:
-    :param selection_test:
-    :param crop_size:
-    :param num_workers:
-    :param batch_size:
-    :param shuffle:
-    :param drop_last:
+    data_dir
+    ├── data_folder_name
+    │   ├── train_folder_name
+    │   │   ├── image1.png
+    │   │   ├── image2.png
+    │   │   ├── ...
+    │   │   └── imageN.png
+    │   ├── val_folder_name
+    │   │   ├── image1.png
+    │   │   ├── image2.png
+    │   │   ├── ...
+    │   │   └── imageN.png
+    │   └── test_folder_name
+    │       ├── image1.png
+    │       ├── image2.png
+    │       ├── ...
+    │       └── imageN.png
+    └── gt_folder_name
+        ├── train_folder_name
+        │   ├── image1.png
+        │   ├── image2.png
+        │   ├── ...
+        │   └── imageN.png
+        ├── val_folder_name
+        │   ├── image1.png
+        │   ├── image2.png
+        │   ├── ...
+        │   └── imageN.png
+        └── test_folder_name
+            ├── image1.png
+            ├── image2.png
+            ├── ...
+            └── imageN.png
+
+    :param data_dir: path to the data directory
+    :type data_dir: str
+    :param data_folder_name: name of the folder containing the images
+    :type data_folder_name: str
+    :param gt_folder_name: name of the folder containing the ground truth
+    :type gt_folder_name: str
+    :param train_folder_name: name of the folder containing the training data
+    :type train_folder_name: str
+    :param val_folder_name: name of the folder containing the validation data
+    :type val_folder_name: str
+    :param test_folder_name: name of the folder containing the test data
+    :type test_folder_name: str
+    :param selection_train: selection of the training data
+    :type selection_train: Union[int, List[str], None]
+    :param selection_val: selection of the validation data
+    :type selection_val: Union[int, List[str], None]
+    :param selection_test: selection of the test data
+    :type selection_test: Union[int, List[str], None]
+    :param crop_size: size of the crops
+    :type crop_size: int
+    :param num_workers: number of workers for the dataloaders
+    :type num_workers: int
+    :param batch_size: batch size
+    :type batch_size: int
+    :param shuffle: shuffle the data
+    :type shuffle: bool
+    :param drop_last: drop the last batch if it is smaller than the batch size
+    :type drop_last: bool
     """
 
     def __init__(self, data_dir: str, data_folder_name: str, gt_folder_name: str,

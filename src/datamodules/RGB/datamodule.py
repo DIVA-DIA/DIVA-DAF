@@ -18,6 +18,77 @@ log = utils.get_logger(__name__)
 
 
 class DataModuleRGB(AbstractDatamodule):
+    """
+    The data module for a dataset where the classes of the ground truth are encoded as colors in the image.
+    This data module expects full sized images. This does not mean, that the image needs to be in the original resolution
+    but it can not consist of cropped images. If you want to work with cropped images use :class: `DataModuleCroppedRGB`.
+
+    The structure of the folder should be as follows:
+
+    data_dir
+    ├── data_folder_name
+    │   ├── train_folder_name
+    │   │   ├── image1.png
+    │   │   ├── image2.png
+    │   │   ├── ...
+    │   │   └── imageN.png
+    │   ├── val_folder_name
+    │   │   ├── image1.png
+    │   │   ├── image2.png
+    │   │   ├── ...
+    │   │   └── imageN.png
+    │   └── test_folder_name
+    │       ├── image1.png
+    │       ├── image2.png
+    │       ├── ...
+    │       └── imageN.png
+    └── gt_folder_name
+        ├── train_folder_name
+        │   ├── image1.png
+        │   ├── image2.png
+        │   ├── ...
+        │   └── imageN.png
+        ├── val_folder_name
+        │   ├── image1.png
+        │   ├── image2.png
+        │   ├── ...
+        │   └── imageN.png
+        └── test_folder_name
+            ├── image1.png
+            ├── image2.png
+            ├── ...
+            └── imageN.png
+
+    :param data_dir: Path to the dataset folder.
+    :type data_dir: str
+    :param data_folder_name: Name of the folder where the images are stored.
+    :type data_folder_name: str
+    :param gt_folder_name: Name of the folder where the ground truth is stored.
+    :type gt_folder_name: str
+    :param train_folder_name: Name of the folder where the training data is stored.
+    :type train_folder_name: str
+    :param val_folder_name: Name of the folder where the validation data is stored.
+    :type val_folder_name: str
+    :param test_folder_name: Name of the folder where the test data is stored.
+    :type test_folder_name: str
+    :param pred_file_path_list: List of file paths to the images that should be predicted.
+    :type pred_file_path_list: List[str]
+    :param selection_train: selection of the training data
+    :type selection_train: Union[int, List[str], None]
+    :param selection_val: selection of the validation data
+    :type selection_val: Union[int, List[str], None]
+    :param selection_test: selection of the test data
+    :type selection_test: Union[int, List[str], None]
+    :param num_workers: number of workers for the dataloaders
+    :type num_workers: int
+    :param batch_size: batch size
+    :type batch_size: int
+    :param shuffle: shuffle the data
+    :type shuffle: bool
+    :param drop_last: drop the last batch if it is smaller than the batch size
+    :type drop_last: bool
+    """
+
     def __init__(self, data_dir: str, data_folder_name: str, gt_folder_name: str,
                  train_folder_name: str = 'train', val_folder_name: str = 'val', test_folder_name: str = 'test',
                  pred_file_path_list: List[str] = None,
@@ -26,6 +97,9 @@ class DataModuleRGB(AbstractDatamodule):
                  selection_test: Optional[Union[int, List[str]]] = None,
                  num_workers: int = 4, batch_size: int = 8,
                  shuffle: bool = True, drop_last: bool = True):
+        """
+        Constructor of the :class: `DataModuleRGB`.
+        """
         super().__init__()
 
         self.train_folder_name = train_folder_name
@@ -127,7 +201,6 @@ class DataModuleRGB(AbstractDatamodule):
 
         if stage == 'predict':
             self.predict = DatasetPredict(image_path_list=self.pred_file_path_list,
-                                          is_test=False,
                                           **common_kwargs)
             log.info(f'Initialized predict dataset with {len(self.predict)} samples.')
 
@@ -163,24 +236,28 @@ class DataModuleRGB(AbstractDatamodule):
                           drop_last=False,
                           pin_memory=True)
 
-    def get_output_filename_test(self, index):
+    def get_output_filename_test(self, index: int) -> str:
         """
         Returns the original filename of the doc image.
         You can just use this during testing!
-        :param index:
-        :return:
+        :param index: index of the sample
+        :type index: int
+        :return: original filename of the doc image
+        :rtype: str
         """
         if not hasattr(self, 'test'):
             raise Exception('This method can just be called during testing')
 
         return self.test.output_file_list[index]
 
-    def get_output_filename_predict(self, index):
+    def get_output_filename_predict(self, index: int) -> str:
         """
         Returns the original filename of the doc image.
         You can just use this during testing!
-        :param index:
-        :return:
+        :param index: index of the sample
+        :type index: int
+        :return: original filename of the doc image
+        :rtype: str
         """
         if not hasattr(self, 'predict'):
             raise Exception('This method can just be called during prediction')
