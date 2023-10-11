@@ -17,6 +17,10 @@ log = utils.get_logger(__name__)
 
 
 class DataModuleRolfFormat(AbstractDatamodule):
+    """
+    DataModule for the RolfFormat dataset.
+
+    """
     def __init__(self, data_root: str,
                  train_specs=None, val_specs=None, test_specs=None, pred_file_path_list: List[str] = None,
                  image_analytics=None, classes=None, image_dims=None,
@@ -205,24 +209,32 @@ class DataModuleRolfFormat(AbstractDatamodule):
                           drop_last=False,
                           pin_memory=True)
 
-    def get_output_filename_test(self, index):
+    def get_output_filename_test(self, index: int) -> str:
         """
         Returns the original filename of the doc image.
         You can just use this during testing!
-        :param index:
-        :return:
+
+        :param index: Index of the sample we want the filename of.
+        :type index: int
+        :raises Exception: This method can just be called during testing
+        :return: Filename of the doc image.
+        :rtype: str
         """
         if not hasattr(self, 'test'):
             raise Exception('This method can just be called during testing')
 
         return self.test.output_file_list[index]
 
-    def get_output_filename_predict(self, index):
+    def get_output_filename_predict(self, index: int) -> str:
         """
         Returns the original filename of the doc image.
         You can just use this during testing!
-        :param index:
-        :return:
+
+        :param index: Index of the sample we want the filename of.
+        :type index: int
+        :raises Exception: This method can just be called during prediction
+        :return: Filename of the doc image.
+        :rtype: str
         """
         if not hasattr(self, 'predict'):
             raise Exception('This method can just be called during prediction')
