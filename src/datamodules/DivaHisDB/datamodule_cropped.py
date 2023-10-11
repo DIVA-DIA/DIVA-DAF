@@ -34,7 +34,7 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
     Blue = 0b...1000 | 0b...0100 = 0b...1100 = 0x00000C : main text body + decoration
     Blue = 0b...0010 | 0b...0100 = 0b...0110 = 0x000006 : comment + decoration
 
-    The structure of the folder should be as follows:
+    The structure of the folder should be as follows::
 
     data_dir
     ├── data_folder_name

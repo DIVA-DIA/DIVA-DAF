@@ -19,7 +19,8 @@ log = utils.get_logger(__name__)
 class DataModuleIndexed(AbstractDatamodule):
     """
     DataModule for datasets where the ground truth is in an index file format encoded (e.g., GIF, TIF).
-    The folder structure is as follows:
+
+    The folder structure is as follows::
 
     data_dir
     ├── data_folder_name

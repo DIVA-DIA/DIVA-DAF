@@ -23,7 +23,8 @@ class DataModuleRGB(AbstractDatamodule):
     This data module expects full sized images. This does not mean, that the image needs to be in the original resolution
     but it can not consist of cropped images. If you want to work with cropped images use class: `DataModuleCroppedRGB`.
 
-    The structure of the folder should be as follows:
+    The structure of the folder should be as follows::
+
         data_dir
         ├── data_folder_name
         │   ├── train_folder_name

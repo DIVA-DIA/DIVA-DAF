@@ -25,7 +25,7 @@ class DataModuleCroppedRGB(AbstractDatamodule):
     and named in the same way as the script does.
     If you want to work with un-cropped images use class: `DataModuleRGB`.
 
-    The structure of the folder should be as follows:
+    The structure of the folder should be as follows::
 
     data_dir
     ├── data_folder_name
