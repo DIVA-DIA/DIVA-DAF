@@ -39,28 +39,23 @@ class DatasetSpecs:
 
 
 class DatasetRolfFormat(data.Dataset):
-    """A generic data loader where the images are arranged in this way::
+    """
+    Dataset that loads the data in the Rolf format. Each file name has a fixed structure of `name_{file_number}.jpg`.
+    The file number is a number between 0 and 9999.
+    The different splits are defined by giving a range and a root folder for each split.
 
-        root/gt/xxx.png
-        root/gt/xxy.png
-        root/gt/xxz.png
-
-        root/data/xxx.png
-        root/data/xxy.png
-        root/data/xxz.png
-
-        :param dataset_specs: The dataset specs that specify the location of the data and ground truth files.
-        :type dataset_specs: List[DatasetSpecs]
-        :param image_dims: The dimensions of the images.
-        :type image_dims: ImageDimensions
-        :param is_test: Is it the test dataset?
-        :type is_test: bool
-        :param image_transform: Transformations that should be applied to the image.
-        :type image_transform: callable
-        :param target_transform: Transformations that should be applied to the ground truth.
-        :type target_transform: callable
-        :param twin_transform: Transformations that should be applied to both the image and the ground truth.
-        :type twin_transform: callable
+    :param dataset_specs: The dataset specs that specify the location of the data and ground truth files.
+    :type dataset_specs: List[DatasetSpecs]
+    :param image_dims: The dimensions of the images.
+    :type image_dims: ImageDimensions
+    :param is_test: Is it the test dataset?
+    :type is_test: bool
+    :param image_transform: Transformations that should be applied to the image.
+    :type image_transform: callable
+    :param target_transform: Transformations that should be applied to the ground truth.
+    :type target_transform: callable
+    :param twin_transform: Transformations that should be applied to both the image and the ground truth.
+    :type twin_transform: callable
     """
 
     def __init__(self, dataset_specs: List[DatasetSpecs], image_dims: ImageDimensions,
