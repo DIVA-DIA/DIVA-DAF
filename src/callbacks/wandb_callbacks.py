@@ -10,11 +10,12 @@ def get_wandb_logger(trainer: Trainer) -> WandbLogger:
     Get WandbLogger from trainer or loggers.
 
     :param trainer: PyTorch Lightning trainer.
+    :type trainer: Trainer
 
     :returns: WandbLogger
+    :rtype: WandbLogger
 
-    Raises:
-        ValueError: If WandbLogger was not found
+    :raises ValueError: If WandbLogger was not found
     """
     if isinstance(trainer.logger, WandbLogger):
         return trainer.logger
