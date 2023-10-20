@@ -24,15 +24,30 @@ log = utils.get_logger(__name__)
 
 class CroppedHisDBDataset(data.Dataset):
     """
-    A generic data loader where the images are arranged in this way: ::
+    Dataset implementation of the RotNet paper of `Gidaris et al. <https://arxiv.org/abs/1803.07728>`_. This
+    dataset is used for the DivaHisDB dataset in a cropped setup. This class represents one split of the whole dataset.
 
-        root/gt/xxx.png
-        root/gt/xxy.png
-        root/gt/xxz.png
+    The structure of the folder should be as follows::
 
-        root/data/xxx.png
-        root/data/xxy.png
-        root/data/xxz.png
+        path
+        ├── data_folder_name
+        │   ├── original_image_name_1
+        │   │   ├── image_crop_1.png
+        │   │   ├── ...
+        │   │   └── image_crop_N.png
+        │   └──original_image_name_N
+        │       ├── image_crop_1.png
+        │       ├── ...
+        │       └── image_crop_N.png
+        └── gt_folder_name
+            ├── original_image_name_1
+            │   ├── image_crop_1.png
+            │   ├── ...
+            │   └── image_crop_N.png
+            └──original_image_name_N
+                ├── image_crop_1.png
+                ├── ...
+                └── image_crop_N.png
 
     :param path: Path to the dataset
     :type path: Path
@@ -54,9 +69,10 @@ class CroppedHisDBDataset(data.Dataset):
 
     def __init__(self, path: Path, data_folder_name: str, gt_folder_name: str,
                  selection: Optional[Union[int, List[str], None]] = None,
-                 is_test=False, image_transform=None, target_transform=None, twin_transform=None) -> None:
+                 is_test: bool = False, image_transform: callable = None, target_transform: callable = None,
+                 twin_transform: callable = None) -> None:
         """
-
+        Constructor method for the CroppedHisDBDataset class.
         """
         self.path = path
         self.data_folder_name = data_folder_name
@@ -141,7 +157,7 @@ class CroppedHisDBDataset(data.Dataset):
 
     @staticmethod
     def get_gt_data_paths(directory: Path, data_folder_name: str, gt_folder_name: str,
-                          selection: Optional[Union[int, List[str]]] = None) \
+                          selection: Optional[Union[int, List[str], None]] = None) \
             -> List[Tuple[Path, Path, str, str, Tuple[int, int]]]:
         """
         Structure of the folder

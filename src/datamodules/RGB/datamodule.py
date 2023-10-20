@@ -26,36 +26,31 @@ class DataModuleRGB(AbstractDatamodule):
     The structure of the folder should be as follows::
 
         data_dir
-        ├── data_folder_name
-        │   ├── train_folder_name
+        ├── train_folder_name
+        │   ├── data_folder_name
         │   │   ├── image1.png
-        │   │   ├── image2.png
         │   │   ├── ...
         │   │   └── imageN.png
-        │   ├── val_folder_name
-        │   │   ├── image1.png
-        │   │   ├── image2.png
-        │   │   ├── ...
-        │   │   └── imageN.png
-        │   └── test_folder_name
+        │   └── gt_folder_name
         │       ├── image1.png
-        │       ├── image2.png
         │       ├── ...
         │       └── imageN.png
-        └── gt_folder_name
-            ├── train_folder_name
+        ├── val_folder_name
+        │   ├── data_folder_name
+        │   │   ├── image1.png
+        │   │   ├── ...
+        │   │   └── imageN.png
+        │   └── gt_folder_name
+        │       ├── image1.png
+        │       ├── ...
+        │       └── imageN.png
+        └── test_folder_name
+            ├── data_folder_name
             │   ├── image1.png
-            │   ├── image2.png
             │   ├── ...
             │   └── imageN.png
-            ├── val_folder_name
-            │   ├── image1.png
-            │   ├── image2.png
-            │   ├── ...
-            │   └── imageN.png
-            └── test_folder_name
+            └── gt_folder_name
                 ├── image1.png
-                ├── image2.png
                 ├── ...
                 └── imageN.png
 

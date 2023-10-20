@@ -30,37 +30,42 @@ class DataModuleCroppedRGB(AbstractDatamodule):
         data_dir
         ├── data_folder_name
         │   ├── train_folder_name
-        │   │   ├── original_image_name
+        │   │   ├── original_image_name_1
         │   │   │   ├── image_crop_1.png
         │   │   │   ├── image_crop_2.png
         │   │   │   ├── ...
         │   │   │   └── image_crop_N.png
         │   ├── val_folder_name
-        │   │   ├── image1.png
-        │   │   ├── image2.png
-        │   │   ├── ...
-        │   │   └── imageN.png
+        │   │   ├── original_image_name_1
+        │   │   │   ├── image1.png
+        │   │   │   ├── image2.png
+        │   │   │   ├── ...
+        │   │   │   └── imageN.png
         │   └── test_folder_name
-        │       ├── image1.png
-        │       ├── image2.png
-        │       ├── ...
-        │       └── imageN.png
+        │   │   ├── original_image_name_1
+        │   │   │   ├── image1.png
+        │   │   │   ├── image2.png
+        │   │   │   ├── ...
+        │   │   │   └── imageN.png
         └── gt_folder_name
             ├── train_folder_name
-            │   ├── image1.png
-            │   ├── image2.png
-            │   ├── ...
-            │   └── imageN.png
+            │   ├── original_image_name_1
+            │   │   ├── image1.png
+            │   │   ├── image2.png
+            │   │   ├── ...
+            │   │   └── imageN.png
             ├── val_folder_name
-            │   ├── image1.png
-            │   ├── image2.png
-            │   ├── ...
-            │   └── imageN.png
+            │   ├── original_image_name_1
+            │   │   ├── image1.png
+            │   │   ├── image2.png
+            │   │   ├── ...
+            │   │   └── imageN.png
             └── test_folder_name
-                ├── image1.png
-                ├── image2.png
-                ├── ...
-                └── imageN.png
+                ├── original_image_name_1
+                │   ├── image1.png
+                │   ├── image2.png
+                │   ├── ...
+                │   └── imageN.png
 
     :param data_dir: Path to the dataset folder.
     :type data_dir: str

@@ -25,13 +25,27 @@ log = utils.get_logger(__name__)
 class CroppedDatasetRGB(data.Dataset):
     """A generic data loader where the images are arranged in this way: ::
 
-        root/gt/xxx.png
-        root/gt/xxy.png
-        root/gt/xxz.png
+        path
+        ├── data_folder_name
+        │   ├── original_image_name_1
+        │   │   ├── image_crop_1.png
+        │   │   ├── ...
+        │   │   └── image_crop_N.png
+        │   └──original_image_name_N
+        │       ├── image_crop_1.png
+        │       ├── ...
+        │       └── image_crop_N.png
+        └── gt_folder_name
+            ├── original_image_name_1
+            │   ├── image_crop_1.png
+            │   ├── ...
+            │   └── image_crop_N.png
+            └──original_image_name_N
+                ├── image_crop_1.png
+                ├── ...
+                └── image_crop_N.png
 
-        root/data/xxx.png
-        root/data/xxy.png
-        root/data/xxz.png
+
 
         :param path: Path to dataset folder (train / val / test)
         :type path: Path
