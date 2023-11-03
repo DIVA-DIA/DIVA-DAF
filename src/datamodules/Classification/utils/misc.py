@@ -3,7 +3,15 @@ from pathlib import Path
 from src.datamodules.utils.exceptions import PathNone, PathNotDir, PathMissingSplitDir
 
 
-def validate_path_for_classification(data_dir: str):
+def validate_path_for_classification(data_dir: str) -> Path:
+    """
+    Checks if the path is valid for classification
+
+    :param data_dir: path to the root dir of the dataset
+    :type data_dir: str
+    :return: path to the root dir of the dataset
+    :rtype: Path
+    """
     if data_dir is None:
         raise PathNone("Please provide the path to root dir of the dataset "
                        "(folder containing the train/val folder)")

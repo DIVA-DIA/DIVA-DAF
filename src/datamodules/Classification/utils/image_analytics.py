@@ -2,11 +2,20 @@ import errno
 import json
 import logging
 from pathlib import Path
+from typing import Any, Dict
 
 from src.datamodules.utils.image_analytics import compute_mean_std
 
 
-def get_analytics_data_image_folder(input_path: Path):
+def get_analytics_data_image_folder(input_path: Path) -> Dict[str, Any]:
+    """
+    Computes mean and std of the images in the input_path folder.
+
+    :param input_path: Path to the root of the dataset
+    :type input_path: Path
+    :return: Dictionary with mean and std
+    :rtype: Dict[str, Any]
+    """
     expected_keys_data = ['mean', 'std']
 
     analytics_path_data = input_path / f'analytics.data.train.json'

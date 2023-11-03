@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Union, List, Optional
+from typing import Union, List, Optional, Dict, Callable
 
 from torch.utils.data import DataLoader
 from torchvision import transforms
@@ -15,20 +15,67 @@ log = utils.get_logger(__name__)
 
 
 class ClassificationDatamodule(AbstractDatamodule):
+    """
+    Datamodule for a classification task. It takes advantage of the ImageFolder class from PyTorch
+
+    The data is expected to be in the following format::
+
+    data_dir
+        ├── train
+        │   ├── 0
+        │   │   ├── image_1.png
+        │   │   ├── ...
+        │   │   └── image_N.png
+        │   ├── ...
+        │   └── N
+        │       ├── image_1.png
+        │       ├── ...
+        │       └── image_N.png
+        ├──  val
+        │   ├── 0
+        │   │   ├── image_1.png
+        │   │   ├── ...
+        │   │   └── image_N.png
+        │   ├── ...
+        │   └── N
+        │       ├── image_1.png
+        │       ├── ...
+        │       └── image_N.png
+        └── test
+            ├── 0
+            │   ├── image_1.png
+            │   ├── ...
+            │   └── image_N.png
+            ├── ...
+            └── N
+                ├── image_1.png
+                ├── ...
+                └── image_N.png
+
+    :param data_dir: Path to the root directory of the dataset.
+    :type data_dir: str
+    :param selection_train: Either an integer or a list of strings. If an integer is provided, the first n classes are
+        selected. If a list of strings is provided, the classes with the given names are selected.
+    :type selection_train: Optional[Union[int, List[str]]]
+    :param selection_val: Either an integer or a list of strings. If an integer is provided, the first n classes are
+        selected. If a list of strings is provided, the classes with the given names are selected.
+    :type selection_val: Optional[Union[int, List[str]]]
+    :param num_workers: Number of workers for the dataloaders.
+    :type num_workers: int
+    :param batch_size: Batch size for the dataloaders.
+    :type batch_size: int
+    :param shuffle: Whether to shuffle the data.
+    :type shuffle: bool
+    :param drop_last: Whether to drop the last batch if it is smaller than the batch size.
+    :type drop_last: bool
+    """
     def __init__(self, data_dir: str,
                  selection_train: Optional[Union[int, List[str]]] = None,
                  selection_val: Optional[Union[int, List[str]]] = None,
                  num_workers: int = 4, batch_size: int = 8,
                  shuffle: bool = True, drop_last: bool = True):
         """
-
-        :param data_dir:
-        :param selection_train:
-        :param selection_val:
-        :param num_workers:
-        :param batch_size:
-        :param shuffle:
-        :param drop_last:
+        Constructor method for the ClassificationDatamodule class.
         """
         super().__init__()
 
@@ -105,7 +152,16 @@ class ClassificationDatamodule(AbstractDatamodule):
     def test_dataloader(self, *args, **kwargs) -> Union[DataLoader, List[DataLoader]]:
         raise ValueError('Test data is not available for Classification.')
 
-    def _create_dataset_parameters(self, dataset_type: str = 'train'):
+    def _create_dataset_parameters(self, dataset_type: str = 'train') -> Dict[str, Union[Path, Callable]]:
+        """
+        Creates the parameters for the ImageFolder dataset.
+
+        :param dataset_type: Type of the dataset. Either 'train', 'val' or 'test'.
+        :type dataset_type: str
+        :return: Parameters for the ImageFolder dataset.
+        :rtype: Dict[str, Union[Path, Callable]]
+        """
+
         return {'root': self.data_dir / dataset_type,
                 'transform': self.image_transform,
                 }
