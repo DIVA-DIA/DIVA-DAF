@@ -1,19 +1,19 @@
 import logging
 from multiprocessing import Pool
 from pathlib import Path
-from typing import List, Tuple, Any
+from typing import List, Tuple, Any, Union
 
 import numpy as np
 from PIL import Image
 from numpy import ndarray, dtype, floating
 
 
-def compute_mean_std(file_names: np.ndarray[str], inmem=False, workers=8) -> Tuple[float, float]:
+def compute_mean_std(file_names: Union[np.ndarray, List[Path]], inmem: bool = False, workers: int = 8) -> Tuple[float, float]:
     """
     Computes mean and std of all images present at target folder.
 
     :param file_names: List of the file names of the images
-    :type file_names: np.ndarray[str]
+    :type file_names: Union[np.ndarray[str], List[Path]]
     :param inmem: Specifies whether is should be computed i nan online of offline fashion.
     :type inmem: bool
     :param workers: Number of workers to use for the mean/std computation
@@ -27,13 +27,13 @@ def compute_mean_std(file_names: np.ndarray[str], inmem=False, workers=8) -> Tup
     return mean, std
 
 
-def _cms_online(file_names: np.ndarray[str], workers=4) -> Tuple[float, float]:
+def _cms_online(file_names: Union[np.ndarray, List[Path]], workers=4) -> Tuple[float, float]:
     """
     Computes mean and image_classification deviation in an online fashion.
     This is useful when the dataset is too big to be allocated in memory.
 
     :param file_names: List of file names of the dataset
-    :type file_names: np.ndarray[str]
+    :type file_names: Union[np.ndarray[str], List[Path]]
     :param workers: Number of workers to use for the mean/std computation
     :type workers: int
 
@@ -68,7 +68,7 @@ def _cms_online(file_names: np.ndarray[str], workers=4) -> Tuple[float, float]:
     return mean, std
 
 
-def _return_mean(image_path: str) -> ndarray[Any, dtype[floating[Any]]]:
+def _return_mean(image_path: str) -> ndarray:
     """
     Computes mean of a single image
 
@@ -82,8 +82,7 @@ def _return_mean(image_path: str) -> ndarray[Any, dtype[floating[Any]]]:
     return mean
 
 
-def _return_std(image_path: str, mean: ndarray[Any, dtype[floating[Any]]]) -> Tuple[
-    ndarray[Any, dtype[floating[Any]]], float]:
+def _return_std(image_path: str, mean: ndarray) -> Tuple[ndarray, float]:
     """
     Computes image_classification deviation of a single image
 
@@ -100,8 +99,7 @@ def _return_std(image_path: str, mean: ndarray[Any, dtype[floating[Any]]]) -> Tu
     return np.sum(np.sum(m2, axis=1), 1), m2.size / 3.0
 
 
-def _cms_inmem(file_names: np.ndarray[str]) -> Tuple[
-    ndarray[Any, dtype[floating[Any]]], ndarray[Any, dtype[floating[Any]]]]:
+def _cms_inmem(file_names: np.ndarray) -> Tuple[ndarray, ndarray]:
     """
     Computes mean and image_classification deviation in an offline fashion. This is possible only when the dataset can
     be allocated in memory.
