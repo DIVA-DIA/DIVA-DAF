@@ -36,6 +36,8 @@ class AbstractDatamodule(pl.LightningDataModule):
     def _check_attributes(self):
         """
         Checks if all attributes are set correctly.
+
+        :raises ValueError: If the attributes are not set correctly
         """
         assert self.num_classes > 0
         if self.class_weights is not None:
@@ -49,10 +51,16 @@ class AbstractDatamodule(pl.LightningDataModule):
         Checks if the number of samples is sufficient for the given batch size and number of devices.
         
         :param num_devices: The number of devices
+        :type num_devices: int
         :param batch_size_input: The batch size
+        :type batch_size_input: int
         :param num_samples: The number of samples
+        :type num_samples: int
         :param data_split: The data split (train, val, test)
+        :type data_split: str
         :param drop_last: Whether to drop the last batch if it is smaller than the batch size
+        :type drop_last: bool
+        :raises ValueError: If the number of samples is not sufficient
         """
         batch_size = batch_size_input
         if drop_last:
