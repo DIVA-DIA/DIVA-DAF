@@ -20,37 +20,37 @@ class ClassificationDatamodule(AbstractDatamodule):
 
     The data is expected to be in the following format::
 
-    data_dir
-        ├── train
-        │   ├── 0
-        │   │   ├── image_1.png
-        │   │   ├── ...
-        │   │   └── image_N.png
-        │   ├── ...
-        │   └── N
-        │       ├── image_1.png
-        │       ├── ...
-        │       └── image_N.png
-        ├──  val
-        │   ├── 0
-        │   │   ├── image_1.png
-        │   │   ├── ...
-        │   │   └── image_N.png
-        │   ├── ...
-        │   └── N
-        │       ├── image_1.png
-        │       ├── ...
-        │       └── image_N.png
-        └── test
-            ├── 0
-            │   ├── image_1.png
+        data_dir
+            ├── train
+            │   ├── 0
+            │   │   ├── image_1.png
+            │   │   ├── ...
+            │   │   └── image_N.png
             │   ├── ...
-            │   └── image_N.png
-            ├── ...
-            └── N
-                ├── image_1.png
+            │   └── N
+            │       ├── image_1.png
+            │       ├── ...
+            │       └── image_N.png
+            ├──  val
+            │   ├── 0
+            │   │   ├── image_1.png
+            │   │   ├── ...
+            │   │   └── image_N.png
+            │   ├── ...
+            │   └── N
+            │       ├── image_1.png
+            │       ├── ...
+            │       └── image_N.png
+            └── test
+                ├── 0
+                │   ├── image_1.png
+                │   ├── ...
+                │   └── image_N.png
                 ├── ...
-                └── image_N.png
+                └── N
+                    ├── image_1.png
+                    ├── ...
+                    └── image_N.png
 
     :param data_dir: Path to the root directory of the dataset.
     :type data_dir: str
