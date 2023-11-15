@@ -19,7 +19,7 @@ log = utils.get_logger(__name__)
 
 class DivaHisDBDataModuleCropped(AbstractDatamodule):
     """
-    DataModule for the DivaHisDB dataset or a similar dataset with the same folder structure and ground truth encoding.
+    DataModule for the `DivaHisDB dataset<https://ieeexplore.ieee.org/abstract/document/7814109>`_ or a similar dataset with the same folder structure and ground truth encoding.
 
     The ground truth encoding is like the following:
     Red = 0 everywhere (except boundaries)

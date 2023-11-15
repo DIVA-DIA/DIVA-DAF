@@ -6,6 +6,10 @@ from torchmetrics import Metric
 
 
 class HisDBIoU(Metric):
+    """
+    Implementation of the mIoU metric used in the paper.Dataset implementation of the RotNet paper of `Gidaris et al. <https://arxiv.org/abs/1803.07728>`_.
+
+    """
 
     def __init__(self, num_classes: int = None, mask_modifies_prediction: bool = True, compute_on_step: bool = True,
                  dist_sync_on_step: bool = False, process_group: Optional[Any] = None, dist_sync_fn: Callable = None,

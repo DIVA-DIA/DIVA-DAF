@@ -24,8 +24,7 @@ log = utils.get_logger(__name__)
 
 class CroppedHisDBDataset(data.Dataset):
     """
-    Dataset implementation of the RotNet paper of `Gidaris et al. <https://arxiv.org/abs/1803.07728>`_. This
-    dataset is used for the DivaHisDB dataset in a cropped setup. This class represents one split of the whole dataset.
+    Dataset used for the `DivaHisDB dataset<https://ieeexplore.ieee.org/abstract/document/7814109>`_ in a cropped setup. This class represents one split of the whole dataset.
 
     The structure of the folder should be as follows::
 
