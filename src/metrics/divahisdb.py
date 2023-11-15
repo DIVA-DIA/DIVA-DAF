@@ -2,12 +2,26 @@ from typing import Any, Optional, Callable
 
 import numpy as np
 import torch
+from torch import Tensor
 from torchmetrics import Metric
 
 
 class HisDBIoU(Metric):
     """
-    Implementation of the mIoU metric used in the paper.Dataset implementation of the RotNet paper of `Gidaris et al. <https://arxiv.org/abs/1803.07728>`_.
+    Implementation of the mIoU metric used in the paper of `Alberti et al.<https://ieeexplore.ieee.org/abstract/document/8270257>`_.
+    Using it just makes sense if the gt is in the DIVA-HisDB format.
+
+    :param num_classes: number of classes
+    :type num_classes: int
+    :param mask_modifies_prediction: if True, the mask is used to modify the prediction, otherwise the prediction is used to modify the mask
+    :type mask_modifies_prediction: bool
+    :param compute_on_step: Forward only calls ``update()`` and return None if this is set to False. default: True
+    :type compute_on_step: bool
+    :param dist_sync_on_step: Synchronize metric state across processes at each ``forward()``
+        before returning the value at the step. default: False
+    :type dist_sync_on_step: bool
+    :param process_group: Specify the process group on which synchronization is called. default: None (which selects the entire world)
+    :type process_group: Optional[Any]
 
     """
 
@@ -53,19 +67,23 @@ class HisDBIoU(Metric):
         return res[~res.isnan()].mean()
 
     @staticmethod
-    def _fast_hist(label_true, label_pred, n_class):
+    def _fast_hist(label_true: Tensor, label_pred: Tensor, n_class: int):
         """
-        Taken from https://github.com/wkentaro/pytorch-fcn
+        Creates a Historgram in a fash fashion taken adventage of the hardware.
+        Inspired from `https://github.com/wkentaro/pytorch-fcn`_.
 
         :param label_true: matrix (batch size x H x W)
             contains the true class labels for each pixel
+        :type label_true: torch.Tensor
         :param label_pred: matrix (batch size x H x W)
             contains the predicted class for each pixel
+        :type label_pred: torch.Tensor
         :param n_class: int
             number possible classes
+        :type n_class: int
+        :return histogram
+        :rtype: torch.Tensor
 
-        :return
-            histogram
         """
         mask = torch.bitwise_and(torch.ge(label_true, 0), torch.lt(label_true, n_class))
         hist = torch.bincount(
