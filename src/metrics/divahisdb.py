@@ -8,7 +8,7 @@ from torchmetrics import Metric
 
 class HisDBIoU(Metric):
     """
-    Implementation of the mIoU metric used in the paper of `Alberti et al.<https://ieeexplore.ieee.org/abstract/document/8270257>`_.
+    Implementation of the mIoU metric used in the paper of `Alberti et al. <https://ieeexplore.ieee.org/abstract/document/8270257>`_.
     Using it just makes sense if the gt is in the DIVA-HisDB format.
 
     :param num_classes: number of classes

@@ -30,20 +30,48 @@ log = utils.get_logger(__name__)
 
 class AbstractTask(LightningModule, metaclass=ABCMeta):
     """
-    Inspired by
-    https://github.com/PyTorchLightning/lightning-flash/blob/2ec52e633bb3679f50dd7e30526885a4547e1851/flash/core/model.py
+    Inspired by `Pytorch Lightning <https://github.com/PyTorchLightning/lightning-flash/blob/2ec52e633bb3679f50dd7e30526885a4547e1851/flash/core/model.py>`_.
 
-    A general abstract Task.
+    A general abstract Task. It provieds the basic functionality for training, validation and testing. A step method
+    is provided which can be overwritten for custom behavior. The step method is called in the training, validation and
+    testing loop. The step method should return a dictionary with the following keys:
+        - ``OutputKeys.PREDICTION``: The prediction of the model.
+        - ``OutputKeys.LOSS``: The loss of the model.
+        - ``OutputKeys.LOG``: A dictionary with all the logs. The keys are the metric names and the values are the
+            metric values.
+        - ``OutputKeys.TARGET``: The target of the model.
 
-    Args:
-        model: Composed model to use for the task.
-        loss_fn: Loss function for training
-        optimizer: Optimizer to use for training, defaults to :class:`torch.optim.Adam`.
-        metric_train: Metrics to compute for training.
-        metric_val: Metrics to compute for evaluation.
-        metric_test: Metrics to compute for testing.
-        lr: Learning rate to use for training, defaults to ``5e-5``.
-        test_output_path: Path relative to the normal output folder where to save the test output
+
+    :param model: Composed model to use for the task.
+    :type model: nn.Module
+    :param loss_fn: Loss function for training
+    :type loss_fn: Union[Callable, Mapping, Sequence]
+    :param optimizer: Optimizer to use for training, defaults to :class:`torch.optim.Adam`.
+    :type optimizer: Union[Type[torch.optim.Optimizer], torch.optim.Optimizer]
+    :param optimizer_kwargs: Keyword arguments to pass to the optimizer.
+    :type optimizer_kwargs: Optional[Dict[str, Any]]
+    :param scheduler: Learning rate scheduler to use for training, defaults to None.
+    :type scheduler: Optional[Union[Type[_LRScheduler], str, _LRScheduler]]
+    :param scheduler_kwargs: Keyword arguments to pass to the scheduler.
+    :type scheduler_kwargs: Optional[Dict[str, Any]]
+    :param metric_train: Metrics to compute for training.
+    :type metric_train: Optional[MetricCollection]
+    :param metric_val: Metrics to compute for evaluation.
+    :type metric_val: Optional[MetricCollection]
+    :param metric_test: Metrics to compute for testing.
+    :type metric_test: Optional[MetricCollection]
+    :param confusion_matrix_val: Whether to compute the confusion matrix for the validation set.
+    :type confusion_matrix_val: bool
+    :param confusion_matrix_test: Whether to compute the confusion matrix for the test set.
+    :type confusion_matrix_test: bool
+    :param confusion_matrix_log_every_n_epoch: How often to compute the confusion matrix.
+    :type confusion_matrix_log_every_n_epoch: int
+    :param lr: Learning rate to use for training, defaults to ``5e-5``.
+    :type lr: float
+    :param test_output_path: Path relative to the normal output folder where to save the test output
+    :type test_output_path: Union[str, Path]
+    :param predict_output_path: Path relative to the normal output folder where to save the predict output
+    :type predict_output_path: Union[str, Path]
     """
 
     def __init__(
@@ -125,18 +153,16 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
 
     def step(self,
              batch: Any,
-             batch_idx: int,
-             metric_kwargs: Optional[Dict[str, Dict[str, Any]]] = None,
-             **kwargs) -> Any:
+             metric_kwargs: Optional[Dict[str, Dict[str, Any]]] = None) -> Dict[OutputKeys, Any]:
         """
         The training/validation/test step. Override for custom behavior.
-        Args:
-            batch: the batch with the images (x) and the gt (y) in the order (x, y)
-            batch_idx: the index of the given batch
-            metric_kwargs: a dictionary with a entry with the additional arguments (pred and y always provided).
-                e.g. you have two metrics (A, B) and B takes an additional arguments x and y so the dictionary would
-                look like this: {'B': {'x': 'value', 'y': 'value'}}
 
+        :param batch: the batch with the images (x) and the gt (y) in the order (x, y)
+        :type batch: Any
+        :param metric_kwargs: a dictionary with a entry with the additional arguments (pred and y always provided).
+            e.g. you have two metrics (A, B) and B takes an additional arguments x and y so the dictionary would
+            look like this: {'B': {'x': 'value', 'y': 'value'}}
+        :type metric_kwargs: Optional[Dict[str, Dict[str, Any]]]
         """
         for key in self.loss_fn:
             if hasattr(self.loss_fn[key], 'weight') and self.loss_fn[key].weight is not None:
@@ -172,10 +198,30 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
 
     @staticmethod
     def to_loss_format(x: torch.Tensor, **kwargs) -> torch.Tensor:
+        """
+        Convert the output of the model to the format needed for the loss function.
+
+        :param x: the output of the model
+        :type x: torch.Tensor
+        :param kwargs: additional arguments
+        :type kwargs: Any
+        :return: the output in the format needed for the loss function
+        :rtype: torch.Tensor
+        """
         return x
 
     @staticmethod
     def to_metrics_format(x: torch.Tensor, **kwargs) -> torch.Tensor:
+        """
+        Convert the output of the model to the format needed for the metrics.
+
+        :param x: the output of the model
+        :type x: torch.Tensor
+        :param kwargs: additional arguments
+        :type kwargs: Any
+        :return: the output in the format needed for the metrics
+        :rtype: torch.Tensor
+        """
         return x
 
     def forward(self, x: Any) -> Any:
@@ -192,15 +238,39 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         return out
 
     def training_step(self, batch: Any, batch_idx: int, **kwargs) -> Any:
+        """
+        The training step. Calls the step method and logs the metrics and loss.
+
+        :param batch: The current batch to train on.
+        :type batch: Any
+        :param batch_idx: The index of the current batch.
+        :type batch_idx: int
+        :param kwargs: Additional arguments.
+        :type kwargs: Any
+        :return: The output of the step method.
+        :rtype: Any
+        """
         output = self.step(batch=batch, batch_idx=batch_idx, **kwargs)
-        self._log_metrics_and_loss(output, phase='train')
+        self._log_metrics_and_loss(output, stage='train')
         return output
 
     def validation_step(self, batch: Any, batch_idx: int, **kwargs) -> None:
+        """
+        the validation step. Calls the step method and logs the metrics and loss.
+
+        :param batch: The current batch to validate on.
+        :type batch: Any
+        :param batch_idx: The index of the current batch.
+        :type batch_idx: int
+        :param kwargs: Additional arguments.
+        :type kwargs: Any
+        :return: The output of the step method.
+        :rtype: Any
+        """
         output = self.step(batch=batch, batch_idx=batch_idx, **kwargs)
         if self.trainer.state.stage == RunningStage.SANITY_CHECKING:
             return output
-        self._log_metrics_and_loss(output, phase='val')
+        self._log_metrics_and_loss(output, stage='val')
         if self.confusion_matrix_val and (self.trainer.current_epoch + 1) % self.confusion_matrix_log_every_n_epoch == 0:
             self.metric_conf_mat_val(preds=output[OutputKeys.PREDICTION], target=output[OutputKeys.TARGET])
         return output
@@ -222,7 +292,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         output = self.step(batch=batch, batch_idx=batch_idx, **kwargs)
         if self.confusion_matrix_test:
             self.metric_conf_mat_test(preds=output[OutputKeys.PREDICTION], target=output[OutputKeys.TARGET])
-        self._log_metrics_and_loss(output, phase='test')
+        self._log_metrics_and_loss(output, stage='test')
         return output
 
     def test_epoch_end(self, outputs: Any) -> None:
@@ -260,7 +330,13 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             f"or a built-in scheduler in {self.available_schedulers()}"
         )
 
-    def _get_current_metric(self):
+    def _get_current_metric(self) -> MetricCollection:
+        """
+        Get the current metrics for the current stage.
+
+        :return: The current metrics.
+        :rtype: MetricCollection
+        """
         if self.trainer.state.stage == RunningStage.TRAINING:
             return self.metric_train
         if self.trainer.state.stage == RunningStage.VALIDATING:
@@ -269,15 +345,36 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             return self.metric_test
         return {}
 
-    def _log_metrics_and_loss(self, output: Dict[str, Any], phase: str) -> None:
+    def _log_metrics_and_loss(self, output: Dict[str, Any], stage: str) -> None:
+        """
+        Log the metrics and loss for the current stage to the logger.
+
+        :param output:
+        :type output: Dict[str, Any]
+        :param stage: The current stage.
+        :type stage: str
+        :return: None
+        :rtype: None
+        """
         for key, value in output[OutputKeys.LOG].items():
             if value.dim() != 0 and len(value) != 1:
                 for i, v in enumerate(value):
-                    self.log(f"{phase}/{key}_c_{i}", v, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
+                    self.log(f"{stage}/{key}_c_{i}", v, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
             else:
-                self.log(f"{phase}/{key}", value, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
+                self.log(f"{stage}/{key}", value, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
 
-    def _create_conf_mat(self, matrix: np.ndarray, stage: str = 'val'):
+    def _create_conf_mat(self, matrix: np.ndarray, stage: str = 'val') -> None:
+        """
+        Create and save confusion matrix to disc and wandb.
+
+        :param matrix: The confusion matrix.
+        :type matrix: np.ndarray
+        :param stage: The current stage.
+        :type stage: str
+        :return: None
+        :rtype: None
+        :raises ValueError: If the sum of the confusion matrix is not close to the expected sum.
+        """
         # verify sum of conf mat entries
         pixels_per_crop = self.trainer.datamodule.dims[1] * self.trainer.datamodule.dims[2]
         num_processes = self.trainer.num_devices
