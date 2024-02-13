@@ -15,6 +15,33 @@ log = utils.get_logger(__name__)
 
 
 class SemanticSegmentationCroppedHisDB(AbstractTask):
+    """
+    Semantic Segmentation task for cropped images of the HisDB dataset. The output for the test
+    are also patches that can be stitched together with the :class: `CroppedOutputMerger` and are in the HisDB format
+    as well as raw prediction of the network in numpy format.
+
+    :param model: The model to train, validate and test.
+    :type model: nn.Module
+    :param optimizer: The optimizer used during training.
+    :type optimizer: torch.optim.Optimizer
+    :param loss_fn: The loss function used during training, validation, and testing.
+    :type loss_fn: Callable
+    :param metric_train: The metric used during training.
+    :type metric_train: torchmetrics.Metric
+    :param metric_val: The metric used during validation.
+    :type metric_val: torchmetrics.Metric
+    :param metric_test: The metric used during testing.
+    :type metric_test: torchmetrics.Metric
+    :param confusion_matrix_val: Whether to compute the confusion matrix during validation.
+    :type confusion_matrix_val: bool
+    :param confusion_matrix_test: Whether to compute the confusion matrix during testing.
+    :type confusion_matrix_test: bool
+    :param confusion_matrix_log_every_n_epoch: The frequency of logging the confusion matrix.
+    :type confusion_matrix_log_every_n_epoch: int
+    :param lr: The learning rate.
+    :type lr: float
+
+    """
 
     def __init__(self,
                  model: nn.Module,
@@ -31,12 +58,7 @@ class SemanticSegmentationCroppedHisDB(AbstractTask):
                  lr: float = 1e-3
                  ) -> None:
         """
-        pixelvise semantic segmentation. The output of the network during test is a DIVAHisDB encoded image
-
-        :param model: torch.nn.Module
-            The encoder for the segmentation e.g. unet
-        :param test_output_path: str
-            String with a path to the output folder of the testing
+        Constructor for the SemanticSegmentationCroppedHisDB task
         """
         super().__init__(
             model=model,
