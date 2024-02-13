@@ -19,8 +19,16 @@ REQUIRED_CONFIGS = ['datamodule', 'task', 'model.backbone', 'model.header', 'los
                     'test']
 
 
-def get_logger(name=__name__, level=logging.INFO):
-    """Initializes python logger."""
+def get_logger(name=__name__, level=logging.INFO) -> logging.Logger:
+    """
+    Gets the Python logger of the system.
+
+    :param name: name of the logger you want to get defaults to __name__
+    :type name: str
+    :param level: logging level defaults to logging.INFO
+    :return: Python logger
+    :rtype: logging.Logger
+    """
 
     logger = logging.getLogger(name)
     logger.setLevel(level)
@@ -44,8 +52,9 @@ def check_config(config: DictConfig) -> None:
         - easier access to debug mode
         - forcing debug friendly configuration
         - forcing multi-gpu friendly configuration
-    Args:
-        config (DictConfig): [description]
+    :param config: the main hydra config
+    :type config: DictConfig
+
     """
 
     # check if required configs are in the main config file
@@ -97,7 +106,16 @@ def check_config(config: DictConfig) -> None:
     OmegaConf.set_struct(config, True)
 
 
-def _check_if_in_config(config: DictConfig, name: str):
+def _check_if_in_config(config: DictConfig, name: str) -> None:
+    """
+    Check if a key is in the config file.
+
+    :param config: Hydra config
+    :type config: DictConfig
+    :param name: name of the key
+    :type name: str
+    :raises ValueError: if the key is not in the config file
+    """
     name_parts = name.split('.')
     for part in name_parts:
         if part in config:
@@ -127,13 +145,17 @@ def print_config(
         resolve: bool = True,
         add_missing_fields: bool = True,
 ) -> None:
-    """Prints content of DictConfig using Rich library and its tree structure.
+    """
+    Prints content of DictConfig using Rich library and its tree structure.
 
-    Args:
-        config (DictConfig): Config.
-        fields (Sequence[str], optional): Determines which main fields from config will be printed
-        and in what order.
-        resolve (bool, optional): Whether to resolve reference fields of DictConfig.
+    :param config: Hydra config
+    :type config: DictConfig
+    :param fields: Determines which main fields from config will be printed and in what order.
+    :type fields: Sequence[str]
+    :param resolve: Whether to resolve reference fields of DictConfig.
+    :type resolve: bool
+    :param add_missing_fields: Whether to add missing fields from config to fields.
+    :type add_missing_fields: bool
     """
 
     style = 'default'
@@ -164,11 +186,19 @@ def log_hyperparameters(
         model: pl.LightningModule,
         trainer: pl.Trainer,
 ) -> None:
-    """This method controls which parameters from Hydra config are saved by Lightning loggers.
+    """
+    This method controls which parameters from Hydra config are saved by Lightning loggers.
 
-    Additionaly saves:
+    Additionally, saves:
         - sizes of train, val, test dataset
         - number of trainable model parameters
+
+    :param config: Hydra config
+    :type config: DictConfig
+    :param model: Lightning model
+    :type model: pl.LightningModule
+    :param trainer: Lightning trainer
+    :type trainer: pl.Trainer
     """
 
     hparams = {"trainer": config["trainer"], "task": config["task"], "model": config["model"],
@@ -211,7 +241,24 @@ def finish(
         callbacks: List[pl.Callback],
         logger: List[pl.loggers.LightningLoggerBase],
 ) -> None:
-    """Makes sure everything closed properly."""
+    """
+    Makes sure everything closed properly.
+
+    :param config: Hydra config
+    :type config: DictConfig
+    :param task: Lightning task
+    :type task: pl.LightningModule
+    :param model: Lightning model
+    :type model: pl.LightningModule
+    :param datamodule: Lightning datamodule
+    :type datamodule: pl.LightningDataModule
+    :param trainer: Lightning trainer
+    :type trainer: pl.Trainer
+    :param callbacks: Lightning callbacks
+    :type callbacks: List[pl.Callback]
+    :param logger: Lightning logger
+    :type logger: List[pl.loggers.LightningLoggerBase]
+    """
 
     # without this sweeps with wandb logger might crash!
     for lg in logger:
