@@ -37,3 +37,19 @@ def test__update_target_class():
     assert torch.eq(transformation.target_class, torch.Tensor([1]))
     transformation._update_target_class()
     assert torch.eq(transformation.target_class, torch.Tensor([2]))
+
+
+def test_tiles_transformation():
+    assert False
+
+
+def test__update_target_perm():
+    assert False
+
+
+def test__get_perms_with_n_fixed_positions():
+    assert False
+
+
+def test__get_tile_image():
+    assert False
