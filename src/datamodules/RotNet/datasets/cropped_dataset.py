@@ -12,12 +12,12 @@ from torch import is_tensor
 from torchvision.datasets.folder import has_file_allowed_extension, pil_loader
 from torchvision.transforms import ToTensor
 
+from src.datamodules.utils.single_transforms import RightAngleRotation
 from src.datamodules.DivaHisDB.datasets.cropped_dataset import CroppedHisDBDataset
 from src.datamodules.utils.misc import selection_validation
 from src.utils import utils
 
 IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm')
-ROTATION_ANGLES = [0, 90, 180, 270]
 
 log = utils.get_logger(__name__)
 
@@ -61,7 +61,7 @@ class CroppedRotNet(CroppedHisDBDataset):
                                             **kwargs)
 
     def __getitem__(self, index):
-        data_img = self._load_data_and_gt(index=int(index / len(ROTATION_ANGLES)))
+        data_img = self._load_data_and_gt(index=index)
         img, gt = self._apply_transformation(data_img, index=index)
         return img, gt
 
@@ -71,7 +71,7 @@ class CroppedRotNet(CroppedHisDBDataset):
         The length is different during train/val and test, because we process the whole image during testing,
         and only sample from the images during train/val.
         """
-        return self.num_samples * len(ROTATION_ANGLES)
+        return self.num_samples
 
     def _load_data_and_gt(self, index):
         data_img = pil_loader(self.img_paths_per_page[index])
@@ -105,12 +105,10 @@ class CroppedRotNet(CroppedHisDBDataset):
         if not is_tensor(img):
             img = ToTensor()(img)
 
-        target_class = index % len(ROTATION_ANGLES)
-        rotation_angle = ROTATION_ANGLES[target_class]
+        rotation_transformation = RightAngleRotation()
+        img = rotation_transformation(img)
 
-        img = torchvision.transforms.functional.rotate(img=img, angle=rotation_angle)
-
-        return img, target_class
+        return img, rotation_transformation.target_class
 
     @staticmethod
     def get_gt_data_paths(directory: Path, data_folder_name: str, gt_folder_name: str = None,

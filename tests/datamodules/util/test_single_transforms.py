@@ -16,26 +16,24 @@ def test_one_hot_to_pixel_labelling():
     assert torch.equal(trans_output, torch.tensor([[2, 0], [0, 2]]))
 
 
-def test_right_angle_rotation():
-    torch.manual_seed(1)
+def test_right_angle_rotation(mocker):
+    mocker.patch('torch.randint', return_value=torch.tensor([1]))
     transformation = RightAngleRotation()
     tensor_input = torch.Tensor([[[0.5, 0.5],
                                   [0.1, 0.1]],
                                  [[0.2, 0.2],
                                   [0.9, 0.9]]])
     trans_output = transformation(tensor=tensor_input)
-    assert torch.eq(transformation.target_class, torch.Tensor([1]))
-    assert torch.eq(trans_output, torch.Tensor([[[0.2, 0.5],
-                                                 [0.9, 0.1]],
-                                                [0.2, 0.5],
-                                                [0.9, 0.1]]))
+    assert transformation.target_class == 1
+    assert torch.equal(trans_output, torch.tensor([[[0.5, 0.1],
+                                                    [0.5, 0.1]],
+                                                   [[0.2, 0.9],
+                                                    [0.2, 0.9]]]))
 
 
 def test__update_target_class():
-    torch.manual_seed(1)  # 1, 2, 0
     transformation = RightAngleRotation()
-    assert torch.eq(transformation.target_class, torch.Tensor([1]))
+    assert transformation.target_class is None
     transformation._update_target_class()
-    assert torch.eq(transformation.target_class, torch.Tensor([2]))
-
+    assert transformation.target_class is not None
 

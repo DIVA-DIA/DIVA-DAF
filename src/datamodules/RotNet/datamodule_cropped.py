@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 
 from src.datamodules.RotNet.utils.image_analytics import get_analytics_data
-from src.datamodules.RotNet.datasets.cropped_dataset import CroppedRotNet, ROTATION_ANGLES
+from src.datamodules.RotNet.datasets.cropped_dataset import CroppedRotNet
 from src.datamodules.RotNet.utils.misc import validate_path_for_self_supervised
 from src.datamodules.utils.wrapper_transforms import OnlyImage
 from src.datamodules.base_datamodule import AbstractDatamodule
@@ -31,7 +31,7 @@ class RotNetDivaHisDBDataModuleCropped(AbstractDatamodule):
 
         self.mean = analytics_data['mean']
         self.std = analytics_data['std']
-        self.class_encodings = np.array(ROTATION_ANGLES)
+        self.class_encodings = np.array([0, 90, 180, 270])
         self.num_classes = len(self.class_encodings)
         self.class_weights = torch.as_tensor([1 / self.num_classes for _ in range(self.num_classes)])
 
