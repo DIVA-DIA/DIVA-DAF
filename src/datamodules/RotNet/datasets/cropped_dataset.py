@@ -6,7 +6,6 @@ Load a dataset of historic documents by specifying the folder where its located.
 from pathlib import Path
 from typing import List, Union, Optional
 
-import torchvision.transforms.functional
 from omegaconf import ListConfig
 from torch import is_tensor
 from torchvision.datasets.folder import has_file_allowed_extension, pil_loader
