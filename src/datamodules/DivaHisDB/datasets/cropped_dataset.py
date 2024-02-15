@@ -7,14 +7,10 @@ import re
 from pathlib import Path
 from typing import List, Tuple, Union, Optional
 
-import torch.utils.data as data
-from omegaconf import ListConfig
 from torch import is_tensor
-from torchvision.datasets.folder import pil_loader, has_file_allowed_extension
 from torchvision.transforms import ToTensor
 
-from datamodules.RGB.datasets.cropped_dataset import CroppedDatasetRGB
-from src.datamodules.utils.misc import selection_validation
+from src.datamodules.RGB.datasets.cropped_dataset import CroppedDatasetRGB
 from src.utils import utils
 
 IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm')

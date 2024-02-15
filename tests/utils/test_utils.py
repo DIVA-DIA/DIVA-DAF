@@ -59,7 +59,6 @@ def test_check_config_no_seed(get_dict, caplog):
     del get_dict['seed']
     check_config(get_dict)
     assert get_dict['seed'] > -1
-    assert f'No seed specified! Seed set to {get_dict["seed"]}'
 
 
 def test_check_config_fast_dev_run(get_dict, caplog):
