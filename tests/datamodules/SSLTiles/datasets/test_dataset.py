@@ -24,38 +24,6 @@ def dataset_train_ssl(data_dir):
                            rows=3, cols=2, horizontal_shuffle=True, vertical_shuffle=False)
 
 
-@pytest.mark.skip('just horizontal working')
-def test__cut_image_in_tiles_and_put_together_2_3_vertical(dataset_train_ssl, data_dir, result_img_2_3_vertical,
-                                                           monkeypatch):
-    img_path = data_dir / 'train' / 'data' / 'fmb-cb-55-005v.png'
-    img = ToTensor()(pil_loader(img_path))
-    monkeypatch.setattr(dataset_train_ssl, 'vertical_shuffle', True)
-    monkeypatch.setattr(dataset_train_ssl, 'horizontal_shuffle', False)
-    np.random.seed(42)
-    tile_img, gt = dataset_train_ssl._cut_image_in_tiles_and_put_together(img)
-    assert gt.shape == (3, 2)
-    assert tile_img.width == 960
-    assert tile_img.height == 1344
-    assert np.array_equal(gt, np.array([[0, 3], [2, 5], [4, 1]]))
-    assert ImageChops.difference(tile_img, result_img_2_3_vertical).getbbox() is None
-
-
-@pytest.mark.skip('just horizontal working')
-def test__cut_image_in_tiles_and_put_together_2_3_horizontal_vertical(dataset_train_ssl, data_dir,
-                                                                      result_img_2_3_horizontal_vertical, monkeypatch):
-    img_path = data_dir / 'train' / 'data' / 'fmb-cb-55-005v.png'
-    img_array = ToTensor()(pil_loader(img_path))
-    monkeypatch.setattr(dataset_train_ssl, 'vertical_shuffle', True)
-    monkeypatch.setattr(dataset_train_ssl, 'horizontal_shuffle', True)
-    np.random.seed(42)
-    tile_img, gt = dataset_train_ssl._cut_image_in_tiles_and_put_together(img_array)
-    assert gt.shape == (3, 2)
-    assert tile_img.width == 960
-    assert tile_img.height == 1344
-    assert np.array_equal(gt, np.array([[2, 3], [1, 4], [5, 0]]))
-    assert ImageChops.difference(tile_img, result_img_2_3_horizontal_vertical).getbbox() is None
-
-
 def test__load_data_and_gt(dataset_train_ssl):
     img = dataset_train_ssl._load_data_and_gt(0)
     assert img.size == (960, 1344)
