@@ -29,11 +29,10 @@ jobs:
             -   name: Build docs
                 working-directory: docs
                 run: |
-                    sphinx-apidoc -o ./source ../src
-                    make html
+                    sphinx-build doc _build
             -   name: GitHub deployment
                 uses: peaceiris/actions-gh-pages@v3
                 with:
                     github_token: ${{ github.token }}
-                    publish_dir: ./docs/build/html
+                    publish_dir: _build/
                     publish_branch: gh-pages
