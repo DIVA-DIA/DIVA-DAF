@@ -1,7 +1,6 @@
 from pathlib import Path
 from typing import Optional, Callable, Union
 
-import numpy as np
 import torch.nn as nn
 import torch.optim
 import torchmetrics
@@ -9,12 +8,40 @@ import torchmetrics
 from src.datamodules.utils.misc import _get_argmax
 from src.tasks.base_task import AbstractTask
 from src.utils import utils
-from src.tasks.utils.outputs import OutputKeys, reduce_dict
+from src.tasks.utils.outputs import OutputKeys, reduce_dict, save_numpy_files
+from src.tasks.utils.task_utils import print_merge_tool_info
 
 log = utils.get_logger(__name__)
 
 
 class SemanticSegmentationCroppedHisDB(AbstractTask):
+    """
+    Semantic Segmentation task for cropped images of the HisDB dataset. The output for the test
+    are also patches that can be stitched together with the :class: `CroppedOutputMerger` and are in the HisDB format
+    as well as raw prediction of the network in numpy format.
+
+    :param model: The model to train, validate and test.
+    :type model: nn.Module
+    :param optimizer: The optimizer used during training.
+    :type optimizer: torch.optim.Optimizer
+    :param loss_fn: The loss function used during training, validation, and testing.
+    :type loss_fn: Callable
+    :param metric_train: The metric used during training.
+    :type metric_train: torchmetrics.Metric
+    :param metric_val: The metric used during validation.
+    :type metric_val: torchmetrics.Metric
+    :param metric_test: The metric used during testing.
+    :type metric_test: torchmetrics.Metric
+    :param confusion_matrix_val: Whether to compute the confusion matrix during validation.
+    :type confusion_matrix_val: bool
+    :param confusion_matrix_test: Whether to compute the confusion matrix during testing.
+    :type confusion_matrix_test: bool
+    :param confusion_matrix_log_every_n_epoch: The frequency of logging the confusion matrix.
+    :type confusion_matrix_log_every_n_epoch: int
+    :param lr: The learning rate.
+    :type lr: float
+
+    """
 
     def __init__(self,
                  model: nn.Module,
@@ -31,12 +58,7 @@ class SemanticSegmentationCroppedHisDB(AbstractTask):
                  lr: float = 1e-3
                  ) -> None:
         """
-        pixelvise semantic segmentation. The output of the network during test is a DIVAHisDB encoded image
-
-        :param model: torch.nn.Module
-            The encoder for the segmentation e.g. unet
-        :param test_output_path: str
-            String with a path to the output folder of the testing
+        Constructor for the SemanticSegmentationCroppedHisDB task
         """
         super().__init__(
             model=model,
@@ -62,9 +84,6 @@ class SemanticSegmentationCroppedHisDB(AbstractTask):
 
         log.info("Setup done!")
 
-    def forward(self, x):
-        return self.model(x)
-
     @staticmethod
     def to_metrics_format(x: torch.Tensor, **kwargs) -> torch.Tensor:
         return _get_argmax(x, **kwargs)
@@ -76,7 +95,7 @@ class SemanticSegmentationCroppedHisDB(AbstractTask):
         input_batch, target_batch, mask_batch = batch
         metric_kwargs = {'hisdbiou': {'mask': mask_batch}}
         output = super().training_step(batch=(input_batch, target_batch), batch_idx=batch_idx,
-                                     metric_kwargs=metric_kwargs)
+                                       metric_kwargs=metric_kwargs)
         return reduce_dict(input_dict=output, key_list=[OutputKeys.LOSS])
 
     #############################################################################################
@@ -87,7 +106,7 @@ class SemanticSegmentationCroppedHisDB(AbstractTask):
         input_batch, target_batch, mask_batch = batch
         metric_kwargs = {'hisdbiou': {'mask': mask_batch}}
         output = super().validation_step(batch=(input_batch, target_batch), batch_idx=batch_idx,
-                                       metric_kwargs=metric_kwargs)
+                                         metric_kwargs=metric_kwargs)
         return reduce_dict(input_dict=output, key_list=[])
 
     #############################################################################################
@@ -99,30 +118,9 @@ class SemanticSegmentationCroppedHisDB(AbstractTask):
         metric_kwargs = {'hisdbiou': {'mask': mask_batch}}
         output = super().test_step(batch=(input_batch, target_batch), batch_idx=batch_idx, metric_kwargs=metric_kwargs)
 
-        if not hasattr(self.trainer.datamodule, 'get_img_name_coordinates'):
-            raise NotImplementedError('Datamodule does not provide detailed information of the crop')
-
-        for patch, idx in zip(output[OutputKeys.PREDICTION].detach().cpu().numpy(),
-                              input_idx.detach().cpu().numpy()):
-            patch_info = self.trainer.datamodule.get_img_name_coordinates(idx)
-            img_name = patch_info[0]
-            patch_name = patch_info[1]
-            dest_folder = self.test_output_path / 'patches' / img_name
-            dest_folder.mkdir(parents=True, exist_ok=True)
-            dest_filename = dest_folder / f'{patch_name}.npy'
-
-            np.save(file=str(dest_filename), arr=patch)
+        save_numpy_files(self.trainer, self.test_output_path, input_idx, output)
 
         return reduce_dict(input_dict=output, key_list=[])
 
     def on_test_end(self) -> None:
-        datamodule_path = self.trainer.datamodule.data_dir
-        prediction_path = (self.test_output_path / 'patches').absolute()
-        output_path = (self.test_output_path / 'result').absolute()
-
-        data_folder_name = self.trainer.datamodule.data_folder_name
-        gt_folder_name = self.trainer.datamodule.gt_folder_name
-
-        log.info(f'To run the merging of patches:')
-        log.info(f'python tools/merge_cropped_output_HisDB.py -d {datamodule_path} -p {prediction_path} '
-                 f'-o {output_path} -df {data_folder_name} -gf {gt_folder_name}')
+        print_merge_tool_info(self.trainer, self.test_output_path, 'HisDB')

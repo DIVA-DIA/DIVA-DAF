@@ -6,6 +6,17 @@ from src.utils import utils
 
 
 def get_wandb_logger(trainer: Trainer) -> WandbLogger:
+    """
+    Get WandbLogger from trainer or loggers.
+
+    :param trainer: PyTorch Lightning trainer.
+    :type trainer: Trainer
+
+    :returns: WandbLogger
+    :rtype: WandbLogger
+
+    :raises ValueError: If WandbLogger was not found
+    """
     if isinstance(trainer.logger, WandbLogger):
         return trainer.logger
 
@@ -19,9 +30,16 @@ def get_wandb_logger(trainer: Trainer) -> WandbLogger:
 
 
 class WatchModelWithWandb(Callback):
-    """Make WandbLogger watch model at the beginning of the run."""
+    """
+    Make WandbLogger watch model at the beginning of the run.
 
-    def __init__(self, log_category: str = "gradients", log_freq: int = 100):
+    :param log_category: Category of the model to log ("gradients", "parameters", "all", or None). Default: "gradients".
+    :type log_category: str
+    :param log_freq: How often to log the model. Default: 100.
+    :type log_freq: int
+    """
+
+    def __init__(self, log_category: str = "gradients", log_freq: int = 100) -> None:
         self.log_category = log_category
         self.log_freq = log_freq
 

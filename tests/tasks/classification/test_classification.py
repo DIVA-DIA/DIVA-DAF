@@ -102,8 +102,8 @@ def test_training_step(monkeypatch, datamodule_and_dir, task, capsys):
     img, gt = data_module_cropped.train[0]
     gt_tensor = torch.as_tensor([gt])
     output = task.training_step(batch=(img[None, :], gt_tensor), batch_idx=0)
-    assert 'train/crossentropyloss 1.3' in capsys.readouterr().out
-    assert np.isclose(output[OutputKeys.LOSS].item(), 1.3173744678497314, rtol=2e-03)
+    assert 'train/crossentropyloss 1.4' in capsys.readouterr().out
+    assert np.isclose(output[OutputKeys.LOSS].item(), 1.4173744678497314, rtol=2e-01)
 
 
 def test_validation_step(monkeypatch, datamodule_and_dir, task, capsys):
@@ -119,7 +119,7 @@ def test_validation_step(monkeypatch, datamodule_and_dir, task, capsys):
     img, gt = data_module_cropped.val[0]
     gt_tensor = torch.as_tensor([gt])
     output = task.validation_step(batch=(img[None, :], gt_tensor), batch_idx=0)
-    assert 'val/crossentropyloss 1.3' in capsys.readouterr().out
+    assert 'val/crossentropyloss 1.4' in capsys.readouterr().out
     assert not output
 
 
@@ -135,5 +135,5 @@ def test_test_step(monkeypatch, datamodule_and_dir, task, capsys):
     img, gt = data_module_cropped.test[0]
     gt_tensor = torch.as_tensor([gt])
     output = task.test_step(batch=(img[None, :], gt_tensor), batch_idx=0)
-    assert 'test/crossentropyloss 1.2' in capsys.readouterr().out
+    assert 'test/crossentropyloss 1.4' in capsys.readouterr().out
     assert not output

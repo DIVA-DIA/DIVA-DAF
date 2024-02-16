@@ -11,17 +11,14 @@ def save_output_page_image(image_name, output_image, output_folder: Path, class_
     """
     Helper function to save the output during testing in the DIVAHisDB format
 
-    Parameters
-    ----------
-    image_name: str
-        name of the image that is saved
-    output_image: numpy matrix of size [#C x H x W]
-        output image at full size
-    output_folder: Path
-        path to the output folder for the test data
-    class_encoding: list(tuple(int))
-        list with the class encodings
-
+    :param image_name: name of the image that is saved
+    :type image_name: str
+    :param output_image: output image at full size
+    :type output_image: np.ndarray
+    :param output_folder: path to the output folder for the test data
+    :type output_folder: Path
+    :param class_encoding: list with the class encodings
+    :type class_encoding: List[Tuple[int]]
     """
 
     output_encoded = output_to_class_encodings(output_image, class_encoding)

@@ -2,16 +2,17 @@ from typing import Callable
 
 
 class OnlyImage(object):
-    """Wrapper function around a single parameter transform. It will be cast only on image"""
+    """
+    Wrapper function around a single parameter transform. It will be cast only on image
+
+    :param transform: Transformation to apply to the codex image
+    :type transform: Callable
+
+    """
 
     def __init__(self, transform: Callable):
-        """Initialize the transformation with the transformation to be called.
-        Could be a compose.
-
-        Parameters
-        ----------
-        transform : torchvision.transforms.transforms
-            Transformation to wrap
+        """
+        Constructor method for the OnlyImage class.
         """
         self.transform = transform
 
@@ -20,16 +21,16 @@ class OnlyImage(object):
 
 
 class OnlyTarget(object):
-    """Wrapper function around a single parameter transform. It will be cast only on target"""
+    """
+    Wrapper function around a single parameter transform. It will be cast only on target
+
+    :param transform: Transformation to apply to the ground truth image
+    :type transform: Callable
+    """
 
     def __init__(self, transform: Callable):
-        """Initialize the transformation with the transformation to be called.
-        Could be a compose.
-
-        Parameters
-        ----------
-        transform : torchvision.transforms.transforms
-            Transformation to wrap
+        """
+        Constructor method for the OnlyTarget class.
         """
         self.transform = transform
 

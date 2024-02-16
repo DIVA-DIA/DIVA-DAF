@@ -25,15 +25,10 @@ def execute(config: DictConfig) -> Optional[float]:
     """Contains training pipeline.
     Instantiates all PyTorch Lightning objects from config.
 
-    Args:
-        config (DictConfig): Configuration composed by Hydra.
+    :param config: Configuration composed by Hydra.
 
-    Returns:
-        Optional[float]: Metric score for hyperparameter optimization.
+    :returns: Optional[float]: Metric score for hyperparameter optimization.
     """
-
-    # Write current run dir into outputs/run_dir_paths.txt
-    _write_current_run_dir(config)
 
     # Init Lightning datamodule
     log.info(f"Instantiating datamodule <{config.datamodule._target_}>")
@@ -154,10 +149,14 @@ def execute(config: DictConfig) -> Optional[float]:
         log.info("Starting testing!")
         results = trainer.test(model=task, datamodule=datamodule)
         log.info(f'Test output: {results}')
+        # Write current run dir into outputs/run_dir_paths.txt
+        _write_current_run_dir(config=config)
 
     if config.predict:
         log.info("Starting prediction!")
         trainer.predict(model=task, datamodule=datamodule)
+        # Write current run dir into outputs/run_dir_paths.txt
+        _write_current_run_dir(config=config)
 
     # Make sure everything closed properly
     log.info("Finalizing!")
@@ -184,6 +183,11 @@ def execute(config: DictConfig) -> Optional[float]:
 
 
 def _save_git_hash(trainer):
+    """
+    Saves the current git hash into the output directory.
+
+    :param trainer: Lightning trainer object
+    """
     log.info("Saving the current git hash into the output directory!")
     if trainer.is_global_zero:
         import subprocess
@@ -203,11 +207,11 @@ def _load_model_part(config: DictConfig, part_name: str):
     Checks if a given model part (backbone or header) has a path to a pretrained model and loads this model.
     If there is no pretrained model the model will be initialised randomly.
 
-    :'path_to_weights' in your model config points to the file with the weights to load them.
-    :'strict' if you want to load it in a strict fashion. Default is True
+    :param config: The config of the model.
+        'path_to_weights' in your model config points to the file with the weights to load them.
+        'strict' if you want to load it in a strict fashion. Default is True
 
-    :return
-        LightningModule: The loaded network
+    :returns: LightningModule: The loaded network
     """
 
     freeze = False
@@ -264,6 +268,11 @@ def _load_model_part(config: DictConfig, part_name: str):
 
 
 def _clean_up_checkpoints(trainer: Trainer):
+    """
+    Clean up checkpoints that are not the best checkpoint.
+
+    :param trainer: the current pl trainer
+    """
     best_model_path = Path(trainer.checkpoint_callback.best_model_path)
     if not best_model_path.is_file():
         return
@@ -278,9 +287,8 @@ def _print_best_paths(conf: DictConfig, trainer: Trainer):
     """
     Print out the best checkpoint paths for the task, the backbone, and the header.
 
-    Args:
-        conf: the hydra config
-        trainer: the current pl trainer
+    :param conf: the hydra config
+    :param trainer: the current pl trainer
     """
     if not conf.train or 'model_checkpoint' not in conf.callbacks:
         return
@@ -306,9 +314,7 @@ def _print_run_command(trainer: Trainer):
     """
     Print out a run command based on the saved run config.
 
-    Args:
-        conf: the hydra config
-        trainer: the current pl trainer
+    :param trainer: the current pl trainer
     """
 
     run_path = trainer.default_root_dir
@@ -325,9 +331,14 @@ def _print_run_command(trainer: Trainer):
 
 @rank_zero_only
 def _write_current_run_dir(config: DictConfig):
+    """
+    Write the current run dir into a log file in the run root dir.
+
+    :param config: the hydra config
+    """
     run_dir_log_filename = 'run_dir_log.txt'
-    run_dir_log_file = Path(to_absolute_path(config['run_root_dir'])) / run_dir_log_filename
+    run_dir_log_file = Path(to_absolute_path(config['run_root_dir'])) / config['name'] / run_dir_log_filename
     run_dir_log_file = run_dir_log_file.resolve()
     log.info(f'Writing work dir into run dir log file ({run_dir_log_file})')
     with run_dir_log_file.open('a') as f:
-        f.write(f'{os.getcwd()}\n')
+        f.write(f'{Path(os.getcwd())}\n')

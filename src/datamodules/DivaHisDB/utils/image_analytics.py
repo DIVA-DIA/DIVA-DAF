@@ -4,6 +4,7 @@ import json
 import logging
 import os
 from pathlib import Path
+from typing import Tuple, Any, Dict, List, Union
 
 import numpy as np
 # Torch related stuff
@@ -11,19 +12,28 @@ import torch
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
 from PIL import Image
+from numpy import ndarray, dtype, floating, complexfloating
 
 from src.datamodules.utils.image_analytics import compute_mean_std
 
 
-def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, get_gt_data_paths_func):
+def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, get_gt_data_paths_func) \
+        -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
-    Parameters
-    ----------
-    input_path: Path to dataset
+    Get the analytics for the dataset. If the analytics file is not present, it will be computed and saved.
 
-    Returns
-    -------
+    :param input_path: Path to the root of the dataset
+    :type input_path: Path
+    :param data_folder_name: Name of the folder containing the data
+    :type data_folder_name: str
+    :param gt_folder_name: Name of the folder containing the ground truth
+    :type gt_folder_name: str
+    :param get_gt_data_paths_func: Function to get the paths to the data and ground truth
+    :type get_gt_data_paths_func: Callable
+    :return: Tuple of analytics for the data and ground truth
+    :rtype: Tuple[Dict[str, Any], Dict[str, Any]]
     """
+
     expected_keys_data = ['mean', 'std']
     expected_keys_gt = ['class_weights', 'class_encodings']
 
@@ -91,22 +101,17 @@ def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, 
     return analytics_data, analytics_gt
 
 
-def get_class_weights(input_folder, workers=4, **kwargs):
+def get_class_weights(input_folder, workers=4) -> List[float]:
     """
     Get the weights proportional to the inverse of their class frequencies.
     The vector sums up to 1
 
-    Parameters
-    ----------
-    input_folder : String (path)
-        Path to the dataset folder (see above for details)
-    workers : int
-        Number of workers to use for the mean/std computation
-
-    Returns
-    -------
-    ndarray[double] of size (num_classes)
-        The weights vector as a 1D array normalized (sum up to 1)
+    :param input_folder: Path to the dataset folder (see above for details)
+    :type input_folder: Path
+    :param workers: Number of workers to use for the mean/std computation
+    :type workers: int
+    :return: The weights vector as a 1D array normalized (sum up to 1)
+    :rtype: List[float]
     """
     # Sanity check on the folder
     if not os.path.isdir(input_folder):
@@ -144,22 +149,15 @@ def get_class_weights(input_folder, workers=4, **kwargs):
     return class_weights
 
 
-def _get_class_frequencies_weights_segmentation_hisdb(gt_images: np.ndarray):
+def _get_class_frequencies_weights_segmentation_hisdb(gt_images: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
     """
     Get the weights proportional to the inverse of their class frequencies.
     The vector sums up to 1
 
-    Parameters
-    ----------
-    gt_images: list of strings
-        Path to all ground truth images, which contain the pixel-wise label
-    workers: int
-        Number of workers to use for the mean/std computation
-
-    Returns
-    -------
-    ndarray[double] of size (num_classes) and ints the classes are represented as
-        The weights vector as a 1D array normalized (sum up to 1)
+    :param gt_images: Path to all ground truth images, which contain the pixel-wise label
+    :type gt_images: np.ndarray
+    :return: The weights vector as a 1D array normalized (sum up to 1)
+    :rtype: Tuple[Union[Union[ndarray[Any, dtype[floating[Any]]], ndarray[Any, dtype[complexfloating[Any, Any]]]], Any], ndarray]
     """
     logging.info('Begin computing class frequencies weights')
 
@@ -179,4 +177,3 @@ def _get_class_frequencies_weights_segmentation_hisdb(gt_images: np.ndarray):
     logging.info(f'Class frequencies (rounded): {np.around(class_frequencies * 100, decimals=2)}')
     # Normalize vector to sum up to 1.0 (in case the Loss function does not do it)
     return (1 / num_samples_per_class) / ((1 / num_samples_per_class).sum()), classes
-

@@ -6,10 +6,11 @@ Load a dataset of historic documents by specifying the folder where its located.
 import re
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import torch.utils.data as data
 from torch import is_tensor
+from PIL import Image
 from torchvision.datasets.folder import pil_loader
 from torchvision.transforms import ToTensor
 
@@ -23,6 +24,11 @@ log = utils.get_logger(__name__)
 
 @dataclass
 class DatasetSpecs:
+    """
+    This class is used to specify the location of the data and ground truth files. It can also be used to
+    specify a range of files that should be used. This is useful if you want to split the data into train/val/test
+    and want to use the same data root for all three splits.
+    """
     data_root: str
     doc_dir: str
     doc_names: str
@@ -33,35 +39,30 @@ class DatasetSpecs:
 
 
 class DatasetRolfFormat(data.Dataset):
-    """A generic data loader where the images are arranged in this way: ::
+    """
+    Dataset that loads the data in the Rolf format. Each file name has a fixed structure of `name_{file_number}.jpg`.
+    The file number is a number between 0 and 9999.
+    The different splits are defined by giving a range and a root folder for each split.
 
-        root/gt/xxx.png
-        root/gt/xxy.png
-        root/gt/xxz.png
-
-        root/data/xxx.png
-        root/data/xxy.png
-        root/data/xxz.png
+    :param dataset_specs: The dataset specs that specify the location of the data and ground truth files.
+    :type dataset_specs: List[DatasetSpecs]
+    :param image_dims: The dimensions of the images.
+    :type image_dims: ImageDimensions
+    :param is_test: Is it the test dataset?
+    :type is_test: bool
+    :param image_transform: Transformations that should be applied to the image.
+    :type image_transform: callable
+    :param target_transform: Transformations that should be applied to the ground truth.
+    :type target_transform: callable
+    :param twin_transform: Transformations that should be applied to both the image and the ground truth.
+    :type twin_transform: callable
     """
 
     def __init__(self, dataset_specs: List[DatasetSpecs], image_dims: ImageDimensions,
-                 is_test=False, image_transform=None, target_transform=None, twin_transform=None,
-                 **kwargs):
+                 is_test: bool = False, image_transform: callable = None, target_transform: callable = None,
+                 twin_transform: callable = None):
         """
-        Parameters
-        ----------
-        path : string
-            Path to dataset folder (train / val / test)
-        classes :
-        workers : int
-        imgs_in_memory :
-        crops_per_image : int
-        crop_size : int
-        image_transform : callable
-        target_transform : callable
-        twin_transform : callable
-        loader : callable
-            A function to load an image given its path.
+        Constructor method for the DatasetRolfFormat class.
         """
 
         self.dataset_specs = dataset_specs
@@ -94,23 +95,56 @@ class DatasetRolfFormat(data.Dataset):
         """
         return self.num_samples
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int) -> Union[Tuple[Image.Image, Image.Image], Tuple[Image.Image, Image.Image, int]]:
+        """
+        This function returns the image and the ground truth for a given index. If it is the test dataset,
+
+        :param index: The index of the sample that should be returned.
+        :type index: int
+        :return: The image and the ground truth for the given index.
+        :rtype: tuple
+        """
         if self.is_test:
             return self._get_test_items(index=index)
         else:
             return self._get_train_val_items(index=index)
 
-    def _get_train_val_items(self, index):
+    def _get_train_val_items(self, index: int) -> Tuple[Image.Image, Image.Image]:
+        """
+        This function returns the image and the ground truth for a given index.
+
+        :param index: The index of the sample that should be returned.
+        :type index: int
+        :return: The image and the ground truth for the given index.
+        :rtype: tuple
+        """
         data_img, gt_img = self._load_data_and_gt(index=index)
         img, gt = self._apply_transformation(data_img, gt_img)
         return img, gt
 
-    def _get_test_items(self, index):
+    def _get_test_items(self, index: int) -> Tuple[Image.Image, Image.Image, int]:
+        """
+        This function returns the image and the ground truth for a given index.
+
+        :param index: The index of the sample that should be returned.
+        :type index: int
+        :return: The image and the ground truth for the given index with the index.
+        :rtype: tuple
+        :return:
+        """
         data_img, gt_img = self._load_data_and_gt(index=index)
         img, gt = self._apply_transformation(data_img, gt_img)
         return img, gt, index
 
-    def _load_data_and_gt(self, index):
+    def _load_data_and_gt(self, index: int) -> Tuple[Image.Image, Image.Image]:
+        """
+        This function loads the image and the ground truth for a given index.
+
+        :param index: The index of the sample that should be returned.
+        :type index: int
+        :return: The image and the ground truth for the given index.
+        :rtype: tuple
+        """
         data_img = pil_loader(str(self.img_gt_path_list[index][0]))
         gt_img = pil_loader(str(self.img_gt_path_list[index][1]))
 
@@ -119,23 +153,17 @@ class DatasetRolfFormat(data.Dataset):
 
         return data_img, gt_img
 
-    def _apply_transformation(self, img, gt):
+    def _apply_transformation(self, img: Image.Image, gt: Image.Image) -> Tuple[Image.Image, Image.Image]:
         """
         Applies the transformations that have been defined in the setup (setup.py). If no transformations
         have been defined, the PIL image is returned instead.
 
-        Parameters
-        ----------
-        img: PIL image
-            image data
-        gt: PIL image
-            ground truth image
-        coordinates: tuple (int, int)
-            coordinates where the sliding window should be cropped
-        Returns
-        -------
-        tuple
-            img and gt after transformations
+        :param img: The original image onto which the transformations should be applied.
+        :type img: Image.Image
+        :param gt: The ground truth onto which the transformations should be applied.
+        :type gt: Image.Image
+        :return: The transformed image and ground truth.
+        :rtype: Tuple[Image.Image, Image.Image]
         """
         if self.twin_transform is not None and not self.is_test:
             img, gt = self.twin_transform(img, gt)
@@ -159,6 +187,26 @@ class DatasetRolfFormat(data.Dataset):
                               doc_dir: str, doc_names: str,
                               gt_dir: str, gt_names: str,
                               range_from: int, range_to: int) -> List[Tuple[Path, Path]]:
+        """
+        This function returns a list of tuples that contain the path to the gt and image that belong together.
+
+        :param data_root: The root where the data is located.
+        :type data_root: str
+        :param doc_dir: The directory where the images are located.
+        :type doc_dir: str
+        :param doc_names: The name of the images.
+        :type doc_names: str
+        :param gt_dir: The directory where the ground truth is located.
+        :type gt_dir: str
+        :param gt_names: The name of the ground truth.
+        :type gt_names: str
+        :param range_from: The first index of the range that should be used.
+        :type range_from: int
+        :param range_to: The last index of the range that should be used.
+        :type range_to: int
+        :return: A list of tuples that contain the path to the gt and image that belong together.
+        :rtype: List[Tuple[Path, Path]]
+        """
 
         path_root = Path(data_root)
         path_doc_dir = path_root / doc_dir
@@ -205,6 +253,14 @@ class DatasetRolfFormat(data.Dataset):
 
     @staticmethod
     def get_img_gt_path_list(list_specs: List[DatasetSpecs]) -> List[Tuple[Path, Path]]:
+        """
+        Returns a list of tuples that contain the path to the gt and image that belong together.
+
+        :param list_specs: The dataset specs that specify the location of the data and ground truth files.
+        :type list_specs: List[DatasetSpecs]
+        :return: A list of tuples that contain the path to the gt and image that belong together.
+        :rtype: List[Tuple[Path, Path]]
+        """
         paths = []
 
         for specs in list_specs:

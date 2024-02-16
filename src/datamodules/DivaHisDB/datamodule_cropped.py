@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Union, List, Optional
+from typing import Union, List, Optional, Tuple, Dict, Any
 
 import torch
 from torch.utils.data import DataLoader
@@ -18,13 +18,124 @@ log = utils.get_logger(__name__)
 
 
 class DivaHisDBDataModuleCropped(AbstractDatamodule):
+    """
+    DataModule for the `DivaHisDB dataset<https://ieeexplore.ieee.org/abstract/document/7814109>`_ or a similar dataset with the same folder structure and ground truth encoding.
+
+    The ground truth encoding is like the following:
+    Red = 0 everywhere (except boundaries)
+    Green = 0 everywhere
+
+    Blue = 0b00...1000 = 0x000008: main text body
+    Blue = 0b00...0100 = 0x000004: decoration
+    Blue = 0b00...0010 = 0x000002: comment
+    Blue = 0b00...0001 = 0x000001: background (out of page)
+
+    Blue = 0b...1000 | 0b...0010 = 0b...1010 = 0x00000A : main text body + comment
+    Blue = 0b...1000 | 0b...0100 = 0b...1100 = 0x00000C : main text body + decoration
+    Blue = 0b...0010 | 0b...0100 = 0b...0110 = 0x000006 : comment + decoration
+
+    The structure of the folder should be as follows::
+
+        data_dir
+        ├── train_folder_name
+        │   ├── data_folder_name
+        │   │   ├── original_image_name_1
+        │   │   │   ├── image_crop_1.png
+        │   │   │   ├── ...
+        │   │   │   └── image_crop_N.png
+        │   │   └──original_image_name_N
+        │   │       ├── image_crop_1.png
+        │   │       ├── ...
+        │   │       └── image_crop_N.png
+        │   └── gt_folder_name
+        │       ├── original_image_name_1
+        │       │   ├── image_crop_1.png
+        │       │   ├── ...
+        │       │   └── image_crop_N.png
+        │       └──original_image_name_N
+        │           ├── image_crop_1.png
+        │           ├── ...
+        │           └── image_crop_N.png
+        ├── validation_folder_name
+        │   ├── data_folder_name
+        │   │   ├── original_image_name_1
+        │   │   │   ├── image_crop_1.png
+        │   │   │   ├── ...
+        │   │   │   └── image_crop_N.png
+        │   │   └──original_image_name_N
+        │   │       ├── image_crop_1.png
+        │   │       ├── ...
+        │   │       └── image_crop_N.png
+        │   └── gt_folder_name
+        │       ├── original_image_name_1
+        │       │   ├── image_crop_1.png
+        │       │   ├── ...
+        │       │   └── image_crop_N.png
+        │       └──original_image_name_N
+        │           ├── image_crop_1.png
+        │           ├── ...
+        │           └── image_crop_N.png
+        └── test_folder_name
+            ├── data_folder_name
+            │   ├── original_image_name_1
+            │   │   ├── image_crop_1.png
+            │   │   ├── ...
+            │   │   └── image_crop_N.png
+            │   └──original_image_name_N
+            │       ├── image_crop_1.png
+            │       ├── ...
+            │       └── image_crop_N.png
+            └── gt_folder_name
+                ├── original_image_name_1
+                │   ├── image_crop_1.png
+                │   ├── ...
+                │   └── image_crop_N.png
+                └──original_image_name_N
+                    ├── image_crop_1.png
+                    ├── ...
+                    └── image_crop_N.png
+
+    :param data_dir: path to the data directory
+    :type data_dir: str
+    :param data_folder_name: name of the folder containing the images
+    :type data_folder_name: str
+    :param gt_folder_name: name of the folder containing the ground truth
+    :type gt_folder_name: str
+    :param train_folder_name: name of the folder containing the training data
+    :type train_folder_name: str
+    :param val_folder_name: name of the folder containing the validation data
+    :type val_folder_name: str
+    :param test_folder_name: name of the folder containing the test data
+    :type test_folder_name: str
+    :param selection_train: selection of the training data
+    :type selection_train: Union[int, List[str], None]
+    :param selection_val: selection of the validation data
+    :type selection_val: Union[int, List[str], None]
+    :param selection_test: selection of the test data
+    :type selection_test: Union[int, List[str], None]
+    :param crop_size: size of the crops
+    :type crop_size: int
+    :param num_workers: number of workers for the dataloaders
+    :type num_workers: int
+    :param batch_size: batch size
+    :type batch_size: int
+    :param shuffle: shuffle the data
+    :type shuffle: bool
+    :param drop_last: drop the last batch if it is smaller than the batch size
+    :type drop_last: bool
+    """
+
     def __init__(self, data_dir: str, data_folder_name: str, gt_folder_name: str,
                  train_folder_name: str = 'train', val_folder_name: str = 'val', test_folder_name: str = 'test',
-                 selection_train: Optional[Union[int, List[str]]] = None,
-                 selection_val: Optional[Union[int, List[str]]] = None,
-                 selection_test: Optional[Union[int, List[str]]] = None,
+                 selection_train: Optional[Union[int, List[str], None]] = None,
+                 selection_val: Optional[Union[int, List[str], None]] = None,
+                 selection_test: Optional[Union[int, List[str], None]] = None,
                  crop_size: int = 256, num_workers: int = 4, batch_size: int = 8,
-                 shuffle: bool = True, drop_last: bool = True):
+                 shuffle: bool = True, drop_last: bool = True) -> None:
+        """
+        Constructor of the DivaHisDBDataModuleCropped class.
+        """
+
         super().__init__()
 
         self.train_folder_name = train_folder_name
@@ -69,7 +180,7 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
         # Check default attributes using base_datamodule function
         self._check_attributes()
 
-    def setup(self, stage: Optional[str] = None):
+    def setup(self, stage: Optional[str] = None) -> None:
         super().setup()
         if stage == 'fit' or stage is None:
             self.data_dir = validate_path_for_segmentation(data_dir=self.data_dir,
@@ -126,7 +237,7 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
                           drop_last=False,
                           pin_memory=True)
 
-    def _create_dataset_parameters(self, dataset_type: str = 'train'):
+    def _create_dataset_parameters(self, dataset_type: str = 'train') -> Dict[str, Any]:
         is_test = dataset_type == 'test'
         return {'path': self.data_dir / dataset_type,
                 'data_folder_name': self.data_folder_name,
@@ -136,12 +247,14 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
                 'twin_transform': self.twin_transform,
                 'is_test': is_test}
 
-    def get_img_name_coordinates(self, index):
+    def get_img_name_coordinates(self, index) -> Tuple[Path, Path, str, str, Tuple[int, int]]:
         """
         Returns the original filename of the crop and its coordinate based on the index.
         You can just use this during testing!
-        :param index:
-        :return:
+
+        :param index: index of the crop
+        :type index: int
+        :return: filename, x, y
         """
         if not hasattr(self, 'test'):
             raise Exception('This method can just be called during testing')

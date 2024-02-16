@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Union, List, Optional
+from typing import Union, List, Optional, Dict, Any
 
 import numpy as np
 import torch
@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 
 from src.datamodules.RotNet.utils.image_analytics import get_analytics_data
-from src.datamodules.RotNet.datasets.cropped_dataset import CroppedRotNet, ROTATION_ANGLES
+from src.datamodules.RotNet.datasets.cropped_dataset import CroppedRotNet
 from src.datamodules.RotNet.utils.misc import validate_path_for_self_supervised
 from src.datamodules.utils.wrapper_transforms import OnlyImage
 from src.datamodules.base_datamodule import AbstractDatamodule
@@ -17,12 +17,107 @@ log = utils.get_logger(__name__)
 
 
 class RotNetDivaHisDBDataModuleCropped(AbstractDatamodule):
+    """
+    Datamodule implementation of the RoNet paper of `Gidaris et al. <https://arxiv.org/abs/1803.07728>`_. This
+    datamodule is used for the DivaHisDB dataset in a cropped setup.
+
+    The structure of the folder should be as follows::
+
+        data_dir
+        ├── train_folder_name
+        │   ├── data_folder_name
+        │   │   ├── original_image_name_1
+        │   │   │   ├── image_crop_1.png
+        │   │   │   ├── ...
+        │   │   │   └── image_crop_N.png
+        │   │   └──original_image_name_N
+        │   │       ├── image_crop_1.png
+        │   │       ├── ...
+        │   │       └── image_crop_N.png
+        │   └── gt_folder_name
+        │       ├── original_image_name_1
+        │       │   ├── image_crop_1.png
+        │       │   ├── ...
+        │       │   └── image_crop_N.png
+        │       └──original_image_name_N
+        │           ├── image_crop_1.png
+        │           ├── ...
+        │           └── image_crop_N.png
+        ├── validation_folder_name
+        │   ├── data_folder_name
+        │   │   ├── original_image_name_1
+        │   │   │   ├── image_crop_1.png
+        │   │   │   ├── ...
+        │   │   │   └── image_crop_N.png
+        │   │   └──original_image_name_N
+        │   │       ├── image_crop_1.png
+        │   │       ├── ...
+        │   │       └── image_crop_N.png
+        │   └── gt_folder_name
+        │       ├── original_image_name_1
+        │       │   ├── image_crop_1.png
+        │       │   ├── ...
+        │       │   └── image_crop_N.png
+        │       └──original_image_name_N
+        │           ├── image_crop_1.png
+        │           ├── ...
+        │           └── image_crop_N.png
+        └── test_folder_name
+            ├── data_folder_name
+            │   ├── original_image_name_1
+            │   │   ├── image_crop_1.png
+            │   │   ├── ...
+            │   │   └── image_crop_N.png
+            │   └──original_image_name_N
+            │       ├── image_crop_1.png
+            │       ├── ...
+            │       └── image_crop_N.png
+            └── gt_folder_name
+                ├── original_image_name_1
+                │   ├── image_crop_1.png
+                │   ├── ...
+                │   └── image_crop_N.png
+                └──original_image_name_N
+                    ├── image_crop_1.png
+                    ├── ...
+                    └── image_crop_N.png
+
+    :param data_dir: Path to root dir of the dataset (folder containing the train/val/test folder)
+    :type data_dir: str
+    :param data_folder_name: Name of the folder containing the train/val/test folder
+    :type data_folder_name: str
+    :param selection_train: Selection of the train set. Can be either a list of strings or an integer. If it is a list
+                            of strings, it should contain the names of the images to be used. If it is an integer, it
+                            should be the number of images to be used. If None, all images are used.
+    :type selection_train: Optional[Union[int, List[str]]]
+    :param selection_val: Selection of the validation set. Can be either a list of strings or an integer. If it is a
+                            list of strings, it should contain the names of the images to be used. If it is an integer,
+                            it should be the number of images to be used. If None, all images are used.
+    :type selection_val: Optional[Union[int, List[str]]]
+    :param selection_test: Selection of the test set. Can be either a list of strings or an integer. If it is a list
+                            of strings, it should contain the names of the images to be used. If it is an integer, it
+                            should be the number of images to be used. If None, all images are used.
+    :type selection_test: Optional[Union[int, List[str]]]
+    :param crop_size: Size of the crop to be used
+    :type crop_size: int
+    :param num_workers: Number of workers to be used for loading the data
+    :type num_workers: int
+    :param batch_size: Batch size to be used
+    :type batch_size: int
+    :param shuffle: Whether to shuffle the data
+    :type shuffle: bool
+    :param drop_last: Whether to drop the last batch
+    :type drop_last: bool
+    """
     def __init__(self, data_dir: str, data_folder_name: str,
                  selection_train: Optional[Union[int, List[str]]] = None,
                  selection_val: Optional[Union[int, List[str]]] = None,
                  selection_test: Optional[Union[int, List[str]]] = None,
                  crop_size: int = 256, num_workers: int = 4, batch_size: int = 8,
-                 shuffle: bool = True, drop_last: bool = True):
+                 shuffle: bool = True, drop_last: bool = True, ):
+        """
+        Constructor method for the RotNetDivaHisDBDataModuleCropped class.
+        """
         super().__init__()
 
         self.data_folder_name = data_folder_name
@@ -31,7 +126,7 @@ class RotNetDivaHisDBDataModuleCropped(AbstractDatamodule):
 
         self.mean = analytics_data['mean']
         self.std = analytics_data['std']
-        self.class_encodings = np.array(ROTATION_ANGLES)
+        self.class_encodings = np.array([0, 90, 180, 270])
         self.num_classes = len(self.class_encodings)
         self.class_weights = torch.as_tensor([1 / self.num_classes for _ in range(self.num_classes)])
 
@@ -101,7 +196,15 @@ class RotNetDivaHisDBDataModuleCropped(AbstractDatamodule):
                           drop_last=False,
                           pin_memory=True)
 
-    def _create_dataset_parameters(self, dataset_type: str = 'train'):
+    def _create_dataset_parameters(self, dataset_type: str = 'train') -> Dict[str, Any]:
+        """
+        Creates the parameters for the dataset that are common for all splits.
+
+        :param dataset_type: Type of the dataset (train/val/test)
+        :type dataset_type: str
+        :return: Dictionary containing the parameters for the dataset
+        :rtype: Dict[str, Any]
+        """
         is_test = dataset_type == 'test'
         return {'path': self.data_dir / dataset_type,
                 'data_folder_name': self.data_folder_name,

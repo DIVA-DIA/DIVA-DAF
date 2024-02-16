@@ -3,7 +3,22 @@ from pathlib import Path
 from src.datamodules.utils.exceptions import PathMissingDirinSplitDir, PathNone, PathNotDir, PathMissingSplitDir
 
 
-def validate_path_for_self_supervised(data_dir, data_folder_name: str):
+def validate_path_for_self_supervised(data_dir: str, data_folder_name: str) -> Path:
+    """
+    Validates the path for the self-supervised learning task. The path should contain a train/val/test folder
+    and each of them a folder with the name of the data_folder_name.
+
+    :param data_dir: Root dir of the dataset (folder containing the train/val/test folder)
+    :type data_dir: str
+    :param data_folder_name: Name of the folder containing the data
+    :type data_folder_name: str
+    :raises PathNone: If data_dir is None
+    :raises PathNotDir: If data_dir is not a directory
+    :raises PathMissingSplitDir: If data_dir does not contain train/val/test
+    :raises PathMissingDirinSplitDir: If train/val/test does not contain data_folder_name
+    :return: Path to the root dir of the dataset
+    :rtype: Path
+    """
     if data_dir is None:
         raise PathNone("Please provide the path to root dir of the dataset "
                        "(folder containing the train/val/test folder)")
