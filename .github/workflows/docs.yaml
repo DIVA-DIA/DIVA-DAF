@@ -10,10 +10,6 @@ on:
 permissions:
     contents: write
 
-defaults:
-    run:
-        shell: bash
-
 jobs:
     docs:
         runs-on: ubuntu-latest
