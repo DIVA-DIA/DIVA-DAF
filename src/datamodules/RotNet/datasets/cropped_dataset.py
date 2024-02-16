@@ -14,6 +14,7 @@ from torchvision.transforms import ToTensor
 
 from src.datamodules.DivaHisDB.datasets.cropped_dataset import CroppedHisDBDataset
 from src.datamodules.utils.misc import selection_validation
+from src.datamodules.utils.single_transforms import RightAngleRotation
 from src.utils import utils
 
 IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm')
@@ -121,7 +122,7 @@ class CroppedRotNet(CroppedHisDBDataset):
         :return: the image and the ground truth
         :rtype: Tuple[Tensor, int]
         """
-        data_img = self._load_data_and_gt(index=int(index / len(ROTATION_ANGLES)))
+        data_img = self._load_data_and_gt(index=index)
         img, gt = self._apply_transformation(data_img, index=index)
         return img, gt
 

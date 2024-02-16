@@ -3,7 +3,7 @@ import shutil
 import numpy as np
 import pytest
 
-from datamodules.Classification.utils.misc import validate_path_for_classification
+from src.datamodules.Classification.utils.misc import validate_path_for_classification
 from src.datamodules.utils.exceptions import PathNone, PathNotDir, PathMissingSplitDir
 from tests.test_data.dummy_data_histdb_new.dummy_data import data_dir_classification
 

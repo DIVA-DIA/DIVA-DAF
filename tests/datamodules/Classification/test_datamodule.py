@@ -1,6 +1,6 @@
 import pytest
 
-from datamodules.Classification.datamodule import ClassificationDatamodule
+from src.datamodules.Classification.datamodule import ClassificationDatamodule
 from tests.test_data.dummy_data_histdb_new.dummy_data import data_dir_classification
 
 

@@ -152,7 +152,7 @@ def test_step(monkeypatch, data_module_cropped_hisdb, model_backbone, model_head
     data_module_cropped_hisdb.setup('fit')
 
     img, gt, _ = data_module_cropped_hisdb.train[0]
-    output = task.step(batch=(img[None, :], gt[None, :]), batch_idx=0)
+    output = task.step(batch=(img[None, :], gt[None, :]))
     assert torch.isclose(output[OutputKeys.LOSS], torch.tensor(1.4348618984222412).type_as(output[OutputKeys.LOSS]))
     assert torch.equal(output[OutputKeys.TARGET], gt[None, :])
     assert output[OutputKeys.PREDICTION].shape == torch.Size([1, 4, 256, 256])
@@ -172,7 +172,7 @@ def test__create_conf_mat_test_error(monkeypatch, data_module_cropped_hisdb, mod
     os.chdir(str(tmp_path))
 
     img, gt, _, _ = data_module_cropped_hisdb.test[0]
-    task.step(batch=(img[None, :], gt[None, :]), batch_idx=0)
+    task.step(batch=(img[None, :], gt[None, :]))
 
     hist = task.metric_conf_mat_test.compute()
     hist = hist.detach().numpy()
@@ -194,7 +194,7 @@ def test__create_conf_mat_test(monkeypatch, data_module_cropped_hisdb, model_bac
     os.chdir(str(tmp_path))
 
     img, gt, _, _ = data_module_cropped_hisdb.test[0]
-    task.step(batch=(img[None, :], gt[None, :]), batch_idx=0)
+    task.step(batch=(img[None, :], gt[None, :]))
 
     hist = task.metric_conf_mat_test.compute()
     hist = hist.detach().numpy()
@@ -219,7 +219,7 @@ def test__create_conf_mat_val_not_drop_last(monkeypatch, data_module_cropped_his
     os.chdir(str(tmp_path))
 
     img, gt, _ = data_module_cropped_hisdb.val[0]
-    task.step(batch=(img[None, :], gt[None, :]), batch_idx=0)
+    task.step(batch=(img[None, :], gt[None, :]))
 
     hist = task.metric_conf_mat_test.compute()
     hist = hist.detach().numpy()
@@ -243,7 +243,7 @@ def test__create_conf_mat_val_drop_last(monkeypatch, data_module_cropped_hisdb, 
     os.chdir(str(tmp_path))
 
     img, gt, _ = data_module_cropped_hisdb.val[0]
-    task.step(batch=(img[None, :], gt[None, :]), batch_idx=0)
+    task.step(batch=(img[None, :], gt[None, :]))
 
     hist = task.metric_conf_mat_test.compute()
     hist = hist.detach().numpy()

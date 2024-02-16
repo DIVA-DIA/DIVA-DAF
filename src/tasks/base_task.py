@@ -250,7 +250,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         :return: The output of the step method.
         :rtype: Any
         """
-        output = self.step(batch=batch, batch_idx=batch_idx, **kwargs)
+        output = self.step(batch=batch,  **kwargs)
         self._log_metrics_and_loss(output, stage='train')
         return output
 
@@ -267,7 +267,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         :return: The output of the step method.
         :rtype: Any
         """
-        output = self.step(batch=batch, batch_idx=batch_idx, **kwargs)
+        output = self.step(batch=batch, **kwargs)
         if self.trainer.state.stage == RunningStage.SANITY_CHECKING:
             return output
         self._log_metrics_and_loss(output, stage='val')
@@ -289,7 +289,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         self.metric_conf_mat_val.reset()
 
     def test_step(self, batch: Any, batch_idx: int, **kwargs) -> None:
-        output = self.step(batch=batch, batch_idx=batch_idx, **kwargs)
+        output = self.step(batch=batch, **kwargs)
         if self.confusion_matrix_test:
             self.metric_conf_mat_test(preds=output[OutputKeys.PREDICTION], target=output[OutputKeys.TARGET])
         self._log_metrics_and_loss(output, stage='test')
