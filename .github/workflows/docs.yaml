@@ -1,0 +1,38 @@
+name: Generating and publishing Docs
+
+on:
+    pull_request:
+        branches:
+            - main
+            - dev
+
+permissions:
+    contents: write
+
+defaults:
+    run:
+        shell: bash
+
+jobs:
+    docs:
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@v3
+            -   uses: actions/setup-python@v3
+                with:
+                    python-version: 3.8
+                    cache: 'pip'
+            -   name: Install pip dependencies
+                run: |
+                    pip install --requirement requirements.txt --upgrade --quiet --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
+            -   name: Build docs
+                working-directory: docs
+                run: |
+                    sphinx-apidoc -o ./source ../src
+                    make html
+            -   name: GitHub deployment
+                uses: peaceiris/actions-gh-pages@v3
+                with:
+                    github_token: ${{ github.token }}
+                    publish_dir: ./docs/build/html
+                    publish_branch: gh-pages
