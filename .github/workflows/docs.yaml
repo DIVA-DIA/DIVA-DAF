@@ -31,3 +31,4 @@ jobs:
                     github_token: ${{ github.token }}
                     publish_dir: _build/
                     publish_branch: gh-pages
+                    force_orphan: true
