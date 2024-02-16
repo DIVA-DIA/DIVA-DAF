@@ -18,7 +18,7 @@ def get_analytics_data_image_folder(input_path: Path) -> Dict[str, Any]:
     """
     expected_keys_data = ['mean', 'std']
 
-    analytics_path_data = input_path / f'analytics.data.train.json'
+    analytics_path_data = input_path / 'analytics.data.train.json'
 
     analytics_data = None
 

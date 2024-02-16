@@ -153,7 +153,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
 
     def step(self,
              batch: Any,
-             metric_kwargs: Optional[Dict[str, Dict[str, Any]]] = None) -> Tuple[Union[int, Any], Dict[str, Union[int, Any]]]:
+             metric_kwargs: Optional[Dict[str, Dict[str, Any]]] = None) -> Dict[OutputKeys, Any]:
         """
         The training/validation/test step. Override for custom behavior.
 
