@@ -24,7 +24,7 @@ def validate_path_for_classification(data_dir: str) -> Path:
                              "(folder containing the train/val folder)")
         split_folders = [d for d in data_folder.iterdir() if d.is_dir() and d.name in split_names]
         if len(split_folders) != 2:
-            raise PathMissingSplitDir(f'Your path needs to contain train/val and '
-                                      f'each of them a folder per class')
+            raise PathMissingSplitDir('Your path needs to contain train/val and '
+                                      'each of them a folder per class')
 
     return Path(data_dir)

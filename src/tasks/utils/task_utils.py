@@ -43,6 +43,6 @@ def print_merge_tool_info(trainer: 'pytorch_lightning.Trainer', test_output_path
     output_path = (test_output_path / 'result').absolute()
     data_folder_name = trainer.datamodule.data_folder_name
     gt_folder_name = trainer.datamodule.gt_folder_name
-    log.info(f'To run the merging of patches:')
+    log.info('To run the merging of patches:')
     log.info(f'python tools/merge_cropped_output_{data_format}.py -d {datamodule_path} -p {prediction_path} '
              f'-o {output_path} -df {data_folder_name} -gf {gt_folder_name}')

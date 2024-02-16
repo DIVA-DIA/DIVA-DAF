@@ -32,7 +32,9 @@ class RightAngleRotation:
     :type angle_list: List[int]
 
     """
-    def __init__(self, angle_list: List[int] = [0, 90, 180, 270]):
+    def __init__(self, angle_list=None):
+        if angle_list is None:
+            angle_list = [0, 90, 180, 270]
         self.angles = angle_list
         self.target_class = None
 

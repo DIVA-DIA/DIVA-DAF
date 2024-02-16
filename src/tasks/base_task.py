@@ -126,10 +126,10 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
     def setup(self, stage: str):
         if self.confusion_matrix_val:
             self.metric_conf_mat_val = MulticlassConfusionMatrix(num_classes=self.trainer.datamodule.num_classes,
-                                                                    compute_on_step=False)
+                                                                 compute_on_step=False)
         if self.confusion_matrix_test:
             self.metric_conf_mat_test = MulticlassConfusionMatrix(num_classes=self.trainer.datamodule.num_classes,
-                                                                     compute_on_step=False)
+                                                                  compute_on_step=False)
         if self.trainer.strategy.strategy_name == 'ddp':
             batch_size = self.trainer.datamodule.batch_size
             if stage == 'fit':
@@ -153,7 +153,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
 
     def step(self,
              batch: Any,
-             metric_kwargs: Optional[Dict[str, Dict[str, Any]]] = None) -> Dict[OutputKeys, Any]:
+             metric_kwargs: Optional[Dict[str, Dict[str, Any]]] = None) -> Tuple[Union[int, Any], Dict[str, Union[int, Any]]]:
         """
         The training/validation/test step. Override for custom behavior.
 
@@ -250,7 +250,7 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         :return: The output of the step method.
         :rtype: Any
         """
-        output = self.step(batch=batch,  **kwargs)
+        output = self.step(batch=batch, **kwargs)
         self._log_metrics_and_loss(output, stage='train')
         return output
 
@@ -271,7 +271,8 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         if self.trainer.state.stage == RunningStage.SANITY_CHECKING:
             return output
         self._log_metrics_and_loss(output, stage='val')
-        if self.confusion_matrix_val and (self.trainer.current_epoch + 1) % self.confusion_matrix_log_every_n_epoch == 0:
+        if self.confusion_matrix_val and (
+                self.trainer.current_epoch + 1) % self.confusion_matrix_log_every_n_epoch == 0:
             self.metric_conf_mat_val(preds=output[OutputKeys.PREDICTION], target=output[OutputKeys.TARGET])
         return output
 
@@ -359,7 +360,8 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
         for key, value in output[OutputKeys.LOG].items():
             if value.dim() != 0 and len(value) != 1:
                 for i, v in enumerate(value):
-                    self.log(f"{stage}/{key}_c_{i}", v, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
+                    self.log(f"{stage}/{key}_c_{i}", v, on_epoch=True, on_step=True, sync_dist=True,
+                             rank_zero_only=True)
             else:
                 self.log(f"{stage}/{key}", value, on_epoch=True, on_step=True, sync_dist=True, rank_zero_only=True)
 

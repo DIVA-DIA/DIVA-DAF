@@ -189,7 +189,3 @@ def _get_class_frequencies_weights_segmentation(gt_images: Union[np.ndarray, Lis
     # Normalize vector to sum up to 1.0 (in case the Loss function does not do it)
     class_weights = (1 / num_samples_per_class)  # / ((1 / num_samples_per_class).sum())
     return class_weights.tolist(), classes
-
-
-if __name__ == '__main__':
-    print(get_analytics(input_path=Path('tests/dummy_data/dummy_dataset')))
