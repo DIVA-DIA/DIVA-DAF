@@ -48,7 +48,7 @@ task:
     confusion_matrix_test: False
 
 datamodule:
-    _target_: src.datamodules.SSLTiles.datamodule_prebuilt.SSLTilesDataModulePrebuilt
+    _target_: src.datamodules.Classification.datamodule.SSLTilesDataModulePrebuilt
 
     data_dir: /net/research-hisdoc/datasets/self-supervised/CB55/tiles_960_1344_embeded/3_fixed_positions/dataset_1
     num_workers: 4

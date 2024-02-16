@@ -3,7 +3,7 @@ import pytest
 from torchvision.datasets.folder import pil_loader
 from torchvision.transforms import ToTensor
 
-from src.datamodules.SSLTiles.utils.single_transform import TilesBuilding
+from src.datamodules.utils.single_transforms import TilesBuilding
 
 from tests.test_data.dummy_data_histdb_new.dummy_data import data_dir
 

@@ -5,25 +5,20 @@ import numpy as np
 from PIL import Image
 
 
-def save_output_page_image(image_name, output_image, output_folder: Path, class_encoding: List[Tuple[int]]):
+def save_output_page_image(image_name: str, output_image: np.ndarray, output_folder: Path,
+                           class_encoding: List[Tuple[int]]) -> None:
     """
     Helper function to save the output during testing in the DIVAHisDB format
 
-    Parameters
-    ----------
-    image_name: str
-        name of the image that is saved
-    output_image: numpy matrix of size [#C x H x W]
-        output image at full size
-    output_folder: Path
-        path to the output folder for the test data
-    class_encoding: list(tuple(int))
-        list with the class encodings
+    :param image_name: name of the image that is saved
+    :type image_name: str
+    :param output_image: output image at full size [#C x H x W]
+    :type output_image: np.ndarray
+    :param output_folder: path to the output folder for the test data
+    :type output_folder: Path
+    :param class_encoding: list with the class encodings
+    :type class_encoding: List[Tuple[int]]
 
-    Returns
-    -------
-    mean_iu : float
-        mean iu of this image
     """
 
     output_encoded = output_to_class_encodings(output_image, class_encoding)
@@ -36,21 +31,17 @@ def save_output_page_image(image_name, output_image, output_folder: Path, class_
     Image.fromarray(output_encoded.astype(np.uint8)).save(str(dest_filename))
 
 
-def output_to_class_encodings(output, class_encodings):
+def output_to_class_encodings(output: np.ndarray, class_encodings: List[Tuple[int]]) -> np.ndarray:
     """
     This function converts the output prediction matrix to an image like it was provided in the ground truth
 
-    Parameters
-    -------
-    output : np.array of size [#C x H x W]
-        output prediction of the network for a full-size image, where #C is the number of classes
-    class_encodings : List
-        Contains the range of encoded classes
-    perform_argmax : bool
-        perform argmax on input data
-    Returns
-    -------
-    numpy array of size [C x H x W] (BGR)
+    :param output: output prediction of the network for a full-size image, where #C is the number of classes
+    :type output: np.ndarray
+    :param class_encodings: Contains the range of encoded classes
+    :type class_encodings: List[Tuple[int]]
+
+    :return: numpy array of size [C x H x W] (BGR) with the classes encoded as in the ground truth
+    :rtype: np.ndarray
     """
 
     integer_encoded = np.argmax(output, axis=0)

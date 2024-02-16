@@ -1,23 +1,27 @@
+from typing import Tuple
+
 import numpy as np
 
 
-def merge_patches(patch, coordinates, full_output):
+def merge_patches(patch: np.ndarray, coordinates: Tuple[int, int], full_output: np.ndarray) -> np.ndarray:
     """
     This function merges the patch into the full output image
     Overlapping values are resolved by taking the max.
 
-    Parameters
-    ----------
-    patch: numpy matrix of size [#classes x crop_size x crop_size]
+    :param patch: numpy matrix of size [#classes x crop_size x crop_size]
         a patch from the larger image
-    coordinates: tuple of ints
+    :type patch: np.ndarray
+    :param coordinates: tuple of ints
         top left coordinates of the patch within the larger image for all patches in a batch
-    full_output: numpy matrix of size [#C x H x W]
+    :type coordinates: Tuple[int, int]
+    :param full_output: numpy matrix of size [#C x H x W]
         output image at full size
-    Returns
-    -------
-    full_output: numpy matrix [#C x Htot x Wtot]
+    :type full_output: np.ndarray
+    :returns: full_output: numpy matrix [#C x Htot x Wtot]
+        output image at full size with patch inserted
+    :rtype: np.ndarray
     """
+
     assert len(full_output.shape) == 3
     assert full_output.size != 0
 

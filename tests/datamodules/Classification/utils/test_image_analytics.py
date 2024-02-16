@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.datamodules.SSLTiles.utils.image_analytics import get_analytics_data_image_folder
+from src.datamodules.Classification.utils.image_analytics import get_analytics_data_image_folder
 from tests.test_data.dummy_data_histdb_new.dummy_data import data_dir_classification
 
 

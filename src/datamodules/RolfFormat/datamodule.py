@@ -1,4 +1,4 @@
-from typing import Union, List, Optional
+from typing import Union, List, Optional, Dict
 
 import torch
 from torch.utils.data import DataLoader
@@ -17,11 +17,45 @@ log = utils.get_logger(__name__)
 
 
 class DataModuleRolfFormat(AbstractDatamodule):
+    """
+    DataModule for the RolfFormat dataset. What makes this dataset special is that all the files are within one folder.
+    Each file name has a fixed structure of `name_{file_number}.jpg`. The file number is a number between 0 and 9999.
+    The different splits are defined by giving a range and a root folder for each split.
+
+    :param data_root: Root folder of the dataset.
+    :type data_root: str
+    :param train_specs: Dictionary with the specs for the train split.
+    :type train_specs: dict
+    :param val_specs: Dictionary with the specs for the validation split.
+    :param test_specs: Dictionary with the specs for the test split.
+    :type val_specs: dict
+    :param pred_file_path_list: List of file paths to predict.
+    :type pred_file_path_list: List[str]
+    :param image_analytics: A dictionary with the mean and std of the images.
+    :type image_analytics: dict
+    :param classes: A dictionary with the class encodings and weights.
+    :type classes: dict
+    :param image_dims: The dimensions of the images.
+    :type image_dims: ImageDimensions
+    :param num_workers: Number of workers for the dataloader.
+    :type num_workers: int
+    :param batch_size: Batch size for the dataloader.
+    :type batch_size: int
+    :param shuffle: Whether to shuffle the dataset.
+    :type shuffle: bool
+    :param drop_last: Whether to drop the last batch if it is smaller than the batch size.
+    :type drop_last: bool
+    """
+
     def __init__(self, data_root: str,
-                 train_specs=None, val_specs=None, test_specs=None, pred_file_path_list: List[str] = None,
-                 image_analytics=None, classes=None, image_dims=None,
+                 train_specs: Dict = None, val_specs: Dict = None, test_specs: Dict = None,
+                 pred_file_path_list: List[str] = None,
+                 image_analytics: Dict = None, classes: Dict = None, image_dims: ImageDimensions = None,
                  num_workers: int = 4, batch_size: int = 8,
                  shuffle: bool = True, drop_last: bool = True):
+        """
+        Constructor method for the `DataModuleRolfFormat` class.
+        """
         super().__init__()
 
         if train_specs is not None:
@@ -151,13 +185,15 @@ class DataModuleRolfFormat(AbstractDatamodule):
                                            is_test=False,
                                            **common_kwargs)
             log.info(f'Initialized train dataset with {len(self.train)} samples.')
-            self.check_min_num_samples(self.trainer.num_devices, self.batch_size, num_samples=len(self.train), data_split='train', drop_last=self.drop_last)
+            self.check_min_num_samples(self.trainer.num_devices, self.batch_size, num_samples=len(self.train),
+                                       data_split='train', drop_last=self.drop_last)
 
             self.val = DatasetRolfFormat(dataset_specs=self.val_dataset_specs,
                                          is_test=False,
                                          **common_kwargs)
             log.info(f'Initialized val dataset with {len(self.val)} samples.')
-            self.check_min_num_samples(self.trainer.num_devices, self.batch_size, num_samples=len(self.val), data_split='val', drop_last=self.drop_last)
+            self.check_min_num_samples(self.trainer.num_devices, self.batch_size, num_samples=len(self.val),
+                                       data_split='val', drop_last=self.drop_last)
 
         if stage == 'test':
             self.test = DatasetRolfFormat(dataset_specs=self.test_dataset_specs,
@@ -171,7 +207,6 @@ class DataModuleRolfFormat(AbstractDatamodule):
                                           **common_kwargs)
             log.info(f'Initialized predict dataset with {len(self.predict)} samples.')
             # self._check_min_num_samples(num_samples=len(self.test), data_split='test', drop_last=False)
-
 
     def train_dataloader(self, *args, **kwargs) -> DataLoader:
         return DataLoader(self.train,
@@ -205,24 +240,32 @@ class DataModuleRolfFormat(AbstractDatamodule):
                           drop_last=False,
                           pin_memory=True)
 
-    def get_output_filename_test(self, index):
+    def get_output_filename_test(self, index: int) -> str:
         """
         Returns the original filename of the doc image.
         You can just use this during testing!
-        :param index:
-        :return:
+
+        :param index: Index of the sample we want the filename of.
+        :type index: int
+        :raises Exception: This method can just be called during testing
+        :return: Filename of the doc image.
+        :rtype: str
         """
         if not hasattr(self, 'test'):
             raise Exception('This method can just be called during testing')
 
         return self.test.output_file_list[index]
 
-    def get_output_filename_predict(self, index):
+    def get_output_filename_predict(self, index: int) -> str:
         """
         Returns the original filename of the doc image.
         You can just use this during testing!
-        :param index:
-        :return:
+
+        :param index: Index of the sample we want the filename of.
+        :type index: int
+        :raises Exception: This method can just be called during prediction
+        :return: Filename of the doc image.
+        :rtype: str
         """
         if not hasattr(self, 'predict'):
             raise Exception('This method can just be called during prediction')

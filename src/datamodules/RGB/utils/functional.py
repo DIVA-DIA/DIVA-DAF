@@ -8,16 +8,12 @@ def gt_to_int_encoding(matrix: torch.Tensor, class_encodings: torch.Tensor):
     """
     Convert ground truth tensor or numpy matrix to one-hot encoded matrix
 
-    Parameters
-    -------
-    matrix: float tensor from to_tensor() or numpy array
-        shape (C x H x W) in the range [0.0, 1.0] or shape (H x W x C) BGR
-    class_encodings: List of list of ints (C x RGB)
-        color to index matching
-    Returns
-    -------
-    torch.LongTensor of size [#C x H x W]
-        sparse one-hot encoded multi-class matrix, where #C is the number of classes
+    :param matrix: Image as a tensor of size [C x H x W] (BGR)
+    :type matrix: torch.Tensor
+    :param class_encodings: class encoding so which class (index) has what value (element)
+    :type class_encodings: List[int]
+    :return: integer encoded matrix of size [#C x H x W]
+    :rtype: torch.Tensor
     """
     integer_encoded = torch.full(size=matrix[0].shape, fill_value=-1, dtype=torch.long)
     for index, encoding in enumerate(class_encodings):
@@ -34,16 +30,15 @@ def gt_to_one_hot(matrix: torch.Tensor, class_encodings: torch.Tensor):
     """
     Convert ground truth tensor or numpy matrix to one-hot encoded matrix
 
-    Parameters
-    -------
-    matrix: float tensor from to_tensor() or numpy array
+    :param matrix: float tensor from to_tensor() or numpy array
         shape (C x H x W) in the range [0.0, 1.0] or shape (H x W x C) BGR
-    class_encodings: List of list of int
-        color to index matching
-    Returns
-    -------
-    torch.LongTensor of size [#C x H x W]
+    :type matrix: torch.Tensor or np.ndarray
+    :param class_encodings: List of int
+        Blue channel values that encode the different classes
+    :type class_encodings: List[int]
+    :return: Tensor of size [#C x H x W]
         sparse one-hot encoded multi-class matrix, where #C is the number of classes
+    :rtype: torch.LongTensor
     """
     integer_encoded = gt_to_int_encoding(matrix=matrix, class_encodings=class_encodings)
 

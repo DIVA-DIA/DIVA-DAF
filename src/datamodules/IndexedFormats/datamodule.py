@@ -17,6 +17,69 @@ log = utils.get_logger(__name__)
 
 
 class DataModuleIndexed(AbstractDatamodule):
+    """
+    DataModule for datasets where the ground truth is in an index file format encoded (e.g., GIF, TIF).
+
+    The folder structure is as follows::
+
+        data_dir
+        ├── train_folder_name
+        │   ├── data_folder_name
+        │   │   ├── image1.png
+        │   │   ├── ...
+        │   │   └── imageN.png
+        │   └── gt_folder_name
+        │       ├── image1.png
+        │       ├── ...
+        │       └── imageN.png
+        ├── val_folder_name
+        │   ├── data_folder_name
+        │   │   ├── image1.png
+        │   │   ├── ...
+        │   │   └── imageN.png
+        │   └── gt_folder_name
+        │       ├── image1.png
+        │       ├── ...
+        │       └── imageN.png
+        └── test_folder_name
+            ├── data_folder_name
+            │   ├── image1.png
+            │   ├── ...
+            │   └── imageN.png
+            └── gt_folder_name
+                ├── image1.png
+                ├── ...
+                └── imageN.png
+
+    :param data_dir: Path to dataset folder (train / val / test)
+    :type data_dir: Path
+    :param data_folder_name: name of the folder inside of the train/val/test that contains the images
+    :type data_folder_name: str
+    :param gt_folder_name: name of the folder in train/val/test containing the ground truth images
+    :type gt_folder_name: str
+    :param train_folder_name: name of the train folder
+    :type train_folder_name: str
+    :param val_folder_name: name of the validation folder
+    :type val_folder_name: str
+    :param test_folder_name: name of the test folder
+    :type test_folder_name: str
+    :param pred_file_path_list: list of file paths to predict
+    :type pred_file_path_list: List[str]
+    :param selection_train: number of files or list of files that should be taken into account for the train split.
+    :type selection_train: Optional[Union[int, List[str]]]
+    :param selection_val: number of files or list of files that should be taken into account for the validation split.
+    :type selection_val: Optional[Union[int, List[str]]]
+    :param selection_test: number of files or list of files that should be taken into account for the test split.
+    :type selection_test: Optional[Union[int, List[str]]]
+    :param num_workers: number of workers for the dataloader
+    :type num_workers: int
+    :param batch_size: batch size
+    :type batch_size: int
+    :param shuffle: shuffle the data
+    :type shuffle: bool
+    :param drop_last: drop the last batch if it is smaller than the batch size
+    :type drop_last: bool
+    """
     def __init__(self, data_dir: str, data_folder_name: str, gt_folder_name: str,
                  train_folder_name: str = 'train', val_folder_name: str = 'val', test_folder_name: str = 'test',
                  pred_file_path_list: List[str] = None,
@@ -24,7 +87,10 @@ class DataModuleIndexed(AbstractDatamodule):
                  selection_val: Optional[Union[int, List[str]]] = None,
                  selection_test: Optional[Union[int, List[str]]] = None,
                  num_workers: int = 4, batch_size: int = 8,
-                 shuffle: bool = True, drop_last: bool = True):
+                 shuffle: bool = True, drop_last: bool = True) -> None:
+        """
+        Constructor method for the DataModuleIndexed class.
+        """
         super().__init__()
 
         self.train_folder_name = train_folder_name
@@ -61,7 +127,7 @@ class DataModuleIndexed(AbstractDatamodule):
         self.shuffle = shuffle
         self.drop_last = drop_last
 
-        self.data_dir = data_dir
+        self.data_dir = Path(data_dir)
 
         self.selection_train = selection_train
         self.selection_val = selection_val
@@ -70,7 +136,7 @@ class DataModuleIndexed(AbstractDatamodule):
         # Check default attributes using base_datamodule function
         self._check_attributes()
 
-    def setup(self, stage: Optional[str] = None):
+    def setup(self, stage: Optional[str] = None) -> None:
         super().setup()
 
         common_kwargs = {'image_dims': self.image_dims,
@@ -120,7 +186,6 @@ class DataModuleIndexed(AbstractDatamodule):
 
         if stage == 'predict':
             self.predict = DatasetPredict(image_path_list=self.pred_file_path_list,
-                                          is_test=False,
                                           **common_kwargs)
             log.info(f'Initialized predict dataset with {len(self.predict)} samples.')
 
@@ -156,24 +221,32 @@ class DataModuleIndexed(AbstractDatamodule):
                           drop_last=False,
                           pin_memory=True)
 
-    def get_output_filename_test(self, index):
+    def get_output_filename_test(self, index: int) -> str:
         """
         Returns the original filename of the doc image.
         You can just use this during testing!
-        :param index:
-        :return:
+
+        :param index: index of the image
+        :type index: int
+        :raise ValueError: if the method is called during training
+        :return: filename of the image
+        :rtype: str
         """
         if not hasattr(self, 'test'):
             raise ValueError('This method can just be called during testing')
 
         return self.test.output_file_list[index]
 
-    def get_output_filename_predict(self, index):
+    def get_output_filename_predict(self, index: int) -> str:
         """
         Returns the original filename of the doc image.
-        You can just use this during testing!
-        :param index:
-        :return:
+        You can just use this during prediction!
+
+        :param index: index of the image
+        :type index: int
+        :raise ValueError: if the method is called during training
+        :return: filename of the image
+        :rtype: str
         """
         if not hasattr(self, 'predict'):
             raise ValueError('This method can just be called during prediction')

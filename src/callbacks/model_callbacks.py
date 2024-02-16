@@ -18,16 +18,36 @@ class SaveModelStateDictAndTaskCheckpoint(ModelCheckpoint):
     """
     Saves the neural network weights into a pth file.
     It produces a file for each the encoder and the header.
+    The encoder file is named after the backbone_filename and the header file after the header_filename.
+    The backbone_filename and the header_filename can be specified in the constructor.
+
+    :param backbone_filename: Filename of the backbone checkpoint
+    :type backbone_filename: str, optional
+    :param header_filename: Filename of the header checkpoint
+    :type header_filename: str, optional
     """
 
     def __init__(self, backbone_filename: Optional[str] = 'backbone', header_filename: Optional[str] = 'header',
                  **kwargs):
+        """
+        Constructor of the SaveModelStateDictAndTaskCheckpoint class.
+        """
         super(SaveModelStateDictAndTaskCheckpoint, self).__init__(**kwargs)
         self.backbone_filename = backbone_filename
         self.header_filename = header_filename
         self.CHECKPOINT_NAME_LAST = 'task_last'
 
     def _save_checkpoint(self, trainer: "pl.Trainer", filepath: str) -> None:
+        """
+        Saves the header and backbone state dict and the task checkpoint in a combined folder.
+        The name of the folder ist the epoch the checkpoint was created on.
+
+        The task checkpoint is saved as task_last.pth if it is the last checkpoint and as task_epoch=x.pth otherwise.
+        :param trainer: The trainer object
+        :type trainer: pl.Trainer
+        :param filepath: The filepath of the model state dict
+        :type filepath: str
+        """
         if not trainer.is_global_zero:
             return
         super()._save_checkpoint(trainer=trainer, filepath=filepath)
@@ -54,6 +74,14 @@ class SaveModelStateDictAndTaskCheckpoint(ModelCheckpoint):
 
     @rank_zero_only
     def _del_old_folder(self, filepath: str, trainer: "pl.Trainer") -> None:
+        """
+        Deletes the old folder of the last checkpoint if the current epoch is better based on the monitor metric.
+
+        :param filepath: The filepath of the old folder
+        :type filepath: str
+        :param trainer: The trainer object
+        :type trainer: pl.Trainer
+        """
         file_system = get_filesystem(filepath)
         if file_system.exists(filepath):
             # delete all files in directory
@@ -66,6 +94,12 @@ class SaveModelStateDictAndTaskCheckpoint(ModelCheckpoint):
 
 
 class CheckBackboneHeaderCompatibility(Callback):
+    """
+    Checks if the backbone and the header are compatible.
+    This is checked by passing a random tensor through the backbone and the header.
+    If the backbone and the header are not compatible, the program is terminated.
+
+    """
 
     def __init__(self):
         self.checked = False

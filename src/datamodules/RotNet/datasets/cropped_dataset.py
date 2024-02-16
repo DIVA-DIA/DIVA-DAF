@@ -4,16 +4,17 @@ Load a dataset of historic documents by specifying the folder where its located.
 
 # Utils
 from pathlib import Path
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Tuple
 
 from omegaconf import ListConfig
-from torch import is_tensor
+from PIL import Image
+from torch import is_tensor, Tensor
 from torchvision.datasets.folder import has_file_allowed_extension, pil_loader
 from torchvision.transforms import ToTensor
 
-from src.datamodules.utils.single_transforms import RightAngleRotation
 from src.datamodules.DivaHisDB.datasets.cropped_dataset import CroppedHisDBDataset
 from src.datamodules.utils.misc import selection_validation
+from src.datamodules.utils.single_transforms import RightAngleRotation
 from src.utils import utils
 
 IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm')
@@ -22,44 +23,105 @@ log = utils.get_logger(__name__)
 
 
 class CroppedRotNet(CroppedHisDBDataset):
-    """A generic data loader where the images are arranged in this way: ::
+    """
+    Dataset implementation of the RotNet paper of `Gidaris et al. <https://arxiv.org/abs/1803.07728>`_. This
+    dataset is used for the DivaHisDB dataset in a cropped setup.
 
-        root/gt/xxx.png
-        root/gt/xxy.png
-        root/gt/xxz.png
+    The structure of the folder should be as follows::
 
-        root/data/xxx.png
-        root/data/xxy.png
-        root/data/xxz.png
+         data_dir
+        ├── train_folder_name
+        │   ├── data_folder_name
+        │   │   ├── original_image_name_1
+        │   │   │   ├── image_crop_1.png
+        │   │   │   ├── ...
+        │   │   │   └── image_crop_N.png
+        │   │   └──original_image_name_N
+        │   │       ├── image_crop_1.png
+        │   │       ├── ...
+        │   │       └── image_crop_N.png
+        │   └── gt_folder_name
+        │       ├── original_image_name_1
+        │       │   ├── image_crop_1.png
+        │       │   ├── ...
+        │       │   └── image_crop_N.png
+        │       └──original_image_name_N
+        │           ├── image_crop_1.png
+        │           ├── ...
+        │           └── image_crop_N.png
+        ├── validation_folder_name
+        │   ├── data_folder_name
+        │   │   ├── original_image_name_1
+        │   │   │   ├── image_crop_1.png
+        │   │   │   ├── ...
+        │   │   │   └── image_crop_N.png
+        │   │   └──original_image_name_N
+        │   │       ├── image_crop_1.png
+        │   │       ├── ...
+        │   │       └── image_crop_N.png
+        │   └── gt_folder_name
+        │       ├── original_image_name_1
+        │       │   ├── image_crop_1.png
+        │       │   ├── ...
+        │       │   └── image_crop_N.png
+        │       └──original_image_name_N
+        │           ├── image_crop_1.png
+        │           ├── ...
+        │           └── image_crop_N.png
+        └── test_folder_name
+            ├── data_folder_name
+            │   ├── original_image_name_1
+            │   │   ├── image_crop_1.png
+            │   │   ├── ...
+            │   │   └── image_crop_N.png
+            │   └──original_image_name_N
+            │       ├── image_crop_1.png
+            │       ├── ...
+            │       └── image_crop_N.png
+            └── gt_folder_name
+                ├── original_image_name_1
+                │   ├── image_crop_1.png
+                │   ├── ...
+                │   └── image_crop_N.png
+                └──original_image_name_N
+                    ├── image_crop_1.png
+                    ├── ...
+                    └── image_crop_N.png
+
+    :param path: Path to root dir of the dataset (folder containing the train/val/test folder)
+    :type path: Path
+    :param data_folder_name: Name of the folder containing the train/val/test folder
+    :type data_folder_name: str
+    :param gt_folder_name: Name of the folder containing the train/val/test folder
+    :type gt_folder_name: str
+    :param selection: If you only want to use a subset of the dataset, you can specify the name of the files
+        (without the file extension) in a list. If you want to use all files, set this parameter to None.
+    :type selection: Union[int, List[str]]
+    :param is_test: If True, the it returns additional information that are important for the test set.
+    :type is_test: bool
+    :param image_transform:
     """
 
     def __init__(self, path: Path, data_folder_name: str, gt_folder_name: str = None,
                  selection: Optional[Union[int, List[str]]] = None,
-                 is_test=False, image_transform=None, **kwargs):
+                 is_test: bool = False, image_transform: callable = None):
         """
-        Parameters
-        ----------
-        path : string
-            Path to dataset folder (train / val / test)
-        classes :
-        workers : int
-        imgs_in_memory :
-        crops_per_image : int
-        crop_size : int
-        image_transform : callable
-        target_transform : callable
-        twin_transform : callable
-        loader : callable
-            A function to load an image given its path.
+        Constructor method of the class RotNetDataset.
         """
-
         super(CroppedRotNet, self).__init__(path=path, data_folder_name=data_folder_name, gt_folder_name=gt_folder_name,
                                             selection=selection,
                                             is_test=is_test, image_transform=image_transform,
-                                            target_transform=None, twin_transform=None,
-                                            **kwargs)
+                                            target_transform=None, twin_transform=None)
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int) -> Tuple[Tensor, int]:
+        """
+        This function returns the image and the ground truth for a given index.
+
+        :param index: index of the image
+        :type index: int
+        :return: the image and the ground truth
+        :rtype: Tuple[Tensor, int]
+        """
         data_img = self._load_data_and_gt(index=index)
         img, gt = self._apply_transformation(data_img, index=index)
         return img, gt
@@ -72,27 +134,28 @@ class CroppedRotNet(CroppedHisDBDataset):
         """
         return self.num_samples
 
-    def _load_data_and_gt(self, index):
+    def _load_data_and_gt(self, index: int) -> Image.Image:
+        """
+        Loads the image for a given index.
+
+        :param index: index of the image to be loaded
+        :type index: int
+        :return: the image
+        :rtype: Image.Image
+        """
+
         data_img = pil_loader(self.img_paths_per_page[index])
         return data_img
 
-    def _apply_transformation(self, img, index):
+    def _apply_transformation(self, img: Image.Image, index: int) -> Tuple[Tensor, int]:
         """
         Applies the transformations that have been defined in the setup (setup.py). If no transformations
         have been defined, the PIL image is returned instead.
 
-        Parameters
-        ----------
-        img: PIL image
-            image data
-        gt: PIL image
-            ground truth image
-        coordinates: tuple (int, int)
-            coordinates where the sliding window should be cropped
-        Returns
-        -------
-        tuple
-            img and gt after transformations
+        :param img: PIL image of the codex
+        :type img: Image.Image
+        :param index: index of the image to determine the rotation angle
+        :type index: int
         """
         if self.twin_transform is not None and not self.is_test:
             img, _ = self.twin_transform(img, None)
@@ -114,16 +177,41 @@ class CroppedRotNet(CroppedHisDBDataset):
                           selection: Optional[Union[int, List[str]]] = None) \
             -> List[Path]:
         """
-        Structure of the folder
+        Creates the list of paths to the original images.
 
-        directory/data/ORIGINAL_FILENAME/FILE_NAME_X_Y.png
-        directory/gt/ORIGINAL_FILENAME/FILE_NAME_X_Y.png
+        Structure of the folder::
 
+            dictionary
+            ├── data_folder_name
+            │   ├── original_image_name_1
+            │   │   ├── image_crop_1.png
+            │   │   ├── ...
+            │   │   └── image_crop_N.png
+            │   └──original_image_name_N
+            │       ├── image_crop_1.png
+            │       ├── ...
+            │       └── image_crop_N.png
+            └── gt_folder_name
+                ├── original_image_name_1
+                │   ├── image_crop_1.png
+                │   ├── ...
+                │   └── image_crop_N.png
+                └──original_image_name_N
+                    ├── image_crop_1.png
+                    ├── ...
+                    └── image_crop_N.png
 
-        :param directory:
-        :param selection:
-        :return: tuple
-            (path_data_file, path_gt_file, original_image_name, (x, y))
+        :param directory: Path to root dir of split
+        :type directory: Path
+        :param data_folder_name: Name of the folder containing the data
+        :type data_folder_name: str
+        :param gt_folder_name: Name of the folder containing the ground truth
+        :type gt_folder_name: str
+        :param selection: If you only want to use a subset of the dataset, you can specify the name of the files
+            (without the file extension) in a list. If you want to use all files, set this parameter to None.
+        :type selection: Union[int, List[str]]
+        :return: List of paths to the original images
+        :rtype: List[Path]
         """
         paths = []
         directory = directory.expanduser()

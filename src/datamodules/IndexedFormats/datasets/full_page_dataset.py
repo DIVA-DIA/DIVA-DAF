@@ -9,6 +9,7 @@ from typing import List, Tuple, Union, Optional
 import numpy as np
 import torch
 import torch.utils.data as data
+from PIL import Image
 from omegaconf import ListConfig
 from torch import is_tensor
 from torchvision.datasets.folder import pil_loader, has_file_allowed_extension
@@ -35,31 +36,29 @@ class DatasetIndexed(data.Dataset):
         root/data/xxz.png
 
         And the ground truth is represented in an index format like GIF.
+
+        :param path: Path to the dataset
+        :type path: Path
+        :param data_folder_name: Name of the folder where the data is located
+        :type data_folder_name: str
+        :param gt_folder_name: Name of the folder where the ground truth is located
+        :type gt_folder_name: str
+        :param image_dims: Image dimensions of the dataset
+        :type image_dims: ImageDimensions
+        :param is_test: Flag to indicate if the dataset is used for testing
+        :type is_test: bool
+        :param selection: Selection of the dataset, can be an integer or a list of strings
+        :type selection: Optional[Union[int, List[str]]]
+        :param image_transform: Transformations that are applied to the image
+        :type image_transform: Optional[Callable]
     """
 
     def __init__(self, path: Path, data_folder_name: str, gt_folder_name: str,
                  image_dims: ImageDimensions, is_test=False,
                  selection: Optional[Union[int, List[str]]] = None,
-                 image_transform=None):
+                 image_transform=None) -> None:
         """
-        Parameters
-        ----------
-        path: Path
-            Path to dataset folder (train / val / test)
-        data_folder_name: string
-            name of the folder inside of the train/val/test that contains the images
-        gt_folder_name: string
-            name of the folder in train/val/test containing the ground truth images
-        image_dims: ImageDimensions
-            Dimension of the image(s)
-        selection: int or list(str)
-            number of files or list of files that should be taken into account for this split.
-        is_test: bool
-            Indicate if the split is the test split
-        image_transform : callable
-        target_transform : callable
-        twin_transform : callable
-            A function to load an image given its path.
+         Constructor method for the DatasetIndexed class.
         """
 
         self.path = path
@@ -95,7 +94,8 @@ class DatasetIndexed(data.Dataset):
         """
         return self.num_samples
 
-    def __getitem__(self, index):
+    def __getitem__(self, index: int) -> Union[
+        Tuple[torch.Tensor, torch.Tensor], Tuple[torch.Tensor, torch.Tensor, int]]:
         data_img, gt_img = self._load_data_and_gt(index=index)
         img, gt = self._apply_transformation(data_img, gt_img)
         assert img.shape[-2:] == gt.shape[-2:]
@@ -104,9 +104,16 @@ class DatasetIndexed(data.Dataset):
         else:
             return img, gt
 
+    def _load_data_and_gt(self, index: int) -> Tuple[Image.Image, Image.Image]:
+        """
+        Load the data and the ground truth.
 
-    def _load_data_and_gt(self, index):
-        data_img = pil_loader(self.img_gt_path_list[index][0])
+        :param index: Index of the image
+        :type index: int
+        :return: Data and ground truth as PIL Image
+        :rtype: Tuple[Image.Image, Image.Image]
+        """
+        data_img = pil_loader(str(self.img_gt_path_list[index][0]))
         gt_img = pil_loader_gif(self.img_gt_path_list[index][1])
 
         assert data_img.height == self.image_dims.height and data_img.width == self.image_dims.width
@@ -114,7 +121,17 @@ class DatasetIndexed(data.Dataset):
 
         return data_img, gt_img
 
-    def _apply_transformation(self, img, gt):
+    def _apply_transformation(self, img: Image, gt: Image) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Apply transformations to the image and the ground truth.
+
+        :param img: Original image
+        :type img: Image
+        :param gt: Ground truth as an image
+        :type gt: Image
+        :return: Original and ground Truth as Tensor with applied transformations
+        :rtype: Tuple[torch.Tensor, torch.Tensor]
+        """
         if self.image_transform is not None:
             # perform transformations
             img, _ = self.image_transform(img, gt)
@@ -140,12 +157,16 @@ class DatasetIndexed(data.Dataset):
         directory/data/FILE_NAME.png
         directory/gt/FILE_NAME.gif
 
-        :param directory:
-        :param data_folder_name:
-        :param gt_folder_name:
-        :param selection:
-        :return: tuple
-            (path_data_file, path_gt_file)
+        :param directory: Path to the dataset
+        :type directory: Path
+        :param data_folder_name: Name of the folder where the data is located
+        :type data_folder_name: str
+        :param gt_folder_name: Name of the folder where the ground truth is located
+        :type gt_folder_name: str
+        :param selection: Selection of the dataset, can be an integer or a list of strings
+        :type selection: Optional[Union[int, List[str]]]
+        :return: List of tuples with the path to the data and the ground truth
+        :rtype: List[Tuple[Path, Path]]
         """
         paths = []
         directory = directory.expanduser()
