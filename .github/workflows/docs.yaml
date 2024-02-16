@@ -1,4 +1,5 @@
 name: Generating and publishing Docs
+# inspired by https://coderefinery.github.io/documentation/gh_workflow/
 
 on:
     pull_request:
