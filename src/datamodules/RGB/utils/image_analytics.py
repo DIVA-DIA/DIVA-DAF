@@ -172,7 +172,6 @@ def _get_class_frequencies_weights_segmentation(gt_images: Union[np.ndarray, Lis
     """
     logging.info('Begin computing class frequencies weights')
 
-    total_num_pixels = 0
     label_counter = {}
 
     for path in gt_images:
@@ -180,7 +179,6 @@ def _get_class_frequencies_weights_segmentation(gt_images: Union[np.ndarray, Lis
         colors = img_raw.getcolors()
 
         for count, color in colors:
-            total_num_pixels += count
             label_counter[color] = label_counter.get(color, 0) + count
 
     classes = sorted(label_counter.keys())

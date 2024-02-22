@@ -48,6 +48,6 @@ class WatchModelWithWandb(Callback):
         try:
             logger = get_wandb_logger(trainer=trainer)
             logger.watch(model=pl_module.model, log=self.log_category, log_freq=self.log_freq)
-        except ValueError as e:
+        except ValueError:
             logger = utils.get_logger(__name__)
             logger.error('No wandb logger found. WatchModelWithWandb callback will not do anything.')

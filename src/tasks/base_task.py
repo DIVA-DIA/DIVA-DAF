@@ -437,5 +437,5 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             # names should be uniqe or else charts from different experiments in wandb will overlap
             experiment.log({f"confusion_matrix_{stage}_img/ep_{self.trainer.current_epoch}": wandb.Image(plt)},
                            commit=False)
-        except ValueError as e:
+        except ValueError:
             log.warning('No wandb logger found. Confusion matrix images are not saved.')
