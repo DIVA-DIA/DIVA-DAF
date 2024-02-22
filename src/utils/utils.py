@@ -4,6 +4,7 @@ import sys
 import warnings
 from typing import List, Sequence
 
+import hydra
 import numpy as np
 import pytorch_lightning as pl
 import rich
@@ -52,9 +53,11 @@ def check_config(config: DictConfig) -> None:
         - easier access to debug mode
         - forcing debug friendly configuration
         - forcing multi-gpu friendly configuration
+        - setting seed for random number generators
+        - setting up default csv logger
+
     :param config: the main hydra config
     :type config: DictConfig
-
     """
 
     # check if required configs are in the main config file
@@ -101,6 +104,9 @@ def check_config(config: DictConfig) -> None:
     if 'freeze' in config.model.backbone and 'freeze' in config.model.header and config.train:
         if config.model.backbone.freeze and config.model.header.freeze:
             log.error(f"Cannot train with no trainable parameters! Both header and backbone are frozen!")
+
+    if 'csv' not in config.logger:
+        config.logger['csv'] = hydra.compose('logger/csv')['logger']['csv']
 
     # disable adding new keys to config
     OmegaConf.set_struct(config, True)
