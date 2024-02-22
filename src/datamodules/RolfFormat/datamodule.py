@@ -134,7 +134,7 @@ class DataModuleRolfFormat(AbstractDatamodule):
     def _print_analytics_data(self, analytics_data):
         indent = 4 * ' '
         lines = ['']
-        lines.append(f'image_analytics:')
+        lines.append('image_analytics:')
         lines.append(f'{indent}mean:')
         lines.append(f'{indent}{indent}R: {analytics_data["mean"][0]}')
         lines.append(f'{indent}{indent}G: {analytics_data["mean"][1]}')
@@ -150,7 +150,7 @@ class DataModuleRolfFormat(AbstractDatamodule):
     def _print_analytics_gt(self, analytics_gt):
         indent = 4 * ' '
         lines = ['']
-        lines.append(f'classes:')
+        lines.append('classes:')
         for i, class_specs in enumerate(zip(analytics_gt['class_encodings'], analytics_gt['class_weights'])):
             lines.append(f'{indent}class{i}:')
             lines.append(f'{indent}{indent}color:')
@@ -165,7 +165,7 @@ class DataModuleRolfFormat(AbstractDatamodule):
     def _print_image_dims(self, image_dims: ImageDimensions):
         indent = 4 * ' '
         lines = ['']
-        lines.append(f'image_dims:')
+        lines.append('image_dims:')
         lines.append(f'{indent}width:  {image_dims.width}')
         lines.append(f'{indent}height: {image_dims.height}')
 
@@ -252,7 +252,7 @@ class DataModuleRolfFormat(AbstractDatamodule):
         :rtype: str
         """
         if not hasattr(self, 'test'):
-            raise Exception('This method can just be called during testing')
+            raise ValueError('This method can just be called during testing')
 
         return self.test.output_file_list[index]
 
@@ -268,6 +268,6 @@ class DataModuleRolfFormat(AbstractDatamodule):
         :rtype: str
         """
         if not hasattr(self, 'predict'):
-            raise Exception('This method can just be called during prediction')
+            raise ValueError('This method can just be called during prediction')
 
         return self.predict.output_file_list[index]

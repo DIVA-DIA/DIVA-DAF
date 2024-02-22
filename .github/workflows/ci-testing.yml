@@ -14,26 +14,23 @@ on:
 
 jobs:
   pytest:
-
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-20.04]
-#        os: [ubuntu-20.04, macOS-10.15, windows-2019]
-        python-version: [3.8]
+    runs-on: ubuntu-latest
 
     # Timeout: https://stackoverflow.com/a/59076067/4521646
     timeout-minutes: 35
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v4
       with:
-        python-version: ${{ matrix.python-version }}
+        python-version: 3.8
         cache: 'pip'
+
+    - name: Set Python Path
+      run: |
+        echo "PYTHONPATH=$PYTHONPATH:." >> $GITHUB_ENV
 
     - name: Install pip dependencies
       run: | 

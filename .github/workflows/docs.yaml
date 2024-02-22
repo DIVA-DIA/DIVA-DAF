@@ -15,20 +15,23 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             -   uses: actions/checkout@v3
-            -   uses: actions/setup-python@v3
+            -   uses: actions/setup-python@v4
                 with:
                     python-version: 3.8
                     cache: 'pip'
+            -   name: Set Python Path
+                run: |
+                    echo "PYTHONPATH=$PYTHONPATH:." >> $GITHUB_ENV
             -   name: Install pip dependencies
                 run: |
                     pip install --requirement requirements.txt --upgrade --quiet --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
             -   name: Build docs
                 run: |
-                    sphinx-build docs _build
+                    sphinx-build docs docs/_build
             -   name: GitHub deployment
                 uses: peaceiris/actions-gh-pages@v3
                 with:
                     github_token: ${{ github.token }}
-                    publish_dir: _build/
+                    publish_dir: docs/_build/
                     publish_branch: gh-pages
                     force_orphan: true

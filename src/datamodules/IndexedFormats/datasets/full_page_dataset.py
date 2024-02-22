@@ -167,6 +167,8 @@ class DatasetIndexed(data.Dataset):
         :type selection: Optional[Union[int, List[str]]]
         :return: List of tuples with the path to the data and the ground truth
         :rtype: List[Tuple[Path, Path]]
+
+        :raises ValueError: If the folder data or gt is not found in the directory
         """
         paths = []
         directory = directory.expanduser()
@@ -175,7 +177,7 @@ class DatasetIndexed(data.Dataset):
         path_gt_root = directory / gt_folder_name
 
         if not (path_data_root.is_dir() or path_gt_root.is_dir()):
-            log.error("folder data or gt not found in " + str(directory))
+            raise ValueError("folder data or gt not found in " + str(directory))
 
         # get all files sorted
         files_in_data_root = sorted(path_data_root.iterdir())
@@ -190,9 +192,8 @@ class DatasetIndexed(data.Dataset):
             counter += 1
 
             if selection:
-                if isinstance(selection, int):
-                    if counter > selection:
-                        break
+                if isinstance(selection, int) and counter > selection:
+                    break
 
                 elif isinstance(selection, ListConfig) or isinstance(selection, list):
                     if path_data_file.stem not in selection:

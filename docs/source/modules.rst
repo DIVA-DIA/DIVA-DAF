@@ -4,4 +4,10 @@ src
 .. toctree::
    :maxdepth: 4
 
-   src
+   callbacks
+   datamodules
+   execute
+   metrics
+   models
+   tasks
+   utils

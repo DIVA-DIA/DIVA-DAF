@@ -9,7 +9,7 @@ from src.datamodules.utils.misc import _get_argmax
 from src.tasks.base_task import AbstractTask
 from src.utils import utils
 from src.tasks.utils.outputs import OutputKeys, reduce_dict, save_numpy_files
-from tasks.utils.task_utils import print_merge_tool_info
+from src.tasks.utils.task_utils import print_merge_tool_info
 
 log = utils.get_logger(__name__)
 
