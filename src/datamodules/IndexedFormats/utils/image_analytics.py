@@ -89,7 +89,7 @@ def _get_and_save_gt_analytics(analytics_path_gt: Path, file_names_gt: np.ndarra
     :rtype: Dict[str, Any]
     """
     # Measure weights for class balancing
-    logging.info(f'Measuring class weights')
+    logging.info('Measuring class weights')
     # create a list with all gt file paths
     class_weights, class_encodings = _get_class_frequencies_weights_segmentation_indexed(gt_images=file_names_gt)
     analytics_gt = {'class_weights': class_weights,

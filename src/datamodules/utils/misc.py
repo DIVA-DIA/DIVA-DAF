@@ -157,9 +157,9 @@ def find_new_filename(filename: str, current_list: List[str]) -> str:
         new_filename = f'{filename}_{i}'
         if new_filename not in current_list:
             return new_filename
-    else:
-        log.error('Unexpected error: Did not find new filename that is not a duplicate!')
-        raise AssertionError
+
+    log.error('Unexpected error: Did not find new filename that is not a duplicate!')
+    raise AssertionError
 
 
 def selection_validation(files_in_data_root: List[Path], selection: Union[int, List[str], ListConfig],
@@ -203,12 +203,12 @@ def selection_validation(files_in_data_root: List[Path], selection: Union[int, L
     elif isinstance(selection, ListConfig) or isinstance(selection, list):
         if full_page:
             if not all(x in [f.stem for f in files_in_data_root] for x in selection):
-                msg = f'Parameter "selection" contains a non-existing file names.)'
+                msg = 'Parameter "selection" contains a non-existing file names.)'
                 log.error(msg)
                 raise ValueError(msg)
         else:
             if not all(x in subdirectories for x in selection):
-                msg = f'Parameter "selection" contains a non-existing subdirectory.)'
+                msg = 'Parameter "selection" contains a non-existing subdirectory.)'
                 log.error(msg)
                 raise ValueError(msg)
 

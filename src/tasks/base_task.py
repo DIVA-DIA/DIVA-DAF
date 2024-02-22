@@ -149,11 +149,11 @@ class AbstractTask(LightningModule, metaclass=ABCMeta):
             if num_samples % self.trainer.datamodule.batch_size != 0:
                 log.warning(
                     f'Number of sample ({num_samples}) in {datasplit_name} not dividable by batch size ({batch_size}).')
-                log.warning(f'Last batch will be incomplete. Behavior depends on datamodule.drop_last setting.')
+                log.warning('Last batch will be incomplete. Behavior depends on datamodule.drop_last setting.')
 
     def step(self,
              batch: Any,
-             metric_kwargs: Optional[Dict[str, Dict[str, Any]]] = None) -> Dict[OutputKeys, Any]:
+             metric_kwargs: Optional[Dict[str, Dict[str, Any]]] = None) -> Union[Dict[OutputKeys, Any], Tuple[Any, Any]]:
         """
         The training/validation/test step. Override for custom behavior.
 

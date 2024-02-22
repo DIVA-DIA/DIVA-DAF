@@ -83,7 +83,7 @@ def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, 
 
         if missing_analytics_gt:
             # Measure weights for class balancing
-            logging.info(f'Measuring class weights')
+            logging.info('Measuring class weights')
             # create a list with all gt file paths
             class_weights, class_encodings = _get_class_frequencies_weights_segmentation_hisdb(gt_images=file_names_gt)
             analytics_gt = {'class_weights': class_weights.tolist(),

@@ -257,6 +257,6 @@ class DivaHisDBDataModuleCropped(AbstractDatamodule):
         :return: filename, x, y
         """
         if not hasattr(self, 'test'):
-            raise Exception('This method can just be called during testing')
+            raise ValueError('This method can just be called during testing')
 
         return self.test.img_paths_per_page[index][2:]

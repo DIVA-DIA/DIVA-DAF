@@ -49,7 +49,7 @@ class DatasetPredict(data.Dataset):
 
         self.num_samples = len(self.image_path_list)
         if self.num_samples == 0:
-            raise RuntimeError(f'List of image paths is empty!')
+            raise RuntimeError('List of image paths is empty!')
 
     def __len__(self) -> int:
         """

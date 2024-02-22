@@ -69,7 +69,7 @@ def check_config(config: DictConfig) -> None:
 
     # disable python warnings if <config.disable_warnings=True>
     if config.get("disable_warnings"):
-        log.info(f"Disabling python warnings! <config.disable_warnings=True>")
+        log.info("Disabling python warnings! <config.disable_warnings=True>")
         warnings.filterwarnings("ignore")
 
     # set <config.trainer.fast_dev_run=True> if <config.debug=True>
@@ -87,7 +87,7 @@ def check_config(config: DictConfig) -> None:
             config.datamodule.num_workers = 0
 
     if config.trainer.get("accelerator") == 'cpu' and config.trainer.precision == 16:
-        log.warning(f'You are using ddp_cpu without precision=16. This can lead to a crash! Use 64 or 32!')
+        log.warning('You are using ddp_cpu without precision=16. This can lead to a crash! Use 64 or 32!')
 
     if config.get('experiment_mode') and not config.get('name'):
         log.info("Experiment mode without specifying a name!")
@@ -103,7 +103,7 @@ def check_config(config: DictConfig) -> None:
 
     if 'freeze' in config.model.backbone and 'freeze' in config.model.header and config.train:
         if config.model.backbone.freeze and config.model.header.freeze:
-            log.error(f"Cannot train with no trainable parameters! Both header and backbone are frozen!")
+            log.error("Cannot train with no trainable parameters! Both header and backbone are frozen!")
 
     if 'csv' not in config.logger:
         config.logger['csv'] = hydra.compose('logger/csv')['logger']['csv']
@@ -165,7 +165,7 @@ def print_config(
     """
 
     style = 'default'
-    tree = Tree(f":gear: CONFIG", style=style, guide_style=style)
+    tree = Tree(":gear: CONFIG", style=style, guide_style=style)
 
     if add_missing_fields:
         fields = list(fields)
