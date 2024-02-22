@@ -28,6 +28,10 @@ jobs:
         python-version: 3.8
         cache: 'pip'
 
+    - name: Set Python Path
+      run: |
+        echo "PYTHONPATH=$PYTHONPATH:." >> $GITHUB_ENV
+
     - name: Install pip dependencies
       run: | 
         pip install --requirement requirements.txt --upgrade --quiet --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
