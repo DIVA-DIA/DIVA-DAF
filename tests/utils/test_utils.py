@@ -55,10 +55,20 @@ def test_check_config_everything_good(get_dict):
     assert get_dict['seed'] == 42
 
 
-def test_check_config_no_seed(get_dict, caplog):
+def test_check_config_no_seed(get_dict):
     del get_dict['seed']
     check_config(get_dict)
     assert get_dict['seed'] > -1
+
+
+def test_config_no_csv_logger(get_dict, mocker):
+    del get_dict['logger']['csv']
+    mocker.patch('hydra.compose',
+                 return_value={'logger': {'csv': {'_target_': 'pytorch_lightning.loggers.csv_logs.CSVLogger',
+                                                  'save_dir': '.', 'name': 'csv/'}}})
+    check_config(get_dict)
+    assert get_dict['logger']['csv'] == {'_target_': 'pytorch_lightning.loggers.csv_logs.CSVLogger', 'save_dir': '.',
+                                         'name': 'csv/'}
 
 
 def test_check_config_fast_dev_run(get_dict, caplog):
