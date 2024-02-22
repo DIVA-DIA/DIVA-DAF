@@ -12,7 +12,7 @@ import torchvision.transforms as transforms
 from PIL import Image
 from numpy import ndarray, dtype
 
-from datamodules.utils.misc import save_json, check_missing_analytics
+from src.datamodules.utils.misc import save_json, check_missing_analytics
 from src.datamodules.utils.image_analytics import compute_mean_std
 
 
