@@ -228,6 +228,6 @@ class DataModuleCroppedRGB(AbstractDatamodule):
         :rtype: Tuple[str, Tuple[int, int, int, int]]
         """
         if not hasattr(self, 'test'):
-            raise Exception('This method can just be called during testing')
+            raise ValueError('This method can just be called during testing')
 
         return self.test.img_paths_per_page[index][2:]

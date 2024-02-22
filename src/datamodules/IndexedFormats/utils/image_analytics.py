@@ -10,7 +10,7 @@ import numpy as np
 from PIL import Image
 
 from src.datamodules.utils.image_analytics import compute_mean_std
-from src.datamodules.utils.misc import pil_loader_gif
+from src.datamodules.utils.misc import pil_loader_gif, save_json
 
 
 def get_analytics(input_path: Path, data_folder_name: str, gt_folder_name: str, train_folder_name: str,
@@ -89,20 +89,14 @@ def _get_and_save_gt_analytics(analytics_path_gt: Path, file_names_gt: np.ndarra
     :rtype: Dict[str, Any]
     """
     # Measure weights for class balancing
-    logging.info(f'Measuring class weights')
+    logging.info('Measuring class weights')
     # create a list with all gt file paths
     class_weights, class_encodings = _get_class_frequencies_weights_segmentation_indexed(gt_images=file_names_gt)
     analytics_gt = {'class_weights': class_weights,
                     'class_encodings': class_encodings}
     # save json
-    try:
-        with analytics_path_gt.open(mode='w') as f:
-            json.dump(obj=analytics_gt, fp=f)
-    except IOError as e:
-        if e.errno == errno.EACCES:
-            print(f'WARNING: No permissions to write analytics file ({analytics_path_gt})')
-        else:
-            raise
+    save_json(analytics_gt, analytics_path_gt)
+
     return analytics_gt
 
 

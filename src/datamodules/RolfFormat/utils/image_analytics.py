@@ -45,7 +45,7 @@ def get_analytics_gt(img_gt_path_list: List[Tuple[Path, Path]]) -> Dict[str, Any
     file_names_gt = np.asarray([str(item[1]) for item in img_gt_path_list])
 
     # Measure weights for class balancing
-    logging.info(f'Measuring class weights')
+    logging.info('Measuring class weights')
     # create a list with all gt file paths
     class_weights, class_encodings = _get_class_frequencies_weights_segmentation(gt_images=file_names_gt)
     analytics_gt = {'class_weights': class_weights,

@@ -1,6 +1,7 @@
+import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Union, List
+from typing import Union, List, Dict, Tuple, Any
 
 import numpy as np
 import torch
@@ -52,16 +53,16 @@ def validate_path_for_segmentation(data_dir: str, data_folder_name: str, gt_fold
     """
     Checks if the data_dir folder has the following structure::
 
-    data_dir
-        ├── train_folder_name
-        │   ├── data_folder_name
-        │   └── gt_folder_name
-        ├── val_folder_name
-        │   ├── data_folder_name
-        │   └── gt_folder_name
-        └── test_folder_name
-            ├── data_folder_name
-            └── gt_folder_name
+        data_dir
+            ├── train_folder_name
+            │   ├── data_folder_name
+            │   └── gt_folder_name
+            ├── val_folder_name
+            │   ├── data_folder_name
+            │   └── gt_folder_name
+            └── test_folder_name
+                ├── data_folder_name
+                └── gt_folder_name
 
     :param data_dir: Path to the root dir of the dataset
     :type data_dir: str
@@ -157,9 +158,9 @@ def find_new_filename(filename: str, current_list: List[str]) -> str:
         new_filename = f'{filename}_{i}'
         if new_filename not in current_list:
             return new_filename
-    else:
-        log.error('Unexpected error: Did not find new filename that is not a duplicate!')
-        raise AssertionError
+
+    log.error('Unexpected error: Did not find new filename that is not a duplicate!')
+    raise AssertionError
 
 
 def selection_validation(files_in_data_root: List[Path], selection: Union[int, List[str], ListConfig],
@@ -203,12 +204,12 @@ def selection_validation(files_in_data_root: List[Path], selection: Union[int, L
     elif isinstance(selection, ListConfig) or isinstance(selection, list):
         if full_page:
             if not all(x in [f.stem for f in files_in_data_root] for x in selection):
-                msg = f'Parameter "selection" contains a non-existing file names.)'
+                msg = 'Parameter "selection" contains a non-existing file names.)'
                 log.error(msg)
                 raise ValueError(msg)
         else:
             if not all(x in subdirectories for x in selection):
-                msg = f'Parameter "selection" contains a non-existing subdirectory.)'
+                msg = 'Parameter "selection" contains a non-existing subdirectory.)'
                 log.error(msg)
                 raise ValueError(msg)
 
@@ -251,3 +252,44 @@ def pil_loader_gif(path: Path) -> Image:
     with open(path, "rb") as f:
         gt_img = Image.open(f)
         return gt_img.convert('P')
+
+
+def save_json(analytics: Dict, analytics_path: Path):
+    """
+    Saves the analytics dict to a json file.
+
+    :param analytics: The analytics dict that should be saved
+    :type analytics: Dict
+    :param analytics_path: Path to the json file
+    :type analytics_path: Path
+    """
+
+    try:
+        with analytics_path.open(mode='w') as f:
+            json.dump(obj=analytics, fp=f)
+    except IOError:
+        print(f'WARNING: No permissions to write analytics file ({analytics_path})')
+
+
+def check_missing_analytics(analytics_path_gt: Path, expected_keys_gt: List[str]) -> Tuple[Dict[str, Any], bool]:
+    """
+    Check if the analytics file for the ground truth is missing and if it is complete. If its is present, it will be
+    loaded and the contained keys checked for completeness.
+
+    :param analytics_path_gt: Path where the analytics file should be
+    :type analytics_path_gt: Path
+    :param expected_keys_gt: List of expected keys in the analytics file
+    :type expected_keys_gt: List[str]
+    :return: Tuple of the loaded analytics and a boolean indicating if the analytics file is missing
+    :rtype: Tuple[Dict[str, Any], bool]
+    """
+    missing_analytics = True
+    analytics = None
+
+    if analytics_path_gt.exists():
+        with analytics_path_gt.open(mode='r') as f:
+            analytics = json.load(fp=f)
+        # check if analytics file is complete
+        if all(k in analytics for k in expected_keys_gt):
+            missing_analytics = False
+    return analytics, missing_analytics

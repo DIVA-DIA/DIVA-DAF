@@ -33,7 +33,7 @@ def save_output_page_image(image_name, output_image, output_folder: Path, class_
 
 def output_to_class_encodings(output, class_encodings, perform_argmax=True):
     """
-    This function converts the output prediction matrix to an image like it was provided in the ground truth
+    This function converts the output prediction matrix to an image with the colors of the class encodings.
 
     :param output: output prediction of the network for a full-size image, where #C is the number of classes
     :type output: np.array of size [#C x H x W]
@@ -44,15 +44,15 @@ def output_to_class_encodings(output, class_encodings, perform_argmax=True):
     :return: np.array of size [H x W] (BGR)
     """
 
-    B = np.argmax(output, axis=0) if perform_argmax else output
+    b_argmax = np.argmax(output, axis=0) if perform_argmax else output
 
-    class_to_B = {i: j for i, j in enumerate(class_encodings)}
+    class_to_color = {i: j for i, j in enumerate(class_encodings)}
 
-    masks = [B == old for old in class_to_B.keys()]
+    masks = [b_argmax == old for old in class_to_color.keys()]
 
-    for mask, (old, new) in zip(masks, class_to_B.items()):
-        B = np.where(mask, new, B)
+    for mask, (old, new) in zip(masks, class_to_color.items()):
+        b_argmax = np.where(mask, new, b_argmax)
 
-    rgb = np.dstack((np.zeros(shape=(B.shape[0], B.shape[1], 2), dtype=np.int8), B))
+    rgb = np.dstack((np.zeros(shape=(b_argmax.shape[0], b_argmax.shape[1], 2), dtype=np.int8), b_argmax))
 
     return rgb
