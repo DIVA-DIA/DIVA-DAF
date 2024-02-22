@@ -6,10 +6,16 @@
 Welcome to DIVA-DAF's documentation!
 ====================================
 
+DIVA-DAF is a deep-learning framework with document image analysis in mind. It is based on PyTorch-lightning and provides a set of tools to train and evaluate models for document analysis tasks.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
+   installation
+   example
+
+   source/modules
 
 
 Indices and tables
