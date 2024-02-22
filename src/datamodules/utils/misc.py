@@ -53,16 +53,16 @@ def validate_path_for_segmentation(data_dir: str, data_folder_name: str, gt_fold
     """
     Checks if the data_dir folder has the following structure::
 
-    data_dir
-        ├── train_folder_name
-        │   ├── data_folder_name
-        │   └── gt_folder_name
-        ├── val_folder_name
-        │   ├── data_folder_name
-        │   └── gt_folder_name
-        └── test_folder_name
-            ├── data_folder_name
-            └── gt_folder_name
+        data_dir
+            ├── train_folder_name
+            │   ├── data_folder_name
+            │   └── gt_folder_name
+            ├── val_folder_name
+            │   ├── data_folder_name
+            │   └── gt_folder_name
+            └── test_folder_name
+                ├── data_folder_name
+                └── gt_folder_name
 
     :param data_dir: Path to the root dir of the dataset
     :type data_dir: str
