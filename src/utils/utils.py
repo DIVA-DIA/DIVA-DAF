@@ -235,6 +235,12 @@ def log_hyperparameters(
 
 
 def empty(*args, **kwargs):
+    """
+    This function does nothing. It is used to disable logging of hyperparameters by Lightning loggers.
+
+    :param args:
+    :param kwargs:
+    """
     pass
 
 

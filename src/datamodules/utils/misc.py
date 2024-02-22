@@ -1,6 +1,7 @@
+import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Union, List
+from typing import Union, List, Dict, Tuple, Any
 
 import numpy as np
 import torch
@@ -251,3 +252,44 @@ def pil_loader_gif(path: Path) -> Image:
     with open(path, "rb") as f:
         gt_img = Image.open(f)
         return gt_img.convert('P')
+
+
+def save_json(analytics: Dict, analytics_path: Path):
+    """
+    Saves the analytics dict to a json file.
+
+    :param analytics: The analytics dict that should be saved
+    :type analytics: Dict
+    :param analytics_path: Path to the json file
+    :type analytics_path: Path
+    """
+
+    try:
+        with analytics_path.open(mode='w') as f:
+            json.dump(obj=analytics, fp=f)
+    except IOError:
+        print(f'WARNING: No permissions to write analytics file ({analytics_path})')
+
+
+def check_missing_analytics(analytics_path_gt: Path, expected_keys_gt: List[str]) -> Tuple[Dict[str, Any], bool]:
+    """
+    Check if the analytics file for the ground truth is missing and if it is complete. If its is present, it will be
+    loaded and the contained keys checked for completeness.
+
+    :param analytics_path_gt: Path where the analytics file should be
+    :type analytics_path_gt: Path
+    :param expected_keys_gt: List of expected keys in the analytics file
+    :type expected_keys_gt: List[str]
+    :return: Tuple of the loaded analytics and a boolean indicating if the analytics file is missing
+    :rtype: Tuple[Dict[str, Any], bool]
+    """
+    missing_analytics = True
+    analytics = None
+
+    if analytics_path_gt.exists():
+        with analytics_path_gt.open(mode='r') as f:
+            analytics = json.load(fp=f)
+        # check if analytics file is complete
+        if all(k in analytics for k in expected_keys_gt):
+            missing_analytics = False
+    return analytics, missing_analytics
