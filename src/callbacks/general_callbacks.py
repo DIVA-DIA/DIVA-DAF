@@ -7,13 +7,8 @@ from pytorch_lightning import Callback
 class TimeTracker(Callback):
     def __init__(self):
         self.start_time_train = None
-        self.end_time_train = None
-
         self.start_time_train_epoch = None
-        self.end_time_train_epoch = None
-
         self.start_time_test = None
-        self.end_time_test = None
 
     @rank_zero_only
     def on_train_start(self, trainer, pl_module):
