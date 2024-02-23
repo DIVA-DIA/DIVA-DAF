@@ -20,6 +20,7 @@ defaults:
           - check_compatibility.yaml
           - model_checkpoint.yaml
           - watch_model_wandb.yaml
+          - time_tracker.yaml
     - /logger:
           - wandb.yaml # set logger here or use command line (e.g. `python run.py logger=wandb`)
           - csv.yaml
