@@ -3,7 +3,7 @@ import logging
 import pytest
 import time
 
-from callbacks.general_callbacks import TimeTracker
+from src.callbacks.general_callbacks import TimeTracker
 
 
 @pytest.fixture
