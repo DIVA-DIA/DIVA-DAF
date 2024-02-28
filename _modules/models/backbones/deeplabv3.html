@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>models.backbones.deeplabv3 &mdash; DIVA-DAF 0.2.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            DIVA-DAF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../example.html">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/modules.html">src</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">DIVA-DAF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">models.backbones.deeplabv3</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for models.backbones.deeplabv3</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+
+<span class="kn">import</span> <span class="nn">urllib</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">src.models.backbones.deeplabv3_resnet</span> <span class="kn">import</span> <span class="n">ResNet18_OS16</span><span class="p">,</span> <span class="n">ResNet34_OS16</span><span class="p">,</span> <span class="n">ResNet50_OS16</span><span class="p">,</span> <span class="n">ResNet101_OS16</span><span class="p">,</span> \
+    <span class="n">ResNet152_OS16</span><span class="p">,</span> <span class="n">ResNet18_OS8</span><span class="p">,</span> <span class="n">ResNet34_OS8</span>
+<span class="kn">from</span> <span class="nn">src.models.backbones.deeplabv3_aspp</span> <span class="kn">import</span> <span class="n">ASPP</span><span class="p">,</span> <span class="n">ASPP_Bottleneck</span>
+
+<span class="n">CLASS_NAMES</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;deeplabv3_resnet18_os16&quot;</span><span class="p">:</span> <span class="n">ResNet18_OS16</span><span class="p">,</span>
+               <span class="s2">&quot;deeplabv3_resnet34_os16&quot;</span><span class="p">:</span> <span class="n">ResNet34_OS16</span><span class="p">,</span>
+               <span class="s2">&quot;deeplabv3_resnet50_os16&quot;</span><span class="p">:</span> <span class="n">ResNet50_OS16</span><span class="p">,</span>
+               <span class="s2">&quot;deeplabv3_resnet101_os16&quot;</span><span class="p">:</span> <span class="n">ResNet101_OS16</span><span class="p">,</span>
+               <span class="s2">&quot;deeplabv3_resnet152_os16&quot;</span><span class="p">:</span> <span class="n">ResNet152_OS16</span><span class="p">,</span>
+               <span class="s2">&quot;deeplabv3_resnet18_os8&quot;</span><span class="p">:</span> <span class="n">ResNet18_OS8</span><span class="p">,</span>
+               <span class="s2">&quot;deeplabv3_resnet34_os8&quot;</span><span class="p">:</span> <span class="n">ResNet34_OS8</span><span class="p">,</span>
+               <span class="p">}</span>
+
+
+<div class="viewcode-block" id="deeplabv3"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.deeplabv3.deeplabv3">[docs]</a><span class="k">def</span> <span class="nf">deeplabv3</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">deeplabv3_builder</span><span class="p">(</span><span class="s1">&#39;deeplabv3&#39;</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="deeplabv3_resnet18_os16"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.deeplabv3.deeplabv3_resnet18_os16">[docs]</a><span class="k">def</span> <span class="nf">deeplabv3_resnet18_os16</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">deeplabv3_builder</span><span class="p">(</span><span class="s1">&#39;deeplabv3_resnet18_os16&#39;</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="deeplabv3_resnet34_os16"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.deeplabv3.deeplabv3_resnet34_os16">[docs]</a><span class="k">def</span> <span class="nf">deeplabv3_resnet34_os16</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">deeplabv3_builder</span><span class="p">(</span><span class="s1">&#39;deeplabv3_resnet34_os16&#39;</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="deeplabv3_resnet50_os16"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.deeplabv3.deeplabv3_resnet50_os16">[docs]</a><span class="k">def</span> <span class="nf">deeplabv3_resnet50_os16</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">deeplabv3_builder</span><span class="p">(</span><span class="s1">&#39;deeplabv3_resnet50_os16&#39;</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="deeplabv3_resnet101_os16"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.deeplabv3.deeplabv3_resnet101_os16">[docs]</a><span class="k">def</span> <span class="nf">deeplabv3_resnet101_os16</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">deeplabv3_builder</span><span class="p">(</span><span class="s1">&#39;deeplabv3_resnet101_os16&#39;</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="deeplabv3_resnet152_os16"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.deeplabv3.deeplabv3_resnet152_os16">[docs]</a><span class="k">def</span> <span class="nf">deeplabv3_resnet152_os16</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">deeplabv3_builder</span><span class="p">(</span><span class="s1">&#39;deeplabv3_resnet152_os16&#39;</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="deeplabv3_resnet18_os8"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.deeplabv3.deeplabv3_resnet18_os8">[docs]</a><span class="k">def</span> <span class="nf">deeplabv3_resnet18_os8</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">deeplabv3_builder</span><span class="p">(</span><span class="s1">&#39;deeplabv3_resnet18_os8&#39;</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="deeplabv3_resnet34_os8"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.deeplabv3.deeplabv3_resnet34_os8">[docs]</a><span class="k">def</span> <span class="nf">deeplabv3_resnet34_os8</span><span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">deeplabv3_builder</span><span class="p">(</span><span class="s1">&#39;deeplabv3_resnet34_os8&#39;</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<span class="c1"># *********************************************************************************</span>
+
+
+<div class="viewcode-block" id="deeplabv3_builder"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.deeplabv3.deeplabv3_builder">[docs]</a><span class="k">def</span> <span class="nf">deeplabv3_builder</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">output_channels</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">resume</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cityscapes</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">model_name</span><span class="o">==</span><span class="s1">&#39;deeplabv3&#39;</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;ResNet type not specified, running &quot;deeplabv3_resnet18_os8&quot;. (choose from </span><span class="si">{}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">CLASS_NAMES</span><span class="o">.</span><span class="n">keys</span><span class="p">())))</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">DeepLabV3</span><span class="p">(</span><span class="s2">&quot;deeplabv3_resnet18_os8&quot;</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">output_channels</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">DeepLabV3</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">output_channels</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="c1"># load a model from a path</span>
+    <span class="k">if</span> <span class="n">resume</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">resume</span><span class="p">):</span>
+            <span class="n">model_dict</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">resume</span><span class="p">)</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Loading a saved model&#39;</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">model_dict</span><span class="p">[</span><span class="s1">&#39;state_dict&#39;</span><span class="p">],</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exp</span><span class="p">:</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;No model dict found at &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">resume</span><span class="p">))</span>
+
+    <span class="c1"># load the weights pre-trained on cityscapes dataset (only possible for current &quot;deeplabv3_resnet18_os8&quot; set-up)</span>
+    <span class="k">if</span> <span class="s2">&quot;deeplabv3_resnet18_os8&quot;</span> <span class="ow">and</span> <span class="n">cityscapes</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">get_cityscapes_model_path</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">load_state_dict</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">path</span><span class="p">),</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exp</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">model</span></div>
+
+
+<div class="viewcode-block" id="DeepLabV3"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.deeplabv3.DeepLabV3">[docs]</a><span class="k">class</span> <span class="nc">DeepLabV3</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">pretrained</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DeepLabV3</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span> <span class="o">=</span> <span class="n">num_classes</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">resnet</span> <span class="o">=</span> <span class="n">CLASS_NAMES</span><span class="p">[</span><span class="n">model_name</span><span class="p">](</span><span class="n">pretrained</span><span class="p">)</span> <span class="c1"># NOTE! specify the type of ResNet here</span>
+        <span class="k">if</span> <span class="s1">&#39;resnet18&#39;</span> <span class="ow">in</span> <span class="n">model_name</span> <span class="ow">or</span> <span class="s1">&#39;resnet34&#39;</span> <span class="ow">in</span> <span class="n">model_name</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">aspp</span> <span class="o">=</span> <span class="n">ASPP</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span> <span class="c1"># NOTE! if you use ResNet50-152, set self.aspp = ASPP_Bottleneck(num_classes=self.num_classes) instead</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">aspp</span> <span class="o">=</span> <span class="n">ASPP_Bottleneck</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DeepLabV3.forward"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.deeplabv3.DeepLabV3.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="c1"># (x has shape (batch_size, 3, h, w))</span>
+
+        <span class="n">h</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">()[</span><span class="mi">3</span><span class="p">]</span>
+
+        <span class="n">feature_map</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resnet</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="c1"># (shape: (batch_size, 512, h/16, w/16)) (assuming self.resnet is ResNet18_OS16 or ResNet34_OS16. If self.resnet is ResNet18_OS8 or ResNet34_OS8, it will be (batch_size, 512, h/8, w/8). If self.resnet is ResNet50-152, it will be (batch_size, 4*512, h/16, w/16))</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">aspp</span><span class="p">(</span><span class="n">feature_map</span><span class="p">)</span> <span class="c1"># (shape: (batch_size, num_classes, h/16, w/16))</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;bilinear&quot;</span><span class="p">,</span> <span class="n">align_corners</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="c1"># (shape: (batch_size, num_classes, h, w))</span>
+
+        <span class="k">return</span> <span class="n">output</span></div></div>
+
+
+<div class="viewcode-block" id="get_cityscapes_model_path"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.deeplabv3.get_cityscapes_model_path">[docs]</a><span class="k">def</span> <span class="nf">get_cityscapes_model_path</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="n">download_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">(),</span> <span class="s2">&quot;models/deeplabv3_13_2_2_2_epoch_580.pth&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">download_path</span><span class="p">):</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">urlparse</span><span class="p">(</span><span class="s2">&quot;https://github.com/fregu856/deeplabv3/blob/master/pretrained_models/model_13_2_2_2_epoch_580.pth?raw=true&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Downloading </span><span class="si">{}</span><span class="s1">...&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url</span><span class="o">.</span><span class="n">geturl</span><span class="p">()))</span>
+        <span class="n">urllib</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">urlretrieve</span><span class="p">(</span><span class="n">url</span><span class="o">.</span><span class="n">geturl</span><span class="p">(),</span> <span class="n">download_path</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">download_path</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lars Vögtlin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

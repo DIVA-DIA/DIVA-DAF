@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tasks.RGB.semantic_segmentation &mdash; DIVA-DAF 0.2.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            DIVA-DAF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../example.html">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/modules.html">src</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">DIVA-DAF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">tasks.RGB.semantic_segmentation</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for tasks.RGB.semantic_segmentation</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.optim</span>
+<span class="kn">import</span> <span class="nn">torchmetrics</span>
+<span class="kn">from</span> <span class="nn">pytorch_lightning.utilities</span> <span class="kn">import</span> <span class="n">rank_zero_only</span>
+
+<span class="kn">from</span> <span class="nn">src.datamodules.RGB.utils.output_tools</span> <span class="kn">import</span> <span class="n">save_output_page_image</span>
+<span class="kn">from</span> <span class="nn">src.datamodules.utils.misc</span> <span class="kn">import</span> <span class="n">_get_argmax</span>
+<span class="kn">from</span> <span class="nn">src.tasks.base_task</span> <span class="kn">import</span> <span class="n">AbstractTask</span>
+<span class="kn">from</span> <span class="nn">src.utils</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">src.tasks.utils.outputs</span> <span class="kn">import</span> <span class="n">OutputKeys</span><span class="p">,</span> <span class="n">reduce_dict</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SemanticSegmentationRGB"><a class="viewcode-back" href="../../../source/tasks.RGB.html#tasks.RGB.semantic_segmentation.SemanticSegmentationRGB">[docs]</a><span class="k">class</span> <span class="nc">SemanticSegmentationRGB</span><span class="p">(</span><span class="n">AbstractTask</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Semantic Segmentation task for whole images that are RGB encoded, so the class is encoded in the color.</span>
+<span class="sd">    The output for the test are also full images in the RGB format.</span>
+
+<span class="sd">    :param model: The model to train, validate and test.</span>
+<span class="sd">    :type model: nn.Module</span>
+<span class="sd">    :param optimizer: The optimizer used during training.</span>
+<span class="sd">    :type optimizer: torch.optim.Optimizer</span>
+<span class="sd">    :param loss_fn: The loss function used during training, validation, and testing.</span>
+<span class="sd">    :type loss_fn: Callable</span>
+<span class="sd">    :param metric_train: The metric used during training.</span>
+<span class="sd">    :type metric_train: torchmetrics.Metric</span>
+<span class="sd">    :param metric_val: The metric used during validation.</span>
+<span class="sd">    :type metric_val: torchmetrics.Metric</span>
+<span class="sd">    :param metric_test: The metric used during testing.</span>
+<span class="sd">    :type metric_test: torchmetrics.Metric</span>
+<span class="sd">    :param confusion_matrix_val: Whether to compute the confusion matrix during validation.</span>
+<span class="sd">    :type confusion_matrix_val: bool</span>
+<span class="sd">    :param confusion_matrix_test: Whether to compute the confusion matrix during testing.</span>
+<span class="sd">    :type confusion_matrix_test: bool</span>
+<span class="sd">    :param confusion_matrix_log_every_n_epoch: The frequency of logging the confusion matrix.</span>
+<span class="sd">    :type confusion_matrix_log_every_n_epoch: int</span>
+<span class="sd">    :param lr: The learning rate.</span>
+<span class="sd">    :type lr: float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">model</span><span class="p">:</span> <span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">,</span>
+                 <span class="n">optimizer</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">,</span>
+                 <span class="n">loss_fn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">metric_train</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torchmetrics</span><span class="o">.</span><span class="n">Metric</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">metric_val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torchmetrics</span><span class="o">.</span><span class="n">Metric</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">metric_test</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">torchmetrics</span><span class="o">.</span><span class="n">Metric</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">test_output_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]]</span> <span class="o">=</span> <span class="s1">&#39;test_output&#39;</span><span class="p">,</span>
+                 <span class="n">predict_output_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]]</span> <span class="o">=</span> <span class="s1">&#39;predict_output&#39;</span><span class="p">,</span>
+                 <span class="n">confusion_matrix_val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                 <span class="n">confusion_matrix_test</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                 <span class="n">confusion_matrix_log_every_n_epoch</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                 <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-3</span>
+                 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construction method for the SemanticSegmentationRGB task</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+            <span class="n">optimizer</span><span class="o">=</span><span class="n">optimizer</span><span class="p">,</span>
+            <span class="n">loss_fn</span><span class="o">=</span><span class="n">loss_fn</span><span class="p">,</span>
+            <span class="n">metric_train</span><span class="o">=</span><span class="n">metric_train</span><span class="p">,</span>
+            <span class="n">metric_val</span><span class="o">=</span><span class="n">metric_val</span><span class="p">,</span>
+            <span class="n">metric_test</span><span class="o">=</span><span class="n">metric_test</span><span class="p">,</span>
+            <span class="n">test_output_path</span><span class="o">=</span><span class="n">test_output_path</span><span class="p">,</span>
+            <span class="n">predict_output_path</span><span class="o">=</span><span class="n">predict_output_path</span><span class="p">,</span>
+            <span class="n">lr</span><span class="o">=</span><span class="n">lr</span><span class="p">,</span>
+            <span class="n">confusion_matrix_val</span><span class="o">=</span><span class="n">confusion_matrix_val</span><span class="p">,</span>
+            <span class="n">confusion_matrix_test</span><span class="o">=</span><span class="n">confusion_matrix_test</span><span class="p">,</span>
+            <span class="n">confusion_matrix_log_every_n_epoch</span><span class="o">=</span><span class="n">confusion_matrix_log_every_n_epoch</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># self.save_hyperparameters()</span>
+
+<div class="viewcode-block" id="SemanticSegmentationRGB.setup"><a class="viewcode-back" href="../../../source/tasks.RGB.html#tasks.RGB.semantic_segmentation.SemanticSegmentationRGB.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">stage</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">datamodule</span><span class="p">,</span> <span class="s1">&#39;get_output_filename_test&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;DataModule needs to implement get_output_filename_test function&#39;</span><span class="p">)</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Setup done!&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SemanticSegmentationRGB.forward"><a class="viewcode-back" href="../../../source/tasks.RGB.html#tasks.RGB.semantic_segmentation.SemanticSegmentationRGB.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SemanticSegmentationRGB.to_metrics_format"><a class="viewcode-back" href="../../../source/tasks.RGB.html#tasks.RGB.semantic_segmentation.SemanticSegmentationRGB.to_metrics_format">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">to_metrics_format</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">_get_argmax</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    <span class="c1">#############################################################################################</span>
+    <span class="c1">########################################### TRAIN ###########################################</span>
+    <span class="c1">#############################################################################################</span>
+<div class="viewcode-block" id="SemanticSegmentationRGB.training_step"><a class="viewcode-back" href="../../../source/tasks.RGB.html#tasks.RGB.semantic_segmentation.SemanticSegmentationRGB.training_step">[docs]</a>    <span class="k">def</span> <span class="nf">training_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">input_batch</span><span class="p">,</span> <span class="n">target_batch</span> <span class="o">=</span> <span class="n">batch</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">training_step</span><span class="p">(</span><span class="n">batch</span><span class="o">=</span><span class="p">(</span><span class="n">input_batch</span><span class="p">,</span> <span class="n">target_batch</span><span class="p">),</span> <span class="n">batch_idx</span><span class="o">=</span><span class="n">batch_idx</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">reduce_dict</span><span class="p">(</span><span class="n">input_dict</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="n">key_list</span><span class="o">=</span><span class="p">[</span><span class="n">OutputKeys</span><span class="o">.</span><span class="n">LOSS</span><span class="p">])</span></div>
+
+    <span class="c1">#############################################################################################</span>
+    <span class="c1">############################################ VAL ############################################</span>
+    <span class="c1">#############################################################################################</span>
+
+<div class="viewcode-block" id="SemanticSegmentationRGB.validation_step"><a class="viewcode-back" href="../../../source/tasks.RGB.html#tasks.RGB.semantic_segmentation.SemanticSegmentationRGB.validation_step">[docs]</a>    <span class="k">def</span> <span class="nf">validation_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">input_batch</span><span class="p">,</span> <span class="n">target_batch</span> <span class="o">=</span> <span class="n">batch</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">validation_step</span><span class="p">(</span><span class="n">batch</span><span class="o">=</span><span class="p">(</span><span class="n">input_batch</span><span class="p">,</span> <span class="n">target_batch</span><span class="p">),</span> <span class="n">batch_idx</span><span class="o">=</span><span class="n">batch_idx</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">reduce_dict</span><span class="p">(</span><span class="n">input_dict</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="n">key_list</span><span class="o">=</span><span class="p">[])</span></div>
+
+    <span class="c1">#############################################################################################</span>
+    <span class="c1">########################################### TEST ############################################</span>
+    <span class="c1">#############################################################################################</span>
+
+<div class="viewcode-block" id="SemanticSegmentationRGB.on_test_start"><a class="viewcode-back" href="../../../source/tasks.RGB.html#tasks.RGB.semantic_segmentation.SemanticSegmentationRGB.on_test_start">[docs]</a>    <span class="nd">@rank_zero_only</span>
+    <span class="k">def</span> <span class="nf">on_test_start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># print output file list</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">test</span>
+        <span class="n">output_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_output_path</span>
+        <span class="n">info_filename</span> <span class="o">=</span> <span class="s1">&#39;info_file_mapping.txt&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_file_mapping</span><span class="p">(</span><span class="n">output_file_list</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">output_file_list</span><span class="p">,</span>
+                                <span class="n">image_path_list</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">image_path_list</span><span class="p">,</span>
+                                <span class="n">output_path</span><span class="o">=</span><span class="n">output_path</span><span class="p">,</span>
+                                <span class="n">info_filename</span><span class="o">=</span><span class="n">info_filename</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SemanticSegmentationRGB.test_step"><a class="viewcode-back" href="../../../source/tasks.RGB.html#tasks.RGB.semantic_segmentation.SemanticSegmentationRGB.test_step">[docs]</a>    <span class="k">def</span> <span class="nf">test_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">input_batch</span><span class="p">,</span> <span class="n">target_batch</span><span class="p">,</span> <span class="n">input_idx</span> <span class="o">=</span> <span class="n">batch</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">test_step</span><span class="p">(</span><span class="n">batch</span><span class="o">=</span><span class="p">(</span><span class="n">input_batch</span><span class="p">,</span> <span class="n">target_batch</span><span class="p">),</span> <span class="n">batch_idx</span><span class="o">=</span><span class="n">batch_idx</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">datamodule</span><span class="p">,</span> <span class="s1">&#39;get_output_filename_test&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Datamodule does not provide output info for test&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">pred_raw</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="n">OutputKeys</span><span class="o">.</span><span class="n">PREDICTION</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span>
+                                 <span class="n">input_idx</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()):</span>
+            <span class="n">img_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">get_output_filename_test</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+            <span class="n">dest_folder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_output_path</span> <span class="o">/</span> <span class="s1">&#39;pred_raw&#39;</span>
+            <span class="n">dest_folder</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">dest_filename</span> <span class="o">=</span> <span class="n">dest_folder</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">img_name</span><span class="si">}</span><span class="s1">.npy&#39;</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">dest_filename</span><span class="p">),</span> <span class="n">arr</span><span class="o">=</span><span class="n">pred_raw</span><span class="p">)</span>
+
+            <span class="n">dest_folder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_output_path</span> <span class="o">/</span> <span class="s1">&#39;pred&#39;</span>
+            <span class="n">dest_folder</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">save_output_page_image</span><span class="p">(</span><span class="n">image_name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">img_name</span><span class="si">}</span><span class="s1">.gif&#39;</span><span class="p">,</span> <span class="n">output_image</span><span class="o">=</span><span class="n">pred_raw</span><span class="p">,</span>
+                                   <span class="n">output_folder</span><span class="o">=</span><span class="n">dest_folder</span><span class="p">,</span> <span class="n">class_encoding</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">class_encodings</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">reduce_dict</span><span class="p">(</span><span class="n">input_dict</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="n">key_list</span><span class="o">=</span><span class="p">[])</span></div>
+
+<div class="viewcode-block" id="SemanticSegmentationRGB.on_test_end"><a class="viewcode-back" href="../../../source/tasks.RGB.html#tasks.RGB.semantic_segmentation.SemanticSegmentationRGB.on_test_end">[docs]</a>    <span class="k">def</span> <span class="nf">on_test_end</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+    <span class="c1">#############################################################################################</span>
+    <span class="c1">######################################### PREDICT ###########################################</span>
+    <span class="c1">#############################################################################################</span>
+
+<div class="viewcode-block" id="SemanticSegmentationRGB.on_predict_start"><a class="viewcode-back" href="../../../source/tasks.RGB.html#tasks.RGB.semantic_segmentation.SemanticSegmentationRGB.on_predict_start">[docs]</a>    <span class="nd">@rank_zero_only</span>
+    <span class="k">def</span> <span class="nf">on_predict_start</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># print output file list</span>
+        <span class="n">dataset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">predict</span>
+        <span class="n">output_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_output_path</span>
+        <span class="n">info_filename</span> <span class="o">=</span> <span class="s1">&#39;info_file_mapping.txt&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">write_file_mapping</span><span class="p">(</span><span class="n">output_file_list</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">output_file_list</span><span class="p">,</span>
+                                <span class="n">image_path_list</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">image_path_list</span><span class="p">,</span>
+                                <span class="n">output_path</span><span class="o">=</span><span class="n">output_path</span><span class="p">,</span>
+                                <span class="n">info_filename</span><span class="o">=</span><span class="n">info_filename</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SemanticSegmentationRGB.predict_step"><a class="viewcode-back" href="../../../source/tasks.RGB.html#tasks.RGB.semantic_segmentation.SemanticSegmentationRGB.predict_step">[docs]</a>    <span class="k">def</span> <span class="nf">predict_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">dataloader_idx</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="n">input_batch</span><span class="p">,</span> <span class="n">input_idx</span> <span class="o">=</span> <span class="n">batch</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">predict_step</span><span class="p">(</span><span class="n">batch</span><span class="o">=</span><span class="n">input_batch</span><span class="p">,</span> <span class="n">batch_idx</span><span class="o">=</span><span class="n">batch_idx</span><span class="p">,</span> <span class="n">dataloader_idx</span><span class="o">=</span><span class="n">dataloader_idx</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">datamodule</span><span class="p">,</span> <span class="s1">&#39;get_output_filename_predict&#39;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Datamodule does not provide output info for predict&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">pred_raw</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="n">OutputKeys</span><span class="o">.</span><span class="n">PREDICTION</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span>
+                                 <span class="n">input_idx</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()):</span>
+            <span class="n">img_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">get_output_filename_predict</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+            <span class="n">dest_folder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_output_path</span> <span class="o">/</span> <span class="s1">&#39;pred_raw&#39;</span>
+            <span class="n">dest_folder</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">dest_filename</span> <span class="o">=</span> <span class="n">dest_folder</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">img_name</span><span class="si">}</span><span class="s1">.npy&#39;</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">dest_filename</span><span class="p">),</span> <span class="n">arr</span><span class="o">=</span><span class="n">pred_raw</span><span class="p">)</span>
+
+            <span class="n">dest_folder</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict_output_path</span> <span class="o">/</span> <span class="s1">&#39;pred&#39;</span>
+            <span class="n">dest_folder</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">save_output_page_image</span><span class="p">(</span><span class="n">image_name</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">img_name</span><span class="si">}</span><span class="s1">.gif&#39;</span><span class="p">,</span> <span class="n">output_image</span><span class="o">=</span><span class="n">pred_raw</span><span class="p">,</span>
+                                   <span class="n">output_folder</span><span class="o">=</span><span class="n">dest_folder</span><span class="p">,</span> <span class="n">class_encoding</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">class_encodings</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">reduce_dict</span><span class="p">(</span><span class="n">input_dict</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="n">key_list</span><span class="o">=</span><span class="p">[])</span></div>
+
+<div class="viewcode-block" id="SemanticSegmentationRGB.write_file_mapping"><a class="viewcode-back" href="../../../source/tasks.RGB.html#tasks.RGB.semantic_segmentation.SemanticSegmentationRGB.write_file_mapping">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">write_file_mapping</span><span class="p">(</span><span class="n">output_file_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">image_path_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Path</span><span class="p">],</span>
+                           <span class="n">output_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">info_filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">output_file_list</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">image_path_list</span><span class="p">)</span>
+        <span class="n">output_path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">output_info_file</span> <span class="o">=</span> <span class="n">output_path</span> <span class="o">/</span> <span class="n">info_filename</span>
+        <span class="k">with</span> <span class="n">output_info_file</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">output_filename</span><span class="p">,</span> <span class="n">image_path</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">output_file_list</span><span class="p">,</span> <span class="n">image_path_list</span><span class="p">):</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">output_filename</span><span class="si">}</span><span class="se">\t</span><span class="si">{</span><span class="n">image_path</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lars Vögtlin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>datamodules.utils.dataset_predict &mdash; DIVA-DAF 0.2.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            DIVA-DAF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../example.html">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/modules.html">src</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">DIVA-DAF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">datamodules.utils.dataset_predict</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for datamodules.utils.dataset_predict</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">glob</span> <span class="kn">import</span> <span class="n">glob</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">torch.utils.data</span> <span class="k">as</span> <span class="nn">data</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">is_tensor</span><span class="p">,</span> <span class="n">Tensor</span>
+<span class="kn">from</span> <span class="nn">torchvision.datasets.folder</span> <span class="kn">import</span> <span class="n">pil_loader</span>
+<span class="kn">from</span> <span class="nn">torchvision.transforms</span> <span class="kn">import</span> <span class="n">ToTensor</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+
+<span class="kn">from</span> <span class="nn">src.datamodules.utils.misc</span> <span class="kn">import</span> <span class="n">ImageDimensions</span><span class="p">,</span> <span class="n">get_output_file_list</span>
+<span class="kn">from</span> <span class="nn">src.utils</span> <span class="kn">import</span> <span class="n">utils</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="DatasetPredict"><a class="viewcode-back" href="../../../source/datamodules.utils.html#datamodules.utils.dataset_predict.DatasetPredict">[docs]</a><span class="k">class</span> <span class="nc">DatasetPredict</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Dataset class for the prediction of the test set. It takes a folder of images and creates the prediction of these images.</span>
+
+<span class="sd">    :param image_path_list: list of image paths</span>
+<span class="sd">    :type image_path_list: List[str]</span>
+<span class="sd">    :param image_dims: image dimensions</span>
+<span class="sd">    :type image_dims: ImageDimensions</span>
+<span class="sd">    :param image_transform: image transformation</span>
+<span class="sd">    :type image_transform: Callable</span>
+<span class="sd">    :param target_transform: target transformation</span>
+<span class="sd">    :type target_transform: Callable</span>
+<span class="sd">    :param twin_transform: twin transformation</span>
+<span class="sd">    :type twin_transform: Callable</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">image_path_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">image_dims</span><span class="p">:</span> <span class="n">ImageDimensions</span><span class="p">,</span>
+                 <span class="n">image_transform</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">target_transform</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">twin_transform</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor method for the DatasetPredict class.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_raw_image_path_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">image_path_list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_path_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expend_glob_path_list</span><span class="p">(</span><span class="n">glob_path_list</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_raw_image_path_list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_file_list</span> <span class="o">=</span> <span class="n">get_output_file_list</span><span class="p">(</span><span class="n">image_path_list</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">image_path_list</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_dims</span> <span class="o">=</span> <span class="n">image_dims</span>
+
+        <span class="c1"># transformations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">image_transform</span> <span class="o">=</span> <span class="n">image_transform</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_transform</span> <span class="o">=</span> <span class="n">target_transform</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">twin_transform</span> <span class="o">=</span> <span class="n">twin_transform</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image_path_list</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;List of image paths is empty!&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function returns the length of an epoch so the data loader knows when to stop.</span>
+<span class="sd">        The length is different during train/val and test, because we process the whole image during testing,</span>
+<span class="sd">        and only sample from the images during train/val.</span>
+
+<span class="sd">        :returns: number of samples</span>
+<span class="sd">        :rtype: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function returns the data and the gt for a given index.</span>
+
+<span class="sd">        :param index: index of the sample</span>
+<span class="sd">        :type index: int</span>
+<span class="sd">        :return: data and gt</span>
+<span class="sd">        :rtype: Tuple[Tensor, int]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">data_img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_data_and_gt</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">)</span>
+        <span class="n">data_tensor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_transformation</span><span class="p">(</span><span class="n">img</span><span class="o">=</span><span class="n">data_img</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">data_tensor</span><span class="p">,</span> <span class="n">index</span>
+
+    <span class="k">def</span> <span class="nf">_load_data_and_gt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Image</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads the data and gt from the disk.</span>
+
+<span class="sd">        :param index: index of the sample</span>
+<span class="sd">        :type index: int</span>
+<span class="sd">        :returns: The image at the given index</span>
+<span class="sd">        :rtype: Image</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data_img</span> <span class="o">=</span> <span class="n">pil_loader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">image_path_list</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+
+        <span class="k">assert</span> <span class="n">data_img</span><span class="o">.</span><span class="n">height</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_dims</span><span class="o">.</span><span class="n">height</span> <span class="ow">and</span> <span class="n">data_img</span><span class="o">.</span><span class="n">width</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_dims</span><span class="o">.</span><span class="n">width</span>
+
+        <span class="k">return</span> <span class="n">data_img</span>
+
+    <span class="k">def</span> <span class="nf">_apply_transformation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">:</span> <span class="n">Image</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Applies the transformations that have been defined in the setup (setup.py). If no transformations</span>
+<span class="sd">        have been defined, the PIL image is returned instead.</span>
+
+<span class="sd">        :param img: Original image to apply transformation on</span>
+<span class="sd">        :type img: PIL image</span>
+<span class="sd">        :returns: transformed image</span>
+<span class="sd">        :rtype: Tensor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_transform</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># perform transformations</span>
+            <span class="n">img</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_transform</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_tensor</span><span class="p">(</span><span class="n">img</span><span class="p">):</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">ToTensor</span><span class="p">()(</span><span class="n">img</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">img</span>
+
+<div class="viewcode-block" id="DatasetPredict.expend_glob_path_list"><a class="viewcode-back" href="../../../source/datamodules.utils.html#datamodules.utils.dataset_predict.DatasetPredict.expend_glob_path_list">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">expend_glob_path_list</span><span class="p">(</span><span class="n">glob_path_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Expends the glob path list to a list of paths.</span>
+
+<span class="sd">        :param glob_path_list: list of glob paths</span>
+<span class="sd">        :type glob_path_list: List[str]</span>
+<span class="sd">        :returns: list of paths</span>
+<span class="sd">        :rtype: List[Path]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">output_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">glob_path</span> <span class="ow">in</span> <span class="n">glob_path_list</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">glob</span><span class="p">(</span><span class="n">glob_path</span><span class="p">)):</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">path</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">output_list</span><span class="p">:</span>
+                    <span class="n">output_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">output_list</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lars Vögtlin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

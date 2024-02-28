@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>callbacks package &mdash; DIVA-DAF 0.2.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="datamodules package" href="datamodules.html" />
+    <link rel="prev" title="src" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            DIVA-DAF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example.html">Example</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">callbacks package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-callbacks.general_callbacks">callbacks.general_callbacks module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-callbacks.model_callbacks">callbacks.model_callbacks module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-callbacks.wandb_callbacks">callbacks.wandb_callbacks module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-callbacks">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.html">datamodules package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="execute.html">execute module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="metrics.html">metrics package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html">models package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html">tasks package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">utils package</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DIVA-DAF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">src</a></li>
+      <li class="breadcrumb-item active">callbacks package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/source/callbacks.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="callbacks-package">
+<h1>callbacks package<a class="headerlink" href="#callbacks-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-callbacks.general_callbacks">
+<span id="callbacks-general-callbacks-module"></span><h2>callbacks.general_callbacks module<a class="headerlink" href="#module-callbacks.general_callbacks" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="callbacks.general_callbacks.TimeTracker">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TimeTracker</span></span><a class="reference internal" href="../_modules/callbacks/general_callbacks.html#TimeTracker"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#callbacks.general_callbacks.TimeTracker" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></p>
+<p>A callback to track the time taken for training and testing.
+It logs the time taken for each epoch and the total time taken for training and testing.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="callbacks.general_callbacks.TimeTracker.on_test_epoch_end">
+<span class="sig-name descname"><span class="pre">on_test_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pl_module</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/callbacks/general_callbacks.html#TimeTracker.on_test_epoch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#callbacks.general_callbacks.TimeTracker.on_test_epoch_end" title="Permalink to this definition"></a></dt>
+<dd><p>Called when the test epoch ends.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="callbacks.general_callbacks.TimeTracker.on_test_epoch_start">
+<span class="sig-name descname"><span class="pre">on_test_epoch_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pl_module</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/callbacks/general_callbacks.html#TimeTracker.on_test_epoch_start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#callbacks.general_callbacks.TimeTracker.on_test_epoch_start" title="Permalink to this definition"></a></dt>
+<dd><p>Called when the test epoch begins.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="callbacks.general_callbacks.TimeTracker.on_train_epoch_end">
+<span class="sig-name descname"><span class="pre">on_train_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pl_module</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/callbacks/general_callbacks.html#TimeTracker.on_train_epoch_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#callbacks.general_callbacks.TimeTracker.on_train_epoch_end" title="Permalink to this definition"></a></dt>
+<dd><p>Called when the train epoch ends.</p>
+<p>To access all batch outputs at the end of the epoch, either:</p>
+<ol class="arabic simple">
+<li><p>Implement <cite>training_epoch_end</cite> in the <cite>LightningModule</cite> and access outputs via the module OR</p></li>
+<li><p>Cache data across train batch hooks inside the callback implementation to post-process in this hook.</p></li>
+</ol>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="callbacks.general_callbacks.TimeTracker.on_train_epoch_start">
+<span class="sig-name descname"><span class="pre">on_train_epoch_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pl_module</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/callbacks/general_callbacks.html#TimeTracker.on_train_epoch_start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#callbacks.general_callbacks.TimeTracker.on_train_epoch_start" title="Permalink to this definition"></a></dt>
+<dd><p>Called when the train epoch begins.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="callbacks.general_callbacks.TimeTracker.on_train_start">
+<span class="sig-name descname"><span class="pre">on_train_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pl_module</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/callbacks/general_callbacks.html#TimeTracker.on_train_start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#callbacks.general_callbacks.TimeTracker.on_train_start" title="Permalink to this definition"></a></dt>
+<dd><p>Called when the train begins.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-callbacks.model_callbacks">
+<span id="callbacks-model-callbacks-module"></span><h2>callbacks.model_callbacks module<a class="headerlink" href="#module-callbacks.model_callbacks" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="callbacks.model_callbacks.CheckBackboneHeaderCompatibility">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CheckBackboneHeaderCompatibility</span></span><a class="reference internal" href="../_modules/callbacks/model_callbacks.html#CheckBackboneHeaderCompatibility"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#callbacks.model_callbacks.CheckBackboneHeaderCompatibility" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></p>
+<p>Checks if the backbone and the header are compatible.
+This is checked by passing a random tensor through the backbone and the header.
+If the backbone and the header are not compatible, the program is terminated.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="callbacks.model_callbacks.CheckBackboneHeaderCompatibility.setup">
+<span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Trainer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pl_module</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">LightningModule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stage</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/callbacks/model_callbacks.html#CheckBackboneHeaderCompatibility.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#callbacks.model_callbacks.CheckBackboneHeaderCompatibility.setup" title="Permalink to this definition"></a></dt>
+<dd><p>Called when fit, validate, test, predict, or tune begins.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="callbacks.model_callbacks.SaveModelStateDictAndTaskCheckpoint">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SaveModelStateDictAndTaskCheckpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backbone_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'backbone'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">header_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'header'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/callbacks/model_callbacks.html#SaveModelStateDictAndTaskCheckpoint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#callbacks.model_callbacks.SaveModelStateDictAndTaskCheckpoint" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ModelCheckpoint</span></code></p>
+<p>Saves the neural network weights into a pth file.
+It produces a file for each the encoder and the header.
+The encoder file is named after the backbone_filename and the header file after the header_filename.
+The backbone_filename and the header_filename can be specified in the constructor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>backbone_filename</strong> (<em>str</em><em>, </em><em>optional</em>) – Filename of the backbone checkpoint</p></li>
+<li><p><strong>header_filename</strong> (<em>str</em><em>, </em><em>optional</em>) – Filename of the header checkpoint</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-callbacks.wandb_callbacks">
+<span id="callbacks-wandb-callbacks-module"></span><h2>callbacks.wandb_callbacks module<a class="headerlink" href="#module-callbacks.wandb_callbacks" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="callbacks.wandb_callbacks.WatchModelWithWandb">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">WatchModelWithWandb</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_category</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'gradients'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_freq</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">100</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/callbacks/wandb_callbacks.html#WatchModelWithWandb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#callbacks.wandb_callbacks.WatchModelWithWandb" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Callback</span></code></p>
+<p>Make WandbLogger watch model at the beginning of the run.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>log_category</strong> (<em>str</em>) – Category of the model to log (“gradients”, “parameters”, “all”, or None). Default: “gradients”.</p></li>
+<li><p><strong>log_freq</strong> (<em>int</em>) – How often to log the model. Default: 100.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="callbacks.wandb_callbacks.WatchModelWithWandb.on_train_start">
+<span class="sig-name descname"><span class="pre">on_train_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pl_module</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/callbacks/wandb_callbacks.html#WatchModelWithWandb.on_train_start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#callbacks.wandb_callbacks.WatchModelWithWandb.on_train_start" title="Permalink to this definition"></a></dt>
+<dd><p>Called when the train begins.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="callbacks.wandb_callbacks.get_wandb_logger">
+<span class="sig-name descname"><span class="pre">get_wandb_logger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainer</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Trainer</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">WandbLogger</span></span></span><a class="reference internal" href="../_modules/callbacks/wandb_callbacks.html#get_wandb_logger"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#callbacks.wandb_callbacks.get_wandb_logger" title="Permalink to this definition"></a></dt>
+<dd><p>Get WandbLogger from trainer or loggers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>trainer</strong> (<em>Trainer</em>) – PyTorch Lightning trainer.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>WandbLogger</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>WandbLogger</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If WandbLogger was not found</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-callbacks">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-callbacks" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-left" title="src" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="datamodules.html" class="btn btn-neutral float-right" title="datamodules package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lars Vögtlin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

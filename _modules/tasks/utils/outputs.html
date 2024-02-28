@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tasks.utils.outputs &mdash; DIVA-DAF 0.2.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            DIVA-DAF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../example.html">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/modules.html">src</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">DIVA-DAF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">tasks.utils.outputs</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for tasks.utils.outputs</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">pytorch_lightning.utilities</span> <span class="kn">import</span> <span class="n">LightningEnum</span>
+
+
+<div class="viewcode-block" id="OutputKeys"><a class="viewcode-back" href="../../../source/tasks.utils.html#tasks.utils.outputs.OutputKeys">[docs]</a><span class="k">class</span> <span class="nc">OutputKeys</span><span class="p">(</span><span class="n">LightningEnum</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Enum class for the keys of the output dictionary.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">PREDICTION</span> <span class="o">=</span> <span class="s1">&#39;pred&#39;</span>
+    <span class="n">TARGET</span> <span class="o">=</span> <span class="s1">&#39;target&#39;</span>
+    <span class="n">LOG</span> <span class="o">=</span> <span class="s1">&#39;logs&#39;</span>
+    <span class="n">LOSS</span> <span class="o">=</span> <span class="s1">&#39;loss&#39;</span>
+
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="reduce_dict"><a class="viewcode-back" href="../../../source/tasks.utils.html#tasks.utils.outputs.reduce_dict">[docs]</a><span class="k">def</span> <span class="nf">reduce_dict</span><span class="p">(</span><span class="n">input_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">key_list</span><span class="p">:</span> <span class="n">List</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reduce the input dictionary to only contain the keys in the key_list.</span>
+
+<span class="sd">    :param input_dict: The dictionary to reduce</span>
+<span class="sd">    :type input_dict: Dict</span>
+<span class="sd">    :param key_list: List of keys to keep</span>
+<span class="sd">    :type key_list: List</span>
+<span class="sd">    :return: The dictionary input_dict with only the keys in the key_list</span>
+<span class="sd">    :rtype: Dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">input_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">key_list</span> <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">input_dict</span><span class="p">}</span></div>
+
+
+<div class="viewcode-block" id="save_numpy_files"><a class="viewcode-back" href="../../../source/tasks.utils.html#tasks.utils.outputs.save_numpy_files">[docs]</a><span class="k">def</span> <span class="nf">save_numpy_files</span><span class="p">(</span><span class="n">trainer</span><span class="p">,</span> <span class="n">test_output_path</span><span class="p">,</span> <span class="n">input_idx</span><span class="p">,</span> <span class="n">output</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">trainer</span><span class="o">.</span><span class="n">datamodule</span><span class="p">,</span> <span class="s1">&#39;get_img_name_coordinates&#39;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;Datamodule does not provide detailed information of the crop&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">patch</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="n">OutputKeys</span><span class="o">.</span><span class="n">PREDICTION</span><span class="p">]</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span>
+                          <span class="n">input_idx</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()):</span>
+        <span class="n">patch_info</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">get_img_name_coordinates</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+        <span class="n">img_name</span> <span class="o">=</span> <span class="n">patch_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">patch_name</span> <span class="o">=</span> <span class="n">patch_info</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">dest_folder</span> <span class="o">=</span> <span class="n">test_output_path</span> <span class="o">/</span> <span class="s1">&#39;patches&#39;</span> <span class="o">/</span> <span class="n">img_name</span>
+        <span class="n">dest_folder</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">dest_filename</span> <span class="o">=</span> <span class="n">dest_folder</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">patch_name</span><span class="si">}</span><span class="s1">.npy&#39;</span>
+
+        <span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">dest_filename</span><span class="p">),</span> <span class="n">arr</span><span class="o">=</span><span class="n">patch</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lars Vögtlin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

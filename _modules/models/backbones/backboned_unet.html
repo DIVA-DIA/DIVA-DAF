@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>models.backbones.backboned_unet &mdash; DIVA-DAF 0.2.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            DIVA-DAF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../example.html">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/modules.html">src</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">DIVA-DAF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">models.backbones.backboned_unet</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for models.backbones.backboned_unet</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">from</span> <span class="nn">torchvision</span> <span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span> <span class="nn">torch.nn</span> <span class="kn">import</span> <span class="n">functional</span> <span class="k">as</span> <span class="n">F</span>
+
+<span class="kn">from</span> <span class="nn">src.models.backbones.resnet</span> <span class="kn">import</span> <span class="n">ResNet50</span><span class="p">,</span> <span class="n">ResNet18</span><span class="p">,</span> <span class="n">ResNet34</span><span class="p">,</span> <span class="n">ResNet152</span><span class="p">,</span> <span class="n">ResNet101</span>
+
+
+<span class="c1"># The whole class is from https://github.com/mkisantal/backboned-unet/blob/master/backboned_unet/unet.py</span>
+
+<div class="viewcode-block" id="get_backbone"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.backboned_unet.get_backbone">[docs]</a><span class="k">def</span> <span class="nf">get_backbone</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; Loading backbone, defining names for skip-connections and encoder output. &quot;&quot;&quot;</span>
+
+    <span class="c1"># TODO: More backbones</span>
+
+    <span class="c1"># loading backbone model</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;resnet18&#39;</span><span class="p">:</span>
+        <span class="n">backbone</span> <span class="o">=</span> <span class="n">ResNet18</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;resnet34&#39;</span><span class="p">:</span>
+        <span class="n">backbone</span> <span class="o">=</span> <span class="n">ResNet34</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;resnet50&#39;</span><span class="p">:</span>
+        <span class="n">backbone</span> <span class="o">=</span> <span class="n">ResNet50</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;resnet101&#39;</span><span class="p">:</span>
+        <span class="n">backbone</span> <span class="o">=</span> <span class="n">ResNet101</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;resnet152&#39;</span><span class="p">:</span>
+        <span class="n">backbone</span> <span class="o">=</span> <span class="n">ResNet152</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;vgg16&#39;</span><span class="p">:</span>
+        <span class="n">backbone</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">vgg16_bn</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained</span><span class="p">)</span><span class="o">.</span><span class="n">features</span>
+    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;vgg19&#39;</span><span class="p">:</span>
+        <span class="n">backbone</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">vgg19_bn</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained</span><span class="p">)</span><span class="o">.</span><span class="n">features</span>
+    <span class="c1"># elif name == &#39;inception_v3&#39;:</span>
+    <span class="c1">#     backbone = models.inception_v3(pretrained=pretrained, aux_logits=False)</span>
+    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;densenet121&#39;</span><span class="p">:</span>
+        <span class="n">backbone</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">densenet121</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">features</span>
+    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;densenet161&#39;</span><span class="p">:</span>
+        <span class="n">backbone</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">densenet161</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">features</span>
+    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;densenet169&#39;</span><span class="p">:</span>
+        <span class="n">backbone</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">densenet169</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">features</span>
+    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;densenet201&#39;</span><span class="p">:</span>
+        <span class="n">backbone</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">densenet201</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">features</span>
+    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;unet_encoder&#39;</span><span class="p">:</span>
+        <span class="n">backbone</span> <span class="o">=</span> <span class="n">UnetEncoder</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> backbone model is not implemented so far.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+
+    <span class="c1"># specifying skip feature and output names</span>
+    <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;resnet&#39;</span><span class="p">):</span>
+        <span class="n">feature_names</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;relu&#39;</span><span class="p">,</span> <span class="s1">&#39;layer1&#39;</span><span class="p">,</span> <span class="s1">&#39;layer2&#39;</span><span class="p">,</span> <span class="s1">&#39;layer3&#39;</span><span class="p">]</span>
+        <span class="n">backbone_output</span> <span class="o">=</span> <span class="s1">&#39;layer4&#39;</span>
+    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;vgg16&#39;</span><span class="p">:</span>
+        <span class="c1"># TODO: consider using a &#39;bridge&#39; for VGG models, there is just a MaxPool between last skip and backbone output</span>
+        <span class="n">feature_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;5&#39;</span><span class="p">,</span> <span class="s1">&#39;12&#39;</span><span class="p">,</span> <span class="s1">&#39;22&#39;</span><span class="p">,</span> <span class="s1">&#39;32&#39;</span><span class="p">,</span> <span class="s1">&#39;42&#39;</span><span class="p">]</span>
+        <span class="n">backbone_output</span> <span class="o">=</span> <span class="s1">&#39;43&#39;</span>
+    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;vgg19&#39;</span><span class="p">:</span>
+        <span class="n">feature_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;5&#39;</span><span class="p">,</span> <span class="s1">&#39;12&#39;</span><span class="p">,</span> <span class="s1">&#39;25&#39;</span><span class="p">,</span> <span class="s1">&#39;38&#39;</span><span class="p">,</span> <span class="s1">&#39;51&#39;</span><span class="p">]</span>
+        <span class="n">backbone_output</span> <span class="o">=</span> <span class="s1">&#39;52&#39;</span>
+    <span class="c1"># elif name == &#39;inception_v3&#39;:</span>
+    <span class="c1">#     feature_names = [None, &#39;Mixed_5d&#39;, &#39;Mixed_6e&#39;]</span>
+    <span class="c1">#     backbone_output = &#39;Mixed_7c&#39;</span>
+    <span class="k">elif</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;densenet&#39;</span><span class="p">):</span>
+        <span class="n">feature_names</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;relu0&#39;</span><span class="p">,</span> <span class="s1">&#39;denseblock1&#39;</span><span class="p">,</span> <span class="s1">&#39;denseblock2&#39;</span><span class="p">,</span> <span class="s1">&#39;denseblock3&#39;</span><span class="p">]</span>
+        <span class="n">backbone_output</span> <span class="o">=</span> <span class="s1">&#39;denseblock4&#39;</span>
+    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;unet_encoder&#39;</span><span class="p">:</span>
+        <span class="n">feature_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;module1&#39;</span><span class="p">,</span> <span class="s1">&#39;module2&#39;</span><span class="p">,</span> <span class="s1">&#39;module3&#39;</span><span class="p">,</span> <span class="s1">&#39;module4&#39;</span><span class="p">]</span>
+        <span class="n">backbone_output</span> <span class="o">=</span> <span class="s1">&#39;module5&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> backbone model is not implemented so far.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">backbone</span><span class="p">,</span> <span class="n">feature_names</span><span class="p">,</span> <span class="n">backbone_output</span></div>
+
+
+<div class="viewcode-block" id="UpsampleBlock"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.backboned_unet.UpsampleBlock">[docs]</a><span class="k">class</span> <span class="nc">UpsampleBlock</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+
+    <span class="c1"># TODO: separate parametric and non-parametric classes?</span>
+    <span class="c1"># TODO: skip connection concatenated OR added</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ch_in</span><span class="p">,</span> <span class="n">ch_out</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">skip_in</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">use_bn</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parametric</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">UpsampleBlock</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">parametric</span> <span class="o">=</span> <span class="n">parametric</span>
+        <span class="n">ch_out</span> <span class="o">=</span> <span class="n">ch_in</span><span class="o">/</span><span class="mi">2</span> <span class="k">if</span> <span class="n">ch_out</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">ch_out</span>
+
+        <span class="c1"># first convolution: either transposed conv, or conv following the skip connection</span>
+        <span class="k">if</span> <span class="n">parametric</span><span class="p">:</span>
+            <span class="c1"># versions: kernel=4 padding=1, kernel=2 padding=0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">up</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="n">ch_in</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">ch_out</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+                                         <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">output_padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="ow">not</span> <span class="n">use_bn</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bn1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">ch_out</span><span class="p">)</span> <span class="k">if</span> <span class="n">use_bn</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">up</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="n">ch_in</span> <span class="o">=</span> <span class="n">ch_in</span> <span class="o">+</span> <span class="n">skip_in</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="n">ch_in</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">ch_out</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+                                   <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="ow">not</span> <span class="n">use_bn</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bn1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">ch_out</span><span class="p">)</span> <span class="k">if</span> <span class="n">use_bn</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">relu</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># second convolution</span>
+        <span class="n">conv2_in</span> <span class="o">=</span> <span class="n">ch_out</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">parametric</span> <span class="k">else</span> <span class="n">ch_out</span> <span class="o">+</span> <span class="n">skip_in</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="n">conv2_in</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">ch_out</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+                               <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="p">(</span><span class="ow">not</span> <span class="n">use_bn</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bn2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">ch_out</span><span class="p">)</span> <span class="k">if</span> <span class="n">use_bn</span> <span class="k">else</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="UpsampleBlock.forward"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.backboned_unet.UpsampleBlock.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">skip_connection</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">up</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parametric</span> <span class="k">else</span> <span class="n">F</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scale_factor</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;bilinear&#39;</span><span class="p">,</span>
+                                                             <span class="n">align_corners</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parametric</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bn1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bn1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">x</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">skip_connection</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">skip_connection</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">parametric</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bn1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bn1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">x</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bn2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">bn2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">x</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">x</span></div></div>
+
+
+<div class="viewcode-block" id="Unet"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.backboned_unet.Unet">[docs]</a><span class="k">class</span> <span class="nc">Unet</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; U-Net (https://arxiv.org/pdf/1505.04597.pdf) implementation with pre-trained torchvision backbones.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">backbone_name</span><span class="o">=</span><span class="s1">&#39;resnet50&#39;</span><span class="p">,</span>
+                 <span class="n">pretrained</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">encoder_freeze</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                 <span class="n">num_classes</span><span class="o">=</span><span class="mi">21</span><span class="p">,</span>
+                 <span class="n">decoder_filters</span><span class="o">=</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span>
+                 <span class="n">parametric_upsampling</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">shortcut_features</span><span class="o">=</span><span class="s1">&#39;default&#39;</span><span class="p">,</span>
+                 <span class="n">decoder_use_batchnorm</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Unet</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">backbone_name</span> <span class="o">=</span> <span class="n">backbone_name</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shortcut_features</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bb_out_name</span> <span class="o">=</span> <span class="n">get_backbone</span><span class="p">(</span><span class="n">backbone_name</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="n">pretrained</span><span class="p">)</span>
+        <span class="n">shortcut_chs</span><span class="p">,</span> <span class="n">bb_out_chs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">infer_skip_channels</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">shortcut_features</span> <span class="o">!=</span> <span class="s1">&#39;default&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shortcut_features</span> <span class="o">=</span> <span class="n">shortcut_features</span>
+
+        <span class="c1"># build decoder part</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upsample_blocks</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
+        <span class="n">decoder_filters</span> <span class="o">=</span> <span class="n">decoder_filters</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shortcut_features</span><span class="p">)]</span>  <span class="c1"># avoiding having more blocks than skip connections</span>
+        <span class="n">decoder_filters_in</span> <span class="o">=</span> <span class="p">[</span><span class="n">bb_out_chs</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">decoder_filters</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">num_blocks</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shortcut_features</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">[</span><span class="n">filters_in</span><span class="p">,</span> <span class="n">filters_out</span><span class="p">]</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">decoder_filters_in</span><span class="p">,</span> <span class="n">decoder_filters</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">upsample_blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">UpsampleBlock</span><span class="p">(</span><span class="n">filters_in</span><span class="p">,</span> <span class="n">filters_out</span><span class="p">,</span>
+                                                      <span class="n">skip_in</span><span class="o">=</span><span class="n">shortcut_chs</span><span class="p">[</span><span class="n">num_blocks</span><span class="o">-</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span>
+                                                      <span class="n">parametric</span><span class="o">=</span><span class="n">parametric_upsampling</span><span class="p">,</span>
+                                                      <span class="n">use_bn</span><span class="o">=</span><span class="n">decoder_use_batchnorm</span><span class="p">))</span>
+
+        <span class="c1"># self.final_conv = nn.Conv2d(decoder_filters[-1], num_classes, kernel_size=(1, 1))</span>
+
+        <span class="k">if</span> <span class="n">encoder_freeze</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">freeze_encoder</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">replaced_conv1</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># for accommodating  inputs with different number of channels later</span>
+
+<div class="viewcode-block" id="Unet.freeze_encoder"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.backboned_unet.Unet.freeze_encoder">[docs]</a>    <span class="k">def</span> <span class="nf">freeze_encoder</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Freezing encoder parameters, the newly initialized decoder parameters are remaining trainable. &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span><span class="o">.</span><span class="n">parameters</span><span class="p">():</span>
+            <span class="n">param</span><span class="o">.</span><span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="Unet.forward"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.backboned_unet.Unet.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="nb">input</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Forward propagation in U-Net. &quot;&quot;&quot;</span>
+
+        <span class="n">x</span><span class="p">,</span> <span class="n">features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">forward_backbone</span><span class="p">(</span><span class="o">*</span><span class="nb">input</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">skip_name</span><span class="p">,</span> <span class="n">upsample_block</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shortcut_features</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">upsample_blocks</span><span class="p">):</span>
+            <span class="n">skip_features</span> <span class="o">=</span> <span class="n">features</span><span class="p">[</span><span class="n">skip_name</span><span class="p">]</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">upsample_block</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">skip_features</span><span class="p">)</span>
+
+        <span class="c1"># x = self.final_conv(x)</span>
+        <span class="k">return</span> <span class="n">x</span></div>
+
+<div class="viewcode-block" id="Unet.forward_backbone"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.backboned_unet.Unet.forward_backbone">[docs]</a>    <span class="k">def</span> <span class="nf">forward_backbone</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Forward propagation in backbone encoder network.  &quot;&quot;&quot;</span>
+
+        <span class="n">features</span> <span class="o">=</span> <span class="p">{</span><span class="kc">None</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span> <span class="k">if</span> <span class="kc">None</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">shortcut_features</span> <span class="k">else</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span><span class="o">.</span><span class="n">named_children</span><span class="p">():</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">child</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">shortcut_features</span><span class="p">:</span>
+                <span class="n">features</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">bb_out_name</span><span class="p">:</span>
+                <span class="k">break</span>
+
+        <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">features</span></div>
+
+<div class="viewcode-block" id="Unet.infer_skip_channels"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.backboned_unet.Unet.infer_skip_channels">[docs]</a>    <span class="k">def</span> <span class="nf">infer_skip_channels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Getting the number of channels at skip connections and at the output of the encoder. &quot;&quot;&quot;</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>
+        <span class="n">has_fullres_features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">backbone_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;vgg&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">backbone_name</span> <span class="o">==</span> <span class="s1">&#39;unet_encoder&#39;</span>
+        <span class="n">channels</span> <span class="o">=</span> <span class="p">[]</span> <span class="k">if</span> <span class="n">has_fullres_features</span> <span class="k">else</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># only VGG has features at full resolution</span>
+
+        <span class="c1"># forward run in backbone to count channels (dirty solution but works for *any* Module)</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">backbone</span><span class="o">.</span><span class="n">named_children</span><span class="p">():</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">child</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">shortcut_features</span><span class="p">:</span>
+                <span class="n">channels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">bb_out_name</span><span class="p">:</span>
+                <span class="n">out_channels</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">break</span>
+        <span class="k">return</span> <span class="n">channels</span><span class="p">,</span> <span class="n">out_channels</span></div></div>
+
+
+<div class="viewcode-block" id="UnetDownModule"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.backboned_unet.UnetDownModule">[docs]</a><span class="k">class</span> <span class="nc">UnetDownModule</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; U-Net downsampling block. &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">downsample</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">UnetDownModule</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="c1"># layers: optional downsampling, 2 x (conv + bn + relu)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxpool</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span> <span class="k">if</span> <span class="n">downsample</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="n">in_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">out_channels</span><span class="p">,</span>
+                               <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bn1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">out_channels</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_channels</span><span class="o">=</span><span class="n">out_channels</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="n">out_channels</span><span class="p">,</span>
+                               <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bn2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">BatchNorm2d</span><span class="p">(</span><span class="n">out_channels</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">relu</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UnetDownModule.forward"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.backboned_unet.UnetDownModule.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxpool</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxpool</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bn1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bn2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">x</span></div></div>
+
+
+<div class="viewcode-block" id="UnetEncoder"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.backboned_unet.UnetEncoder">[docs]</a><span class="k">class</span> <span class="nc">UnetEncoder</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+
+<span class="w">    </span><span class="sd">&quot;&quot;&quot; U-Net encoder. https://arxiv.org/pdf/1505.04597.pdf &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_channels</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">UnetEncoder</span><span class="p">,</span> <span class="bp">self</span><span class="p">,)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">module1</span> <span class="o">=</span> <span class="n">UnetDownModule</span><span class="p">(</span><span class="n">num_channels</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="n">downsample</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">module2</span> <span class="o">=</span> <span class="n">UnetDownModule</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">module3</span> <span class="o">=</span> <span class="n">UnetDownModule</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">module4</span> <span class="o">=</span> <span class="n">UnetDownModule</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span> <span class="mi">512</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">module5</span> <span class="o">=</span> <span class="n">UnetDownModule</span><span class="p">(</span><span class="mi">512</span><span class="p">,</span> <span class="mi">1024</span><span class="p">)</span>
+
+<div class="viewcode-block" id="UnetEncoder.forward"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.backboned_unet.UnetEncoder.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">module1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">module2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">module3</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">module4</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">module5</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lars Vögtlin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

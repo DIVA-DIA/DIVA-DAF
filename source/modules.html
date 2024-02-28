@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>src &mdash; DIVA-DAF 0.2.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="callbacks package" href="callbacks.html" />
+    <link rel="prev" title="Example" href="../example.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            DIVA-DAF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example.html">Example</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">src</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="callbacks.html">callbacks package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.html">datamodules package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="execute.html">execute module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="metrics.html">metrics package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html">models package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html">tasks package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">utils package</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DIVA-DAF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">src</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/source/modules.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="src">
+<h1>src<a class="headerlink" href="#src" title="Permalink to this heading"></a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="callbacks.html">callbacks package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="callbacks.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="callbacks.html#module-callbacks.general_callbacks">callbacks.general_callbacks module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="callbacks.html#module-callbacks.model_callbacks">callbacks.model_callbacks module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="callbacks.html#module-callbacks.wandb_callbacks">callbacks.wandb_callbacks module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="callbacks.html#module-callbacks">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="datamodules.html">datamodules package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="datamodules.Classification.html">datamodules.Classification package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.Classification.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.Classification.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.Classification.html#module-datamodules.Classification.datamodule">datamodules.Classification.datamodule module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.Classification.html#module-datamodules.Classification">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="datamodules.DivaHisDB.html">datamodules.DivaHisDB package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.DivaHisDB.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.DivaHisDB.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.DivaHisDB.html#module-datamodules.DivaHisDB.datamodule_cropped">datamodules.DivaHisDB.datamodule_cropped module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.DivaHisDB.html#module-datamodules.DivaHisDB">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="datamodules.IndexedFormats.html">datamodules.IndexedFormats package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.IndexedFormats.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.IndexedFormats.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.IndexedFormats.html#module-datamodules.IndexedFormats.datamodule">datamodules.IndexedFormats.datamodule module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.IndexedFormats.html#module-datamodules.IndexedFormats">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="datamodules.RGB.html">datamodules.RGB package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RGB.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RGB.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RGB.html#module-datamodules.RGB.datamodule">datamodules.RGB.datamodule module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RGB.html#module-datamodules.RGB.datamodule_cropped">datamodules.RGB.datamodule_cropped module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RGB.html#module-datamodules.RGB">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="datamodules.RolfFormat.html">datamodules.RolfFormat package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RolfFormat.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RolfFormat.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RolfFormat.html#module-datamodules.RolfFormat.datamodule">datamodules.RolfFormat.datamodule module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RolfFormat.html#module-datamodules.RolfFormat">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="datamodules.RotNet.html">datamodules.RotNet package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RotNet.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RotNet.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RotNet.html#module-datamodules.RotNet.datamodule_cropped">datamodules.RotNet.datamodule_cropped module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RotNet.html#module-datamodules.RotNet">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="datamodules.utils.html">datamodules.utils package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.utils.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.utils.html#module-datamodules.utils.dataset_predict">datamodules.utils.dataset_predict module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.utils.html#module-datamodules.utils.exceptions">datamodules.utils.exceptions module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.utils.html#module-datamodules.utils.functional">datamodules.utils.functional module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.utils.html#module-datamodules.utils.image_analytics">datamodules.utils.image_analytics module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.utils.html#module-datamodules.utils.misc">datamodules.utils.misc module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.utils.html#module-datamodules.utils.output_tools">datamodules.utils.output_tools module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.utils.html#module-datamodules.utils.single_transforms">datamodules.utils.single_transforms module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.utils.html#module-datamodules.utils.twin_transforms">datamodules.utils.twin_transforms module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.utils.html#module-datamodules.utils.wrapper_transforms">datamodules.utils.wrapper_transforms module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.utils.html#module-datamodules.utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.html#module-datamodules.base_datamodule">datamodules.base_datamodule module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.html#module-datamodules">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="execute.html">execute module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="metrics.html">metrics package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="metrics.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="metrics.html#module-metrics.divahisdb">metrics.divahisdb module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="metrics.html#module-metrics">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="models.html">models package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="models.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="models.backbones.html">models.backbones package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="models.backbones.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="models.backbones.html#module-models.backbones.VGG">models.backbones.VGG module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="models.backbones.html#module-models.backbones.adaptive_unet">models.backbones.adaptive_unet module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="models.backbones.html#module-models.backbones.baby_cnn">models.backbones.baby_cnn module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="models.backbones.html#module-models.backbones.backboned_unet">models.backbones.backboned_unet module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="models.backbones.html#module-models.backbones.deeplabv3">models.backbones.deeplabv3 module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="models.backbones.html#module-models.backbones.deeplabv3_aspp">models.backbones.deeplabv3_aspp module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="models.backbones.html#module-models.backbones.deeplabv3_resnet">models.backbones.deeplabv3_resnet module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="models.backbones.html#module-models.backbones.doc_ufcn">models.backbones.doc_ufcn module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="models.backbones.html#module-models.backbones.resnet">models.backbones.resnet module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="models.backbones.html#module-models.backbones.resnetdd">models.backbones.resnetdd module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="models.backbones.html#module-models.backbones.segnet">models.backbones.segnet module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="models.backbones.html#module-models.backbones.unet">models.backbones.unet module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="models.backbones.html#module-models.backbones">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="models.headers.html">models.headers package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="models.headers.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="models.headers.html#module-models.headers.fully_connected">models.headers.fully_connected module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="models.headers.html#module-models.headers.fully_convolution">models.headers.fully_convolution module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="models.headers.html#module-models.headers.unet">models.headers.unet module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="models.headers.html#module-models.headers">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="models.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html#module-models.backbone_header_model">models.backbone_header_model module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html#module-models">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tasks.html">tasks package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tasks.DivaHisDB.html">tasks.DivaHisDB package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tasks.DivaHisDB.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tasks.DivaHisDB.html#module-tasks.DivaHisDB.semantic_segmentation_cropped">tasks.DivaHisDB.semantic_segmentation_cropped module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tasks.DivaHisDB.html#module-tasks.DivaHisDB">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.RGB.html">tasks.RGB package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tasks.RGB.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tasks.RGB.html#module-tasks.RGB.semantic_segmentation">tasks.RGB.semantic_segmentation module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tasks.RGB.html#module-tasks.RGB.semantic_segmentation_cropped">tasks.RGB.semantic_segmentation_cropped module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tasks.RGB.html#module-tasks.RGB">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.classification.html">tasks.classification package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tasks.classification.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tasks.classification.html#module-tasks.classification.classification">tasks.classification.classification module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tasks.classification.html#module-tasks.classification">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tasks.utils.html">tasks.utils package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="tasks.utils.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tasks.utils.html#module-tasks.utils.outputs">tasks.utils.outputs module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tasks.utils.html#module-tasks.utils.task_utils">tasks.utils.task_utils module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="tasks.utils.html#module-tasks.utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html#module-tasks.base_task">tasks.base_task module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html#module-tasks">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">utils package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#module-utils.utils">utils.utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#module-utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../example.html" class="btn btn-neutral float-left" title="Example" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="callbacks.html" class="btn btn-neutral float-right" title="callbacks package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lars Vögtlin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
