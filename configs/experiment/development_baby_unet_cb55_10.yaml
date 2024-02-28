@@ -30,7 +30,7 @@ defaults:
 # instead we define all modules and their paths directly in this config,
 # so everything is stored in one place for more readibility
 
-name: "Development Baby UNet on HisDB Cropped"
+name: "Development-Baby-UNet-on-HisDB-Cropped"
 
 seed: 42
 
