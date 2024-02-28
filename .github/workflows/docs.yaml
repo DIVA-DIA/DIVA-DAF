@@ -27,6 +27,7 @@ jobs:
                     pip install --requirement requirements.txt --upgrade --quiet --find-links https://download.pytorch.org/whl/cpu/torch_stable.html
             -   name: Build docs
                 run: |
+                    sphinx-apidoc -o ./docs/source src/
                     sphinx-build docs docs/_build
             -   name: GitHub deployment
                 uses: peaceiris/actions-gh-pages@v3
