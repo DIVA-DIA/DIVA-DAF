@@ -5,6 +5,10 @@ from pytorch_lightning import Callback
 
 
 class TimeTracker(Callback):
+    """
+    A callback to track the time taken for training and testing.
+    It logs the time taken for each epoch and the total time taken for training and testing.
+    """
     def __init__(self):
         self.start_time_train = None
         self.start_time_train_epoch = None
