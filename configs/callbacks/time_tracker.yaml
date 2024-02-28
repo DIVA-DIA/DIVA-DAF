@@ -1,0 +1,2 @@
+timeTracker:
+    _target_: src.callbacks.general_callbacks.TimeTracker

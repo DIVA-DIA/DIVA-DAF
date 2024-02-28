@@ -336,6 +336,8 @@ def _write_current_run_dir(config: DictConfig):
 
     :param config: the hydra config
     """
+    if config.get('development_mode'):
+        return
     run_dir_log_filename = 'run_dir_log.txt'
     run_dir_log_file = Path(to_absolute_path(config['run_root_dir'])) / config['name'] / run_dir_log_filename
     run_dir_log_file = run_dir_log_file.resolve()
