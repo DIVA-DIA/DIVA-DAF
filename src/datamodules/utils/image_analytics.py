@@ -7,8 +7,13 @@ import numpy as np
 from PIL import Image
 from numpy import ndarray, dtype, floating
 
+from src.utils import utils
 
-def compute_mean_std(file_names: Union[np.ndarray, List[Path]], inmem: bool = False, workers: int = 8) -> Tuple[float, float]:
+log = utils.get_logger(__name__)
+
+
+def compute_mean_std(file_names: Union[np.ndarray, List[Path]], inmem: bool = False, workers: int = 8) -> Tuple[
+    float, float]:
     """
     Computes mean and std of all images present at target folder.
 
@@ -40,7 +45,7 @@ def _cms_online(file_names: Union[np.ndarray, List[Path]], workers=4) -> Tuple[f
     :returns: mean and std
     :rtype: Tuple[float, float]
     """
-    logging.info('Begin computing the mean')
+    log.info('Begin computing the mean')
 
     # Set up a pool of workers
     pool = Pool(workers + 1)
@@ -52,15 +57,15 @@ def _cms_online(file_names: Union[np.ndarray, List[Path]], workers=4) -> Tuple[f
     # Divide by number of samples in train set
     mean = mean_sum / file_names.size
 
-    logging.info('Finished computing the mean')
-    logging.info('Begin computing the std')
+    log.info('Finished computing the mean')
+    log.info('Begin computing the std')
 
     # Online image_classification deviation
     results = pool.starmap(_return_std, [[item, mean] for item in file_names])
     std_sum = np.sum(np.array([item[0] for item in results]), axis=0)
     total_pixel_count = np.sum(np.array([item[1] for item in results]))
     std = np.sqrt(std_sum / total_pixel_count)
-    logging.info('Finished computing the std')
+    log.info('Finished computing the std')
 
     # Shut down the pool
     pool.close()

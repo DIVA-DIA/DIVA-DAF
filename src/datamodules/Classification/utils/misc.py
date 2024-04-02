@@ -3,12 +3,12 @@ from pathlib import Path
 from src.datamodules.utils.exceptions import PathNone, PathNotDir, PathMissingSplitDir
 
 
-def validate_path_for_classification(data_dir: str) -> Path:
+def validate_path_for_classification(data_dir: Path) -> Path:
     """
     Checks if the path is valid for classification
 
     :param data_dir: path to the root dir of the dataset
-    :type data_dir: str
+    :type data_dir: Path
     :return: path to the root dir of the dataset
     :rtype: Path
     """
