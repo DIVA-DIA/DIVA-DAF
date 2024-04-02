@@ -69,6 +69,7 @@ class ClassificationDatamodule(AbstractDatamodule):
     :param drop_last: Whether to drop the last batch if it is smaller than the batch size.
     :type drop_last: bool
     """
+
     def __init__(self, data_dir: str,
                  selection_train: Optional[Union[int, List[str]]] = None,
                  selection_val: Optional[Union[int, List[str]]] = None,
@@ -111,9 +112,11 @@ class ClassificationDatamodule(AbstractDatamodule):
 
         self.train = None
         self.val = None
+        self.test = None
 
         self.train_loader = None
         self.val_loader = None
+        self.test_loader = None
 
     def setup(self, stage: Optional[str] = None):
         super().setup()
@@ -131,7 +134,11 @@ class ClassificationDatamodule(AbstractDatamodule):
                                        drop_last=self.drop_last)
 
         if stage == 'test':
-            raise ValueError('Test data is not available for Classification.')
+            self.test = ImageFolder(**self._create_dataset_parameters('val'))
+            log.info(f'Initialized val dataset with {len(self.val)} samples.')
+            self.check_min_num_samples(self.trainer.num_devices, self.batch_size, num_samples=len(self.val),
+                                       data_split='val',
+                                       drop_last=self.drop_last)
 
     def train_dataloader(self, *args, **kwargs) -> DataLoader:
         return DataLoader(self.train,
@@ -150,7 +157,12 @@ class ClassificationDatamodule(AbstractDatamodule):
                           pin_memory=True)
 
     def test_dataloader(self, *args, **kwargs) -> Union[DataLoader, List[DataLoader]]:
-        raise ValueError('Test data is not available for Classification.')
+        return DataLoader(self.test,
+                          batch_size=self.batch_size,
+                          num_workers=self.num_workers,
+                          shuffle=False,
+                          drop_last=False,
+                          pin_memory=True)
 
     def _create_dataset_parameters(self, dataset_type: str = 'train') -> Dict[str, Union[Path, Callable]]:
         """

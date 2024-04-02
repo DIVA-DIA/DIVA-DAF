@@ -198,8 +198,8 @@ def _save_git_hash(trainer):
                 'ascii').strip()
             with open('git_hash.txt', mode='w') as fp:
                 fp.write(git_hash)
-        except subprocess.CalledProcessError as e:
-            log.error(e.returncode, e.output)
+        except subprocess.CalledProcessError:
+            log.warning(f"Root folder ({get_original_cwd()}) does not contain .git")
 
 
 def _load_model_part(config: DictConfig, part_name: str):
