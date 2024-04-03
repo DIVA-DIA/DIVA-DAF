@@ -30,10 +30,10 @@ defaults:
 # instead we define all modules and their paths directly in this config,
 # so everything is stored in one place for more readibility
 
-name: "time_tracking_resnet50_imagenet_gpu"
+name: "time_tracking_resnet50_imagenet"
 
 train: True
-test: True
+test: False
 predict: False
 
 trainer:
@@ -43,7 +43,7 @@ trainer:
     devices: [1]
     strategy: 'ddp_find_unused_parameters_false'
     min_epochs: 1
-    max_epochs: 10
+    max_epochs: 1
     precision: 32
     check_val_every_n_epoch: 1
 
@@ -57,11 +57,11 @@ model:
         in_channels: 2048
 
 datamodule:
-    _target_: src.datamodules.Classification.datamodule.ClassificationDatamodule
+    _target_: src.datamodules.Classification.datamodule_imagenet.ClassificationDatamoduleImagenet
 
     data_dir: /net/research-hisdoc/datasets/classification/ImageNet
     num_workers: 4
-    batch_size: 1024
+    batch_size: 96
     shuffle: True
     drop_last: True
 
