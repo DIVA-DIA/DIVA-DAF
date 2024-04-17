@@ -1,0 +1,81 @@
+# @package _global_
+
+# to execute this experiment run:
+# python run.py +experiment=exp_example_full
+
+defaults:
+    - /mode: icpr.yaml
+    - /plugins: null
+    - /task: classification.yaml
+    - /loss: crossentropyloss.yaml
+    - /metric:
+          - accuracy.yaml
+    - /model/backbone: mlp.yaml
+    - /model/header: identity.yaml
+    - /optimizer: adam.yaml
+    - /callbacks:
+          - model_checkpoint.yaml
+          - watch_model_wandb.yaml
+    - /logger:
+          - wandb.yaml # set logger here or use command line (e.g. `python run.py logger=wandb`)
+          - csv.yaml
+    - _self_
+
+# we override default configurations with nulls to prevent them from loading at all
+# instead we define all modules and their paths directly in this config,
+# so everything is stored in one place for more readibility
+
+name: "embedding_classification_mlp"
+
+train: True
+test: True
+predict: False
+
+trainer:
+    _target_: pytorch_lightning.Trainer
+
+    accelerator: 'gpu'
+    devices: [1]
+    strategy: 'ddp_find_unused_parameters_false'
+    min_epochs: 1
+    max_epochs: 100
+    precision: 32
+    check_val_every_n_epoch: 1
+
+task:
+    confusion_matrix_log_every_n_epoch: 10
+    confusion_matrix_val: False
+    confusion_matrix_test: False
+
+model:
+    backbone:
+        hidden_channels:
+            - 2048
+            - 16
+
+datamodule:
+    _target_: src.datamodules.Classification.datamodule_embeddings.EmbeddingClassificationDatamodule
+
+    data_dir: /net/research-hisdoc/datasets/ocr/RVL-CDIP/ICPR/embeddings
+    num_workers: 4
+    batch_size: 32
+    shuffle: True
+    drop_last: True
+
+optimizer:
+    lr: 1e-4
+    betas: [0.9, 0.999]
+    eps: 1e-5
+
+callbacks:
+    model_checkpoint:
+        monitor: "val/accuracy"
+        mode: "max"
+        filename: ${checkpoint_folder_name}_${name}
+
+logger:
+    wandb:
+        project: "ICPR-embedding"
+        name: ${name}
+        tags: ["MLP", "embedding"]
+        group: 'ICPR-embedding'
