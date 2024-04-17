@@ -30,7 +30,7 @@ defaults:
 # instead we define all modules and their paths directly in this config,
 # so everything is stored in one place for more readibility
 
-name: "time_tracking_resnet50_imagenet"
+name: "time_tracking_resnet50_imagenet_resized"
 
 train: True
 test: False
@@ -57,9 +57,9 @@ model:
         in_channels: 2048
 
 datamodule:
-    _target_: src.datamodules.Classification.datamodule_imagenet.ClassificationDatamoduleImagenet
+    _target_: src.datamodules.Classification.datamodule_imagenet.ClassificationDatamodule
 
-    data_dir: /net/research-hisdoc/datasets/classification/ImageNet
+    data_dir: /net/research-hisdoc/datasets/classification/ImageNet/resized
     num_workers: 4
     batch_size: 96
     shuffle: True
