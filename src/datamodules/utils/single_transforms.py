@@ -1,11 +1,10 @@
 import itertools
-from typing import List
+from typing import List, Tuple
 
 import numpy as np
 import torch
 from torchvision.transforms import functional
-
-import torch
+from torch.nn.functional import unfold
 
 import src.datamodules.utils.functional
 
@@ -19,6 +18,7 @@ class OneHotToPixelLabelling(object):
     :returns: The pixel labelling tensor
     :rtype: torch.Tensor
     """
+
     def __call__(self, tensor: torch.Tensor):
         return src.datamodules.utils.functional.argmax_onehot(tensor)
 
@@ -32,6 +32,7 @@ class RightAngleRotation:
     :type angle_list: List[int]
 
     """
+
     def __init__(self, angle_list=None):
         if angle_list is None:
             angle_list = [0, 90, 180, 270]
@@ -77,6 +78,7 @@ class TilesBuilding:
     :param height_center_crop: The height of the center crop
 
     """
+
     def __init__(self, rows: int, cols: int, fixed_positions: int = 0, width_center_crop: int = 840,
                  height_center_crop: int = 1200):
         self.rows = rows
@@ -131,7 +133,42 @@ class TilesBuilding:
                 h_stop_o = h_offset + ((i + 1) * self.height_tile) + random_height_offset
 
                 new_img_tensor[:, h_begin_o: h_stop_o, w_begin_o: w_stop_o] = cropped_img[:,
-                                                                                 h_begin_crop:h_stop_crop,
-                                                                                 w_begin_crop:w_stop_crop]
+                                                                              h_begin_crop:h_stop_crop,
+                                                                              w_begin_crop:w_stop_crop]
 
         return new_img_tensor
+
+
+class MorphoBuilding:
+    """
+    Applies the idea of morphological operators to build the GT.
+
+    Code inspiration from: https://stackoverflow.com/questions/56235733/is-there-a-tensor-operation-or-function-in-pytorch-that-works-like-cv2-dilate
+
+    """
+
+    def __init__(self, dilation_filter_size: Tuple[int], erosion_filter_size: Tuple[int], border_size: int):
+        self.dilation_filter_size = torch.tensor(dilation_filter_size)
+        self.erosion_filter_size = torch.tensor(erosion_filter_size)
+        self.border_size = border_size
+
+    def __call__(self, tensor: torch.Tensor) -> torch.Tensor:
+        return self.morpho(tensor=tensor)
+
+    def morpho(self, tensor: torch.Tensor) -> torch.Tensor:
+        return
+
+    def _dilation(self, image):
+        # first pad the image to have correct unfolding; here is where the origins is used
+        image_pad = functional.pad(img=image, padding=[0, self.dilation_filter_size[0] - 1, 0, self.dilation_filter_size.shape[1] - 1],
+                                   padding_mode='constant', fill=0)
+        # Unfold the image to be able to perform operation on neighborhoods
+        image_unfold = unfold(image_pad.unsqueeze(0).unsqueeze(0), kernel_size=self.dilation_filter_size.shape)
+        # Flatten the structural element since its two dimensions have been flatten when unfolding
+        strel_flatten = torch.flatten(self.dilation_filter_size).unsqueeze(0).unsqueeze(-1)
+        # Perform the greyscale operation; sum would be replaced by rest if you want erosion
+        sums = image_unfold + strel_flatten
+        # Take maximum over the neighborhood
+        result, _ = sums.max(dim=1)
+        # Reshape the image to recover initial shape
+        return torch.reshape(result, image.shape)
