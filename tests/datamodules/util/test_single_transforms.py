@@ -1,6 +1,10 @@
 import torch
 
-from src.datamodules.utils.single_transforms import OneHotToPixelLabelling, RightAngleRotation
+from PIL import Image
+from torchvision.transforms import ToTensor, ToPILImage
+
+from src.datamodules.utils.single_transforms import OneHotToPixelLabelling, RightAngleRotation, MorphoBuilding
+from tests.test_data.dummy_data_histdb_new.dummy_data import data_dir
 
 
 def test_one_hot_to_pixel_labelling():
@@ -37,3 +41,17 @@ def test__update_target_class():
     transformation._update_target_class()
     assert transformation.target_class is not None
 
+
+def test_morpho():
+    assert False
+
+
+def test__dilation(data_dir):
+    trans = MorphoBuilding(first_filter_size=(1, 45), second_filter_size=(25, 25), border_size=10)
+    img = Image.open(next((data_dir / 'train' / 'data').iterdir()))
+    morph_img_tensor = trans._morpho(img)
+
+    ToPILImage()(morph_img_tensor[0][0, :, :, :]).save('test_1.png')
+    ToPILImage()(morph_img_tensor[1][0, :, :, :]).save('test_2.png')
+
+    assert False

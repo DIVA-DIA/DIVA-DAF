@@ -3,8 +3,10 @@ from typing import List, Tuple
 
 import numpy as np
 import torch
-from torchvision.transforms import functional
-from torch.nn.functional import unfold
+from skimage.filters.thresholding import threshold_otsu
+from torchvision.transforms import functional, ToTensor
+from PIL import Image
+from kornia.morphology import closing, opening
 
 import src.datamodules.utils.functional
 
@@ -147,28 +149,22 @@ class MorphoBuilding:
 
     """
 
-    def __init__(self, dilation_filter_size: Tuple[int], erosion_filter_size: Tuple[int], border_size: int):
-        self.dilation_filter_size = torch.tensor(dilation_filter_size)
-        self.erosion_filter_size = torch.tensor(erosion_filter_size)
+    def __init__(self, first_filter_size: Tuple[int, int], second_filter_size: Tuple[int, int], border_size: int):
+        self.first_filter = torch.ones(first_filter_size)
+        self.second_filter = torch.ones(second_filter_size)
         self.border_size = border_size
 
-    def __call__(self, tensor: torch.Tensor) -> torch.Tensor:
-        return self.morpho(tensor=tensor)
+    def __call__(self, img: "PIL.Image") -> Tuple[torch.Tensor, torch.Tensor]:
+        if isinstance(img, torch.Tensor):
+            raise TypeError(f"img should be PIL Image. Got {type(img)}")
+        return self._morpho(img=img)
 
-    def morpho(self, tensor: torch.Tensor) -> torch.Tensor:
-        return
-
-    def _dilation(self, image):
-        # first pad the image to have correct unfolding; here is where the origins is used
-        image_pad = functional.pad(img=image, padding=[0, self.dilation_filter_size[0] - 1, 0, self.dilation_filter_size.shape[1] - 1],
-                                   padding_mode='constant', fill=0)
-        # Unfold the image to be able to perform operation on neighborhoods
-        image_unfold = unfold(image_pad.unsqueeze(0).unsqueeze(0), kernel_size=self.dilation_filter_size.shape)
-        # Flatten the structural element since its two dimensions have been flatten when unfolding
-        strel_flatten = torch.flatten(self.dilation_filter_size).unsqueeze(0).unsqueeze(-1)
-        # Perform the greyscale operation; sum would be replaced by rest if you want erosion
-        sums = image_unfold + strel_flatten
-        # Take maximum over the neighborhood
-        result, _ = sums.max(dim=1)
-        # Reshape the image to recover initial shape
-        return torch.reshape(result, image.shape)
+    def _morpho(self, img: "PIL.Image") -> Tuple[torch.Tensor, torch.Tensor]:
+        b_channel = img.getchannel(2)  # get blue channel but need to have B x C (1) x W x H
+        b_channel = b_channel > threshold_otsu(np.asarray(b_channel))
+        bin_img = Image.fromarray(b_channel)
+        # https://kornia.readthedocs.io/en/stable/morphology.html
+        b_channel_tensor = ToTensor()(bin_img)
+        b_channel_tensor = b_channel_tensor.expand((1, 1, *b_channel.shape))
+        return closing(opening(b_channel_tensor, self.first_filter), self.first_filter), closing(
+            opening(b_channel_tensor, self.second_filter), self.second_filter)
