@@ -42,16 +42,19 @@ def test__update_target_class():
     assert transformation.target_class is not None
 
 
-def test_morpho():
-    assert False
-
-
-def test__dilation(data_dir):
-    trans = MorphoBuilding(first_filter_size=(1, 45), second_filter_size=(25, 25), border_size=10)
+def test_morpho(data_dir):
+    trans = MorphoBuilding(first_filter_size=(1, 45), second_filter_size=(25, 25), border_cut_horizontal=45)
     img = Image.open(next((data_dir / 'train' / 'data').iterdir()))
-    morph_img_tensor = trans._morpho(img)
-
-    ToPILImage()(morph_img_tensor[0][0, :, :, :]).save('test_1.png')
-    ToPILImage()(morph_img_tensor[1][0, :, :, :]).save('test_2.png')
-
+    morpho_img_tensor = trans(img)
     assert False
+
+
+def test__get_filters(data_dir):
+    trans = MorphoBuilding(first_filter_size=(1, 45), second_filter_size=(25, 25), border_cut_horizontal=45)
+    img = Image.open(next((data_dir / 'train' / 'data').iterdir()))
+    filter_1, filter_2 = trans._get_filters(img)
+
+    assert torch.equal(filter_1.unique(), filter_2.unique())
+    assert len(filter_1.unique()) == 2
+    assert len(filter_2.unique()) == 2
+

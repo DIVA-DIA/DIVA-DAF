@@ -149,22 +149,40 @@ class MorphoBuilding:
 
     """
 
-    def __init__(self, first_filter_size: Tuple[int, int], second_filter_size: Tuple[int, int], border_size: int):
+    def __init__(self, first_filter_size: Tuple[int, int], second_filter_size: Tuple[int, int],
+                 border_cut_horizontal: int = None, border_cut_vertical: int = None):
         self.first_filter = torch.ones(first_filter_size)
         self.second_filter = torch.ones(second_filter_size)
-        self.border_size = border_size
+        self.border_h = border_cut_horizontal
+        self.border_w = border_cut_vertical
 
     def __call__(self, img: "PIL.Image") -> Tuple[torch.Tensor, torch.Tensor]:
         if isinstance(img, torch.Tensor):
             raise TypeError(f"img should be PIL Image. Got {type(img)}")
-        return self._morpho(img=img)
+        morpho_filter_1, morpho_filter_2 = self._get_filters(img=img)
+        img_tensor = torch.stack((morpho_filter_1, morpho_filter_2, torch.zeros(morpho_filter_1.shape)), dim=2)[0]
+        return img_tensor
 
-    def _morpho(self, img: "PIL.Image") -> Tuple[torch.Tensor, torch.Tensor]:
+    def _get_filters(self, img: "PIL.Image") -> Tuple[torch.Tensor, torch.Tensor]:
         b_channel = img.getchannel(2)  # get blue channel but need to have B x C (1) x W x H
         b_channel = b_channel > threshold_otsu(np.asarray(b_channel))
         bin_img = Image.fromarray(b_channel)
         # https://kornia.readthedocs.io/en/stable/morphology.html
         b_channel_tensor = ToTensor()(bin_img)
+        if self.border_w:
+            self._border_remove_w(b_channel_tensor)
+        if self.border_h:
+            self._border_remove_h(b_channel_tensor)
         b_channel_tensor = b_channel_tensor.expand((1, 1, *b_channel.shape))
         return closing(opening(b_channel_tensor, self.first_filter), self.first_filter), closing(
             opening(b_channel_tensor, self.second_filter), self.second_filter)
+
+    def _border_remove_w(self, img_tensor: torch.Tensor):
+        img_w = img_tensor.shape[2]
+        img_tensor[:, :, :self.border_w] = 1.
+        img_tensor[:, :, img_w - self.border_w:] = 1.
+
+    def _border_remove_h(self, img_tensor: torch.Tensor):
+        img_h = img_tensor.shape[1]
+        img_tensor[:, :self.border_h, :] = 1.
+        img_tensor[:, img_h - self.border_h:, :] = 1.
