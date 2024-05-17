@@ -1,11 +1,12 @@
 import itertools
-from typing import List
+from typing import List, Tuple
 
 import numpy as np
 import torch
-from torchvision.transforms import functional
-
-import torch
+from skimage.filters.thresholding import threshold_otsu
+from torchvision.transforms import functional, ToTensor
+from PIL import Image
+from kornia.morphology import closing, opening
 
 import src.datamodules.utils.functional
 
@@ -19,6 +20,7 @@ class OneHotToPixelLabelling(object):
     :returns: The pixel labelling tensor
     :rtype: torch.Tensor
     """
+
     def __call__(self, tensor: torch.Tensor):
         return src.datamodules.utils.functional.argmax_onehot(tensor)
 
@@ -32,6 +34,7 @@ class RightAngleRotation:
     :type angle_list: List[int]
 
     """
+
     def __init__(self, angle_list=None):
         if angle_list is None:
             angle_list = [0, 90, 180, 270]
@@ -77,6 +80,7 @@ class TilesBuilding:
     :param height_center_crop: The height of the center crop
 
     """
+
     def __init__(self, rows: int, cols: int, fixed_positions: int = 0, width_center_crop: int = 840,
                  height_center_crop: int = 1200):
         self.rows = rows
@@ -131,7 +135,82 @@ class TilesBuilding:
                 h_stop_o = h_offset + ((i + 1) * self.height_tile) + random_height_offset
 
                 new_img_tensor[:, h_begin_o: h_stop_o, w_begin_o: w_stop_o] = cropped_img[:,
-                                                                                 h_begin_crop:h_stop_crop,
-                                                                                 w_begin_crop:w_stop_crop]
+                                                                              h_begin_crop:h_stop_crop,
+                                                                              w_begin_crop:w_stop_crop]
 
         return new_img_tensor
+
+
+class MorphoBuilding:
+    """
+    Applies the idea of morphological operators to build the GT base on the paper `Historical document image analysis using controlled data for pre-training <https://link.springer.com/article/10.1007/s10032-023-00437-8/>`_.
+    It takes an :class:`.PIL.Image` extracts the blue color channel and binarizes it with the Otsu method.
+    On this image we cut away the border and use twice a closing followed by an opening operation onto the image to create two binary images.
+    These images are then used as the red and green channel of a new image where the blue channel contains zeros.
+
+    :param first_filter_size: The size of the first filter
+    :type first_filter_size: Tuple[int, int]
+    :param second_filter_size: The size of the second filter
+    :type second_filter_size: Tuple[int, int]
+    :param border_cut_horizontal: Pixel to remove on top and bottom
+    :type border_cut_horizontal: int
+    :param border_cut_vertical: Pixel to removeleft and right
+    :type border_cut_vertical: int
+    """
+
+    def __init__(self, first_filter_size: Tuple[int, int], second_filter_size: Tuple[int, int],
+                 border_cut_horizontal: int = None, border_cut_vertical: int = None):
+        self.first_filter = torch.ones(first_filter_size)
+        self.second_filter = torch.ones(second_filter_size)
+        self.border_h = border_cut_horizontal
+        self.border_w = border_cut_vertical
+
+    def __call__(self, img: "PIL.Image") -> torch.Tensor:
+        if isinstance(img, torch.Tensor):
+            raise TypeError(f"img should be PIL Image. Got {type(img)}")
+        morpho_filter_1, morpho_filter_2 = self._get_filters(img=img)
+        return torch.stack((morpho_filter_1, morpho_filter_2, torch.zeros(morpho_filter_1.shape)), dim=1)[0]
+
+    def _get_filters(self, img: "PIL.Image") -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Creates the two filter for the read and green channel with the morphological operations.
+
+        :param img: The image to build the two channels from
+        :type img: PIL.Image
+        :return: The two filter
+        :rtype: Tuple[torch.Tensor, torch.Tensor]
+        """
+        b_channel = img.getchannel(2)  # get blue channel but need to have B x C (1) x W x H
+        b_channel = b_channel > threshold_otsu(np.asarray(b_channel))
+        bin_img = Image.fromarray(b_channel)
+        # https://kornia.readthedocs.io/en/stable/morphology.html
+        b_channel_tensor = ToTensor()(bin_img)
+        if self.border_w:
+            self._border_remove_w(b_channel_tensor)
+        if self.border_h:
+            self._border_remove_h(b_channel_tensor)
+        b_channel_tensor = b_channel_tensor.expand((1, 1, *b_channel.shape))
+        return closing(opening(b_channel_tensor, self.first_filter), self.first_filter)[0], closing(
+            opening(b_channel_tensor, self.second_filter), self.second_filter)[0]
+
+    def _border_remove_w(self, img_tensor: torch.Tensor):
+        """
+        Removes the border on the left and right in place.
+
+        :param img_tensor: The image to remove the border
+        :type img_tensor: torch.Tensor
+        """
+        img_w = img_tensor.shape[2]
+        img_tensor[:, :, :self.border_w] = 1.
+        img_tensor[:, :, img_w - self.border_w:] = 1.
+
+    def _border_remove_h(self, img_tensor: torch.Tensor):
+        """
+        Removes the boarder at the top and bottom in place.
+
+        :param img_tensor: The image to remove the border
+        :type img_tensor: torch.Tensor
+        """
+        img_h = img_tensor.shape[1]
+        img_tensor[:, :self.border_h, :] = 1.
+        img_tensor[:, img_h - self.border_h:, :] = 1.
