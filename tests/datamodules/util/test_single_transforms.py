@@ -1,3 +1,4 @@
+import pytest
 import torch
 
 from PIL import Image
@@ -42,8 +43,9 @@ def test__update_target_class():
     assert transformation.target_class is not None
 
 
-def test_morpho(data_dir):
-    trans = MorphoBuilding(first_filter_size=(1, 45), second_filter_size=(25, 25), border_cut_horizontal=45)
+def test_morpho_image_input(data_dir):
+    trans = MorphoBuilding(first_filter_size=(1, 45), second_filter_size=(25, 25), border_cut_horizontal=40,
+                           border_cut_vertical=10)
     img = Image.open(next((data_dir / 'train' / 'data').iterdir()))
     morpho_img_tensor = trans(img)
 
@@ -51,6 +53,13 @@ def test_morpho(data_dir):
     assert torch.equal(morpho_img_tensor[2].unique(), torch.tensor([0.]))
     assert not torch.equal(morpho_img_tensor[0].unique(), torch.tensor([0.]))
     assert not torch.equal(morpho_img_tensor[1].unique(), torch.tensor([0.]))
+
+
+def test_morpho_tensor_input(data_dir):
+    trans = MorphoBuilding(first_filter_size=(1, 45), second_filter_size=(25, 25), border_cut_horizontal=45)
+    img = Image.open(next((data_dir / 'train' / 'data').iterdir()))
+    with pytest.raises(TypeError):
+        trans(ToTensor()(img))
 
 
 def test__get_filters(data_dir):
@@ -61,4 +70,3 @@ def test__get_filters(data_dir):
     assert torch.equal(filter_1.unique(), filter_2.unique())
     assert len(filter_1.unique()) == 2
     assert len(filter_2.unique()) == 2
-
