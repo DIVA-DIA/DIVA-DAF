@@ -143,10 +143,19 @@ class TilesBuilding:
 
 class MorphoBuilding:
     """
-    Applies the idea of morphological operators to build the GT.
+    Applies the idea of morphological operators to build the GT base on the paper `Historical document image analysis using controlled data for pre-training <https://link.springer.com/article/10.1007/s10032-023-00437-8/>`_.
+    It takes an :class:`.PIL.Image` extracts the blue color channel and binarizes it with the Otsu method.
+    On this image we cut away the border and use twice a closing followed by an opening operation onto the image to create two binary images.
+    These images are then used as the red and green channel of a new image where the blue channel contains zeros.
 
-    Code inspiration from: https://stackoverflow.com/questions/56235733/is-there-a-tensor-operation-or-function-in-pytorch-that-works-like-cv2-dilate
-
+    :param first_filter_size: The size of the first filter
+    :type first_filter_size: Tuple[int, int]
+    :param second_filter_size: The size of the second filter
+    :type second_filter_size: Tuple[int, int]
+    :param border_cut_horizontal: Pixel to remove on top and bottom
+    :type border_cut_horizontal: int
+    :param border_cut_vertical: Pixel to removeleft and right
+    :type border_cut_vertical: int
     """
 
     def __init__(self, first_filter_size: Tuple[int, int], second_filter_size: Tuple[int, int],
@@ -163,6 +172,14 @@ class MorphoBuilding:
         return torch.stack((morpho_filter_1, morpho_filter_2, torch.zeros(morpho_filter_1.shape)), dim=1)[0]
 
     def _get_filters(self, img: "PIL.Image") -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Creates the two filter for the read and green channel with the morphological operations.
+
+        :param img: The image to build the two channels from
+        :type img: PIL.Image
+        :return: The two filter
+        :rtype: Tuple[torch.Tensor, torch.Tensor]
+        """
         b_channel = img.getchannel(2)  # get blue channel but need to have B x C (1) x W x H
         b_channel = b_channel > threshold_otsu(np.asarray(b_channel))
         bin_img = Image.fromarray(b_channel)
@@ -177,11 +194,23 @@ class MorphoBuilding:
             opening(b_channel_tensor, self.second_filter), self.second_filter)[0]
 
     def _border_remove_w(self, img_tensor: torch.Tensor):
+        """
+        Removes the border on the left and right in place.
+
+        :param img_tensor: The image to remove the border
+        :type img_tensor: torch.Tensor
+        """
         img_w = img_tensor.shape[2]
         img_tensor[:, :, :self.border_w] = 1.
         img_tensor[:, :, img_w - self.border_w:] = 1.
 
     def _border_remove_h(self, img_tensor: torch.Tensor):
+        """
+        Removes the boarder at the top and bottom in place.
+
+        :param img_tensor: The image to remove the border
+        :type img_tensor: torch.Tensor
+        """
         img_h = img_tensor.shape[1]
         img_tensor[:, :self.border_h, :] = 1.
         img_tensor[:, img_h - self.border_h:, :] = 1.
