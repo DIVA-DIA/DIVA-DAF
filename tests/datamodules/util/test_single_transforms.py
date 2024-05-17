@@ -46,7 +46,11 @@ def test_morpho(data_dir):
     trans = MorphoBuilding(first_filter_size=(1, 45), second_filter_size=(25, 25), border_cut_horizontal=45)
     img = Image.open(next((data_dir / 'train' / 'data').iterdir()))
     morpho_img_tensor = trans(img)
-    assert False
+
+    assert morpho_img_tensor.shape[0] == 3
+    assert torch.equal(morpho_img_tensor[2].unique(), torch.tensor([0.]))
+    assert not torch.equal(morpho_img_tensor[0].unique(), torch.tensor([0.]))
+    assert not torch.equal(morpho_img_tensor[1].unique(), torch.tensor([0.]))
 
 
 def test__get_filters(data_dir):

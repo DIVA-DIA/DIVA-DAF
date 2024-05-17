@@ -156,12 +156,11 @@ class MorphoBuilding:
         self.border_h = border_cut_horizontal
         self.border_w = border_cut_vertical
 
-    def __call__(self, img: "PIL.Image") -> Tuple[torch.Tensor, torch.Tensor]:
+    def __call__(self, img: "PIL.Image") -> torch.Tensor:
         if isinstance(img, torch.Tensor):
             raise TypeError(f"img should be PIL Image. Got {type(img)}")
         morpho_filter_1, morpho_filter_2 = self._get_filters(img=img)
-        img_tensor = torch.stack((morpho_filter_1, morpho_filter_2, torch.zeros(morpho_filter_1.shape)), dim=2)[0]
-        return img_tensor
+        return torch.stack((morpho_filter_1, morpho_filter_2, torch.zeros(morpho_filter_1.shape)), dim=1)[0]
 
     def _get_filters(self, img: "PIL.Image") -> Tuple[torch.Tensor, torch.Tensor]:
         b_channel = img.getchannel(2)  # get blue channel but need to have B x C (1) x W x H
@@ -174,8 +173,8 @@ class MorphoBuilding:
         if self.border_h:
             self._border_remove_h(b_channel_tensor)
         b_channel_tensor = b_channel_tensor.expand((1, 1, *b_channel.shape))
-        return closing(opening(b_channel_tensor, self.first_filter), self.first_filter), closing(
-            opening(b_channel_tensor, self.second_filter), self.second_filter)
+        return closing(opening(b_channel_tensor, self.first_filter), self.first_filter)[0], closing(
+            opening(b_channel_tensor, self.second_filter), self.second_filter)[0]
 
     def _border_remove_w(self, img_tensor: torch.Tensor):
         img_w = img_tensor.shape[2]
