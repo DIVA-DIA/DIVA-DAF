@@ -133,9 +133,6 @@ class DataModuleIndexed(AbstractDatamodule):
         self.selection_val = selection_val
         self.selection_test = selection_test
 
-        # Check default attributes using base_datamodule function
-        self._check_attributes()
-
     def setup(self, stage: Optional[str] = None) -> None:
         super().setup()
 
