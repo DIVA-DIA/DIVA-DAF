@@ -128,9 +128,6 @@ class DataModuleRolfFormat(AbstractDatamodule):
         self.shuffle = shuffle
         self.drop_last = drop_last
 
-        # Check default attributes using base_datamodule function
-        self._check_attributes()
-
     def _print_analytics_data(self, analytics_data):
         indent = 4 * ' '
         lines = ['']
