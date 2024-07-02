@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>models.backbones.adaptive_unet &mdash; DIVA-DAF 0.2.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            DIVA-DAF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../example.html">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/modules.html">src</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">DIVA-DAF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">models.backbones.adaptive_unet</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for models.backbones.adaptive_unet</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+
+
+<div class="viewcode-block" id="encoding_block"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.adaptive_unet.encoding_block">[docs]</a><span class="k">def</span> <span class="nf">encoding_block</span><span class="p">(</span><span class="n">in_c</span><span class="p">,</span> <span class="n">out_c</span><span class="p">):</span>
+    <span class="n">conv</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_c</span><span class="p">,</span> <span class="n">out_c</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">out_c</span><span class="p">,</span> <span class="n">out_c</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">conv</span></div>
+
+
+<div class="viewcode-block" id="encoding_block1"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.adaptive_unet.encoding_block1">[docs]</a><span class="k">def</span> <span class="nf">encoding_block1</span><span class="p">(</span><span class="n">in_c</span><span class="p">,</span> <span class="n">out_c</span><span class="p">):</span>
+    <span class="n">conv</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">in_c</span><span class="p">,</span> <span class="n">out_c</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">out_c</span><span class="p">,</span> <span class="n">out_c</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.4</span><span class="p">)</span>
+
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">conv</span></div>
+
+
+<div class="viewcode-block" id="decoding_block"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.adaptive_unet.decoding_block">[docs]</a><span class="k">def</span> <span class="nf">decoding_block</span><span class="p">(</span><span class="n">in_c</span><span class="p">,</span> <span class="n">out_c</span><span class="p">):</span>
+    <span class="n">conv</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">ConvTranspose2d</span><span class="p">(</span><span class="n">in_c</span><span class="p">,</span> <span class="n">out_c</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+        <span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">conv</span></div>
+
+
+<div class="viewcode-block" id="Adaptive_Unet"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.adaptive_unet.Adaptive_Unet">[docs]</a><span class="k">class</span> <span class="nc">Adaptive_Unet</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">out_channels</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="p">[</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">256</span><span class="p">]):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Adaptive_Unet</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pool1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">stride</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pool2</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">stride</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pool3</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">stride</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pool4</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">MaxPool2d</span><span class="p">(</span><span class="n">kernel_size</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">stride</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">encoding_block</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">features</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">encoding_block</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">features</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv3</span> <span class="o">=</span> <span class="n">encoding_block</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">features</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv4</span> <span class="o">=</span> <span class="n">encoding_block1</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">features</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv5</span> <span class="o">=</span> <span class="n">encoding_block</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">features</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv6</span> <span class="o">=</span> <span class="n">encoding_block</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">features</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv7</span> <span class="o">=</span> <span class="n">encoding_block</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">features</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conv8</span> <span class="o">=</span> <span class="n">encoding_block</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">features</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tconv1</span> <span class="o">=</span> <span class="n">decoding_block</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="n">features</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tconv2</span> <span class="o">=</span> <span class="n">decoding_block</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">features</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tconv3</span> <span class="o">=</span> <span class="n">decoding_block</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span> <span class="n">features</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tconv4</span> <span class="o">=</span> <span class="n">decoding_block</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">],</span> <span class="n">features</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bottleneck</span> <span class="o">=</span> <span class="n">encoding_block1</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">features</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">final_layer</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Conv2d</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">out_channels</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Adaptive_Unet.forward"><a class="viewcode-back" href="../../../source/models.backbones.html#models.backbones.adaptive_unet.Adaptive_Unet.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="c1"># encoder</span>
+        <span class="n">x_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>  <span class="c1"># Convolution, ReLU 32 3×3 # To concat</span>
+        <span class="c1"># print(x_1.size())</span>
+
+        <span class="n">x_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool1</span><span class="p">(</span><span class="n">x_1</span><span class="p">)</span>  <span class="c1"># Maxpooling  2×2 ([1, 32, 672, 480])</span>
+        <span class="c1"># print(x_2.size())</span>
+
+        <span class="n">x_3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="n">x_2</span><span class="p">)</span>  <span class="c1"># 2 conv ([1, 64, 672, 480]) # To concat</span>
+        <span class="c1"># print(x_3.size())</span>
+
+        <span class="n">x_4</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool2</span><span class="p">(</span><span class="n">x_3</span><span class="p">)</span>  <span class="c1"># Maxpooling  2×2 ([1, 64, 336, 240])</span>
+        <span class="c1"># print(x_4.size())</span>
+
+        <span class="n">x_5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv3</span><span class="p">(</span><span class="n">x_4</span><span class="p">)</span>  <span class="c1"># 2 conv ([1, 128, 336, 240]) # To concat</span>
+        <span class="c1"># print(x_5.size())</span>
+
+        <span class="n">x_6</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool3</span><span class="p">(</span><span class="n">x_5</span><span class="p">)</span>  <span class="c1"># Maxpooling  2×2 ([1, 128, 168, 120])</span>
+        <span class="c1"># print(x_6.size())</span>
+
+        <span class="n">x_7</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv4</span><span class="p">(</span><span class="n">x_6</span><span class="p">)</span>  <span class="c1"># 2 conv ([1, 256, 168, 120]) # To concat</span>
+        <span class="c1"># print(x_7.size())</span>
+
+        <span class="n">x_8</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pool4</span><span class="p">(</span><span class="n">x_7</span><span class="p">)</span>  <span class="c1"># Maxpooling  2×2 [1, 256, 84, 60])</span>
+        <span class="c1"># print(x_8.size())</span>
+
+        <span class="n">x_9</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bottleneck</span><span class="p">(</span><span class="n">x_8</span><span class="p">)</span>  <span class="c1"># 2 conv ([1, 512, 84, 60])</span>
+        <span class="c1"># print(x_9.size())</span>
+
+        <span class="c1"># decoder</span>
+        <span class="n">x_10</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tconv1</span><span class="p">(</span><span class="n">x_9</span><span class="p">)</span>  <span class="c1"># deconv ([1, 256, 168, 120])</span>
+        <span class="c1"># print(x_10.size())</span>
+
+        <span class="n">x_11</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">x_7</span><span class="p">,</span> <span class="n">x_10</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># ([1, 512, 168, 120])</span>
+        <span class="c1"># print(x_11.size())</span>
+
+        <span class="n">x_12</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv5</span><span class="p">(</span><span class="n">x_11</span><span class="p">)</span>  <span class="c1"># 2 conv ([1, 256, 168, 120])</span>
+        <span class="c1"># print(x_12.size())</span>
+
+        <span class="n">x_13</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tconv2</span><span class="p">(</span><span class="n">x_12</span><span class="p">)</span>  <span class="c1"># deconv [1, 128, 336, 240])</span>
+        <span class="c1"># print(x_13.size())</span>
+
+        <span class="n">x_14</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">x_5</span><span class="p">,</span> <span class="n">x_13</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># ([1, 256, 336, 240])</span>
+        <span class="c1"># print(x_14.size())</span>
+
+        <span class="n">x_15</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv6</span><span class="p">(</span><span class="n">x_14</span><span class="p">)</span>  <span class="c1"># 2 conv ([1, 128, 336, 240])</span>
+        <span class="c1"># print(x_15.size())</span>
+
+        <span class="n">x_16</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tconv3</span><span class="p">(</span><span class="n">x_15</span><span class="p">)</span>  <span class="c1"># deconv [1, 64, 672, 480])</span>
+        <span class="c1"># print(x_16.size())</span>
+
+        <span class="n">x_17</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">x_3</span><span class="p">,</span> <span class="n">x_16</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># ([1, 128, 672, 480])</span>
+        <span class="c1"># print(x_17.size())</span>
+
+        <span class="n">x_18</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv7</span><span class="p">(</span><span class="n">x_17</span><span class="p">)</span>  <span class="c1"># 2 conv ([1, 64, 672, 480])</span>
+        <span class="c1"># print(x_18.size())</span>
+
+        <span class="n">x_19</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tconv4</span><span class="p">(</span><span class="n">x_18</span><span class="p">)</span>  <span class="c1"># deconv [1, 32, 1344, 960])</span>
+        <span class="c1"># print(x_19.size())</span>
+
+        <span class="n">x_20</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cat</span><span class="p">((</span><span class="n">x_1</span><span class="p">,</span> <span class="n">x_19</span><span class="p">),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># ([1, 64, 1344, 960])</span>
+        <span class="c1"># print(x_20.size())</span>
+
+        <span class="n">x_21</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conv8</span><span class="p">(</span><span class="n">x_20</span><span class="p">)</span>  <span class="c1"># 2 conv ([1, 32, 1344, 960]</span>
+        <span class="c1"># print(x_21.size())</span>
+
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">final_layer</span><span class="p">(</span><span class="n">x_21</span><span class="p">)</span>
+        <span class="c1"># print(x.size())</span>
+
+        <span class="k">return</span> <span class="n">x</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lars Vögtlin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

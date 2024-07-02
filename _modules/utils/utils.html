@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>utils.utils &mdash; DIVA-DAF 0.2.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            DIVA-DAF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example.html">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/modules.html">src</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">DIVA-DAF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">utils.utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for utils.utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Sequence</span>
+
+<span class="kn">import</span> <span class="nn">hydra</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pytorch_lightning</span> <span class="k">as</span> <span class="nn">pl</span>
+<span class="kn">import</span> <span class="nn">rich</span>
+<span class="kn">import</span> <span class="nn">wandb</span>
+<span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">DictConfig</span><span class="p">,</span> <span class="n">OmegaConf</span>
+<span class="kn">from</span> <span class="nn">pytorch_lightning</span> <span class="kn">import</span> <span class="n">seed_everything</span>
+<span class="kn">from</span> <span class="nn">pytorch_lightning.loggers.wandb</span> <span class="kn">import</span> <span class="n">WandbLogger</span>
+<span class="kn">from</span> <span class="nn">pytorch_lightning.utilities</span> <span class="kn">import</span> <span class="n">rank_zero_only</span>
+<span class="kn">from</span> <span class="nn">rich.syntax</span> <span class="kn">import</span> <span class="n">Syntax</span>
+<span class="kn">from</span> <span class="nn">rich.tree</span> <span class="kn">import</span> <span class="n">Tree</span>
+
+<span class="n">REQUIRED_CONFIGS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;datamodule&#39;</span><span class="p">,</span> <span class="s1">&#39;task&#39;</span><span class="p">,</span> <span class="s1">&#39;model.backbone&#39;</span><span class="p">,</span> <span class="s1">&#39;model.header&#39;</span><span class="p">,</span> <span class="s1">&#39;loss&#39;</span><span class="p">,</span> <span class="s1">&#39;optimizer&#39;</span><span class="p">,</span> <span class="s1">&#39;trainer&#39;</span><span class="p">,</span> <span class="s1">&#39;train&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;test&#39;</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="get_logger"><a class="viewcode-back" href="../../source/utils.html#utils.utils.get_logger">[docs]</a><span class="k">def</span> <span class="nf">get_logger</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Gets the Python logger of the system.</span>
+
+<span class="sd">    :param name: name of the logger you want to get defaults to __name__</span>
+<span class="sd">    :type name: str</span>
+<span class="sd">    :param level: logging level defaults to logging.INFO</span>
+<span class="sd">    :return: Python logger</span>
+<span class="sd">    :rtype: logging.Logger</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+
+    <span class="c1"># this ensures all logging levels get marked with the rank zero decorator</span>
+    <span class="c1"># otherwise logs would get multiplied for each GPU process in multi-GPU setup</span>
+    <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;debug&quot;</span><span class="p">,</span> <span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="s2">&quot;warning&quot;</span><span class="p">,</span> <span class="s2">&quot;error&quot;</span><span class="p">,</span> <span class="s2">&quot;exception&quot;</span><span class="p">,</span> <span class="s2">&quot;fatal&quot;</span><span class="p">,</span> <span class="s2">&quot;critical&quot;</span><span class="p">):</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">rank_zero_only</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">level</span><span class="p">)))</span>
+
+    <span class="k">return</span> <span class="n">logger</span></div>
+
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="check_config"><a class="viewcode-back" href="../../source/utils.html#utils.utils.check_config">[docs]</a><span class="nd">@rank_zero_only</span>
+<span class="k">def</span> <span class="nf">check_config</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">DictConfig</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A couple of optional utilities, controlled by main config file.</span>
+<span class="sd">        - check for required configs in the main config</span>
+<span class="sd">        - disabling warnings</span>
+<span class="sd">        - easier access to debug mode</span>
+<span class="sd">        - forcing debug friendly configuration</span>
+<span class="sd">        - forcing multi-gpu friendly configuration</span>
+<span class="sd">        - setting seed for random number generators</span>
+<span class="sd">        - setting up default csv logger</span>
+
+<span class="sd">    :param config: the main hydra config</span>
+<span class="sd">    :type config: DictConfig</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># check if required configs are in the main config file</span>
+    <span class="k">for</span> <span class="n">cf</span> <span class="ow">in</span> <span class="n">REQUIRED_CONFIGS</span><span class="p">:</span>
+        <span class="n">_check_if_in_config</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">cf</span><span class="p">)</span>
+
+    <span class="c1"># enable adding new keys to config</span>
+    <span class="n">OmegaConf</span><span class="o">.</span><span class="n">set_struct</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># disable python warnings if &lt;config.disable_warnings=True&gt;</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;disable_warnings&quot;</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Disabling python warnings! &lt;config.disable_warnings=True&gt;&quot;</span><span class="p">)</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
+
+    <span class="c1"># set &lt;config.trainer.fast_dev_run=True&gt; if &lt;config.debug=True&gt;</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;debug&quot;</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Running in debug mode! &lt;config.debug=True&gt;&quot;</span><span class="p">)</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">fast_dev_run</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="c1"># force debugger friendly configuration if &lt;config.trainer.fast_dev_run=True&gt;</span>
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fast_dev_run&quot;</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Forcing debugger friendly configuration! &lt;config.trainer.fast_dev_run=True&gt;&quot;</span><span class="p">)</span>
+        <span class="c1"># Debuggers don&#39;t like GPUs or multiprocessing</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;gpus&quot;</span><span class="p">):</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">gpus</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;num_workers&quot;</span><span class="p">):</span>
+            <span class="n">config</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">num_workers</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;accelerator&quot;</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;cpu&#39;</span> <span class="ow">and</span> <span class="n">config</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">precision</span> <span class="o">==</span> <span class="mi">16</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;You are using ddp_cpu without precision=16. This can lead to a crash! Use 64 or 32!&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;experiment_mode&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">):</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Experiment mode without specifying a name!&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Set seed for random number generators in pytorch, numpy and python.random</span>
+    <span class="k">if</span> <span class="s2">&quot;seed&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+        <span class="n">seed_everything</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">seed</span><span class="p">,</span> <span class="n">workers</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">seed</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">iinfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">iinfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint32</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+        <span class="n">config</span><span class="p">[</span><span class="s1">&#39;seed&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">seed</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No seed specified! Seed set to </span><span class="si">{</span><span class="n">seed</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s1">&#39;freeze&#39;</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">backbone</span> <span class="ow">and</span> <span class="s1">&#39;freeze&#39;</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">header</span> <span class="ow">and</span> <span class="n">config</span><span class="o">.</span><span class="n">train</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">backbone</span><span class="o">.</span><span class="n">freeze</span> <span class="ow">and</span> <span class="n">config</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">freeze</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Cannot train with no trainable parameters! Both header and backbone are frozen!&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="s1">&#39;csv&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">logger</span><span class="p">:</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">logger</span><span class="p">[</span><span class="s1">&#39;csv&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">hydra</span><span class="o">.</span><span class="n">compose</span><span class="p">(</span><span class="s1">&#39;logger/csv&#39;</span><span class="p">)[</span><span class="s1">&#39;logger&#39;</span><span class="p">][</span><span class="s1">&#39;csv&#39;</span><span class="p">]</span>
+
+    <span class="c1"># disable adding new keys to config</span>
+    <span class="n">OmegaConf</span><span class="o">.</span><span class="n">set_struct</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_check_if_in_config</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">DictConfig</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if a key is in the config file.</span>
+
+<span class="sd">    :param config: Hydra config</span>
+<span class="sd">    :type config: DictConfig</span>
+<span class="sd">    :param name: name of the key</span>
+<span class="sd">    :type name: str</span>
+<span class="sd">    :raises ValueError: if the key is not in the config file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">name_parts</span> <span class="o">=</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">name_parts</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+            <span class="n">config</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">part</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;You need to define a value for (</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">) else the system will not start!&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="print_config"><a class="viewcode-back" href="../../source/utils.html#utils.utils.print_config">[docs]</a><span class="nd">@rank_zero_only</span>
+<span class="k">def</span> <span class="nf">print_config</span><span class="p">(</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">DictConfig</span><span class="p">,</span>
+        <span class="n">fields</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="s2">&quot;trainer&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;task&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;model&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;optimizer&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;datamodule&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;callbacks&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;loss&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;metric&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;logger&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;seed&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;train&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;test&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;predict&quot;</span>
+        <span class="p">),</span>
+        <span class="n">resolve</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">add_missing_fields</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Prints content of DictConfig using Rich library and its tree structure.</span>
+
+<span class="sd">    :param config: Hydra config</span>
+<span class="sd">    :type config: DictConfig</span>
+<span class="sd">    :param fields: Determines which main fields from config will be printed and in what order.</span>
+<span class="sd">    :type fields: Sequence[str]</span>
+<span class="sd">    :param resolve: Whether to resolve reference fields of DictConfig.</span>
+<span class="sd">    :type resolve: bool</span>
+<span class="sd">    :param add_missing_fields: Whether to add missing fields from config to fields.</span>
+<span class="sd">    :type add_missing_fields: bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">style</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
+    <span class="n">tree</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="s2">&quot;:gear: CONFIG&quot;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">style</span><span class="p">,</span> <span class="n">guide_style</span><span class="o">=</span><span class="n">style</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">add_missing_fields</span><span class="p">:</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">fields</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">:</span>
+                <span class="n">fields</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">:</span>
+        <span class="n">branch</span> <span class="o">=</span> <span class="n">tree</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">field</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">style</span><span class="p">,</span> <span class="n">guide_style</span><span class="o">=</span><span class="n">style</span><span class="p">)</span>
+
+        <span class="n">config_section</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">field</span><span class="p">)</span>
+        <span class="n">branch_content</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">config_section</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">config_section</span><span class="p">,</span> <span class="n">DictConfig</span><span class="p">):</span>
+            <span class="n">branch_content</span> <span class="o">=</span> <span class="n">OmegaConf</span><span class="o">.</span><span class="n">to_yaml</span><span class="p">(</span><span class="n">config_section</span><span class="p">,</span> <span class="n">resolve</span><span class="o">=</span><span class="n">resolve</span><span class="p">)</span>
+
+        <span class="n">branch</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">Syntax</span><span class="p">(</span><span class="n">branch_content</span><span class="p">,</span> <span class="s2">&quot;yaml&quot;</span><span class="p">,</span> <span class="n">background_color</span><span class="o">=</span><span class="n">style</span><span class="p">))</span>
+
+    <span class="n">rich</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">tree</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="log_hyperparameters"><a class="viewcode-back" href="../../source/utils.html#utils.utils.log_hyperparameters">[docs]</a><span class="nd">@rank_zero_only</span>
+<span class="k">def</span> <span class="nf">log_hyperparameters</span><span class="p">(</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">DictConfig</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">LightningModule</span><span class="p">,</span>
+        <span class="n">trainer</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Trainer</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This method controls which parameters from Hydra config are saved by Lightning loggers.</span>
+
+<span class="sd">    Additionally, saves:</span>
+<span class="sd">        - sizes of train, val, test dataset</span>
+<span class="sd">        - number of trainable model parameters</span>
+
+<span class="sd">    :param config: Hydra config</span>
+<span class="sd">    :type config: DictConfig</span>
+<span class="sd">    :param model: Lightning model</span>
+<span class="sd">    :type model: pl.LightningModule</span>
+<span class="sd">    :param trainer: Lightning trainer</span>
+<span class="sd">    :type trainer: pl.Trainer</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">hparams</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;trainer&quot;</span><span class="p">:</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;trainer&quot;</span><span class="p">],</span> <span class="s2">&quot;task&quot;</span><span class="p">:</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;task&quot;</span><span class="p">],</span> <span class="s2">&quot;model&quot;</span><span class="p">:</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">],</span>
+               <span class="s2">&quot;datamodule&quot;</span><span class="p">:</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;datamodule&quot;</span><span class="p">],</span> <span class="s1">&#39;loss&#39;</span><span class="p">:</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;loss&#39;</span><span class="p">],</span> <span class="s1">&#39;optimizer&#39;</span><span class="p">:</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;optimizer&#39;</span><span class="p">],</span>
+               <span class="s2">&quot;seed&quot;</span><span class="p">:</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;seed&#39;</span><span class="p">],</span> <span class="s1">&#39;callbacks&#39;</span><span class="p">:</span> <span class="n">config</span><span class="p">[</span><span class="s1">&#39;callbacks&#39;</span><span class="p">]}</span>
+
+    <span class="c1"># choose which parts of hydra config will be saved to loggers</span>
+    <span class="k">if</span> <span class="s2">&quot;optimizer&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+        <span class="n">hparams</span><span class="p">[</span><span class="s2">&quot;optimizer&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;optimizer&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="s2">&quot;callbacks&quot;</span> <span class="ow">in</span> <span class="n">config</span><span class="p">:</span>
+        <span class="n">hparams</span><span class="p">[</span><span class="s2">&quot;callbacks&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;callbacks&quot;</span><span class="p">]</span>
+
+    <span class="c1"># save number of model parameters</span>
+    <span class="n">hparams</span><span class="p">[</span><span class="s2">&quot;model/params_total&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">())</span>
+    <span class="n">hparams</span><span class="p">[</span><span class="s2">&quot;model/params_trainable&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span>
+    <span class="p">)</span>
+    <span class="n">hparams</span><span class="p">[</span><span class="s2">&quot;model/params_not_trainable&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span>
+        <span class="n">p</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span>
+    <span class="p">)</span>
+
+    <span class="c1"># send hparams to all loggers</span>
+    <span class="n">trainer</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_hyperparams</span><span class="p">(</span><span class="n">hparams</span><span class="p">)</span>
+
+    <span class="c1"># disable logging any more hyperparameters for all loggers</span>
+    <span class="c1"># (this is just a trick to prevent trainer from logging hparams of model, since we already did that above)</span>
+    <span class="n">trainer</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log_hyperparams</span> <span class="o">=</span> <span class="n">empty</span></div>
+
+
+<div class="viewcode-block" id="empty"><a class="viewcode-back" href="../../source/utils.html#utils.utils.empty">[docs]</a><span class="k">def</span> <span class="nf">empty</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function does nothing. It is used to disable logging of hyperparameters by Lightning loggers.</span>
+
+<span class="sd">    :param args:</span>
+<span class="sd">    :param kwargs:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="finish"><a class="viewcode-back" href="../../source/utils.html#utils.utils.finish">[docs]</a><span class="k">def</span> <span class="nf">finish</span><span class="p">(</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">DictConfig</span><span class="p">,</span>
+        <span class="n">task</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">LightningModule</span><span class="p">,</span>
+        <span class="n">model</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">LightningModule</span><span class="p">,</span>
+        <span class="n">datamodule</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">LightningDataModule</span><span class="p">,</span>
+        <span class="n">trainer</span><span class="p">:</span> <span class="n">pl</span><span class="o">.</span><span class="n">Trainer</span><span class="p">,</span>
+        <span class="n">callbacks</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">pl</span><span class="o">.</span><span class="n">Callback</span><span class="p">],</span>
+        <span class="n">logger</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">pl</span><span class="o">.</span><span class="n">loggers</span><span class="o">.</span><span class="n">LightningLoggerBase</span><span class="p">],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Makes sure everything closed properly.</span>
+
+<span class="sd">    :param config: Hydra config</span>
+<span class="sd">    :type config: DictConfig</span>
+<span class="sd">    :param task: Lightning task</span>
+<span class="sd">    :type task: pl.LightningModule</span>
+<span class="sd">    :param model: Lightning model</span>
+<span class="sd">    :type model: pl.LightningModule</span>
+<span class="sd">    :param datamodule: Lightning datamodule</span>
+<span class="sd">    :type datamodule: pl.LightningDataModule</span>
+<span class="sd">    :param trainer: Lightning trainer</span>
+<span class="sd">    :type trainer: pl.Trainer</span>
+<span class="sd">    :param callbacks: Lightning callbacks</span>
+<span class="sd">    :type callbacks: List[pl.Callback]</span>
+<span class="sd">    :param logger: Lightning logger</span>
+<span class="sd">    :type logger: List[pl.loggers.LightningLoggerBase]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># without this sweeps with wandb logger might crash!</span>
+    <span class="k">for</span> <span class="n">lg</span> <span class="ow">in</span> <span class="n">logger</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">lg</span><span class="p">,</span> <span class="n">WandbLogger</span><span class="p">):</span>
+            <span class="n">wandb</span><span class="o">.</span><span class="n">finish</span><span class="p">()</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lars Vögtlin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

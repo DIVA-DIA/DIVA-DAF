@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>datamodules.RotNet.datasets.cropped_dataset &mdash; DIVA-DAF 0.2.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            DIVA-DAF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example.html">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../source/modules.html">src</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">DIVA-DAF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">datamodules.RotNet.datasets.cropped_dataset</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for datamodules.RotNet.datasets.cropped_dataset</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Load a dataset of historic documents by specifying the folder where its located.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1"># Utils</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">ListConfig</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">is_tensor</span><span class="p">,</span> <span class="n">Tensor</span>
+<span class="kn">from</span> <span class="nn">torchvision.datasets.folder</span> <span class="kn">import</span> <span class="n">has_file_allowed_extension</span><span class="p">,</span> <span class="n">pil_loader</span>
+<span class="kn">from</span> <span class="nn">torchvision.transforms</span> <span class="kn">import</span> <span class="n">ToTensor</span>
+
+<span class="kn">from</span> <span class="nn">src.datamodules.DivaHisDB.datasets.cropped_dataset</span> <span class="kn">import</span> <span class="n">CroppedHisDBDataset</span>
+<span class="kn">from</span> <span class="nn">src.datamodules.utils.misc</span> <span class="kn">import</span> <span class="n">selection_validation</span>
+<span class="kn">from</span> <span class="nn">src.datamodules.utils.single_transforms</span> <span class="kn">import</span> <span class="n">RightAngleRotation</span>
+<span class="kn">from</span> <span class="nn">src.utils</span> <span class="kn">import</span> <span class="n">utils</span>
+
+<span class="n">IMG_EXTENSIONS</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;.jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;.jpeg&#39;</span><span class="p">,</span> <span class="s1">&#39;.png&#39;</span><span class="p">,</span> <span class="s1">&#39;.ppm&#39;</span><span class="p">,</span> <span class="s1">&#39;.bmp&#39;</span><span class="p">,</span> <span class="s1">&#39;.pgm&#39;</span><span class="p">)</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="CroppedRotNet"><a class="viewcode-back" href="../../../../source/datamodules.RotNet.datasets.html#datamodules.RotNet.datasets.cropped_dataset.CroppedRotNet">[docs]</a><span class="k">class</span> <span class="nc">CroppedRotNet</span><span class="p">(</span><span class="n">CroppedHisDBDataset</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Dataset implementation of the RotNet paper of `Gidaris et al. &lt;https://arxiv.org/abs/1803.07728&gt;`_. This</span>
+<span class="sd">    dataset is used for the DivaHisDB dataset in a cropped setup.</span>
+
+<span class="sd">    The structure of the folder should be as follows::</span>
+
+<span class="sd">         data_dir</span>
+<span class="sd">        ├── train_folder_name</span>
+<span class="sd">        │   ├── data_folder_name</span>
+<span class="sd">        │   │   ├── original_image_name_1</span>
+<span class="sd">        │   │   │   ├── image_crop_1.png</span>
+<span class="sd">        │   │   │   ├── ...</span>
+<span class="sd">        │   │   │   └── image_crop_N.png</span>
+<span class="sd">        │   │   └──original_image_name_N</span>
+<span class="sd">        │   │       ├── image_crop_1.png</span>
+<span class="sd">        │   │       ├── ...</span>
+<span class="sd">        │   │       └── image_crop_N.png</span>
+<span class="sd">        │   └── gt_folder_name</span>
+<span class="sd">        │       ├── original_image_name_1</span>
+<span class="sd">        │       │   ├── image_crop_1.png</span>
+<span class="sd">        │       │   ├── ...</span>
+<span class="sd">        │       │   └── image_crop_N.png</span>
+<span class="sd">        │       └──original_image_name_N</span>
+<span class="sd">        │           ├── image_crop_1.png</span>
+<span class="sd">        │           ├── ...</span>
+<span class="sd">        │           └── image_crop_N.png</span>
+<span class="sd">        ├── validation_folder_name</span>
+<span class="sd">        │   ├── data_folder_name</span>
+<span class="sd">        │   │   ├── original_image_name_1</span>
+<span class="sd">        │   │   │   ├── image_crop_1.png</span>
+<span class="sd">        │   │   │   ├── ...</span>
+<span class="sd">        │   │   │   └── image_crop_N.png</span>
+<span class="sd">        │   │   └──original_image_name_N</span>
+<span class="sd">        │   │       ├── image_crop_1.png</span>
+<span class="sd">        │   │       ├── ...</span>
+<span class="sd">        │   │       └── image_crop_N.png</span>
+<span class="sd">        │   └── gt_folder_name</span>
+<span class="sd">        │       ├── original_image_name_1</span>
+<span class="sd">        │       │   ├── image_crop_1.png</span>
+<span class="sd">        │       │   ├── ...</span>
+<span class="sd">        │       │   └── image_crop_N.png</span>
+<span class="sd">        │       └──original_image_name_N</span>
+<span class="sd">        │           ├── image_crop_1.png</span>
+<span class="sd">        │           ├── ...</span>
+<span class="sd">        │           └── image_crop_N.png</span>
+<span class="sd">        └── test_folder_name</span>
+<span class="sd">            ├── data_folder_name</span>
+<span class="sd">            │   ├── original_image_name_1</span>
+<span class="sd">            │   │   ├── image_crop_1.png</span>
+<span class="sd">            │   │   ├── ...</span>
+<span class="sd">            │   │   └── image_crop_N.png</span>
+<span class="sd">            │   └──original_image_name_N</span>
+<span class="sd">            │       ├── image_crop_1.png</span>
+<span class="sd">            │       ├── ...</span>
+<span class="sd">            │       └── image_crop_N.png</span>
+<span class="sd">            └── gt_folder_name</span>
+<span class="sd">                ├── original_image_name_1</span>
+<span class="sd">                │   ├── image_crop_1.png</span>
+<span class="sd">                │   ├── ...</span>
+<span class="sd">                │   └── image_crop_N.png</span>
+<span class="sd">                └──original_image_name_N</span>
+<span class="sd">                    ├── image_crop_1.png</span>
+<span class="sd">                    ├── ...</span>
+<span class="sd">                    └── image_crop_N.png</span>
+
+<span class="sd">    :param path: Path to root dir of the dataset (folder containing the train/val/test folder)</span>
+<span class="sd">    :type path: Path</span>
+<span class="sd">    :param data_folder_name: Name of the folder containing the train/val/test folder</span>
+<span class="sd">    :type data_folder_name: str</span>
+<span class="sd">    :param gt_folder_name: Name of the folder containing the train/val/test folder</span>
+<span class="sd">    :type gt_folder_name: str</span>
+<span class="sd">    :param selection: If you only want to use a subset of the dataset, you can specify the name of the files</span>
+<span class="sd">        (without the file extension) in a list. If you want to use all files, set this parameter to None.</span>
+<span class="sd">    :type selection: Union[int, List[str]]</span>
+<span class="sd">    :param is_test: If True, the it returns additional information that are important for the test set.</span>
+<span class="sd">    :type is_test: bool</span>
+<span class="sd">    :param image_transform:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">data_folder_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gt_folder_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">selection</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">is_test</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">image_transform</span><span class="p">:</span> <span class="nb">callable</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Constructor method of the class RotNetDataset.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">CroppedRotNet</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">data_folder_name</span><span class="o">=</span><span class="n">data_folder_name</span><span class="p">,</span> <span class="n">gt_folder_name</span><span class="o">=</span><span class="n">gt_folder_name</span><span class="p">,</span>
+                                            <span class="n">selection</span><span class="o">=</span><span class="n">selection</span><span class="p">,</span>
+                                            <span class="n">is_test</span><span class="o">=</span><span class="n">is_test</span><span class="p">,</span> <span class="n">image_transform</span><span class="o">=</span><span class="n">image_transform</span><span class="p">,</span>
+                                            <span class="n">target_transform</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">twin_transform</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function returns the image and the ground truth for a given index.</span>
+
+<span class="sd">        :param index: index of the image</span>
+<span class="sd">        :type index: int</span>
+<span class="sd">        :return: the image and the ground truth</span>
+<span class="sd">        :rtype: Tuple[Tensor, int]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">data_img</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_data_and_gt</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">)</span>
+        <span class="n">img</span><span class="p">,</span> <span class="n">gt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_apply_transformation</span><span class="p">(</span><span class="n">data_img</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">img</span><span class="p">,</span> <span class="n">gt</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function returns the length of an epoch so the data loader knows when to stop.</span>
+<span class="sd">        The length is different during train/val and test, because we process the whole image during testing,</span>
+<span class="sd">        and only sample from the images during train/val.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_samples</span>
+
+    <span class="k">def</span> <span class="nf">_load_data_and_gt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Image</span><span class="o">.</span><span class="n">Image</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads the image for a given index.</span>
+
+<span class="sd">        :param index: index of the image to be loaded</span>
+<span class="sd">        :type index: int</span>
+<span class="sd">        :return: the image</span>
+<span class="sd">        :rtype: Image.Image</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">data_img</span> <span class="o">=</span> <span class="n">pil_loader</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">img_paths_per_page</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">data_img</span>
+
+    <span class="k">def</span> <span class="nf">_apply_transformation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">:</span> <span class="n">Image</span><span class="o">.</span><span class="n">Image</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Tensor</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Applies the transformations that have been defined in the setup (setup.py). If no transformations</span>
+<span class="sd">        have been defined, the PIL image is returned instead.</span>
+
+<span class="sd">        :param img: PIL image of the codex</span>
+<span class="sd">        :type img: Image.Image</span>
+<span class="sd">        :param index: index of the image to determine the rotation angle</span>
+<span class="sd">        :type index: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">twin_transform</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_test</span><span class="p">:</span>
+            <span class="n">img</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">twin_transform</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_transform</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># perform transformations</span>
+            <span class="n">img</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">image_transform</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">is_tensor</span><span class="p">(</span><span class="n">img</span><span class="p">):</span>
+            <span class="n">img</span> <span class="o">=</span> <span class="n">ToTensor</span><span class="p">()(</span><span class="n">img</span><span class="p">)</span>
+
+        <span class="n">rotation_transformation</span> <span class="o">=</span> <span class="n">RightAngleRotation</span><span class="p">()</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">rotation_transformation</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">img</span><span class="p">,</span> <span class="n">rotation_transformation</span><span class="o">.</span><span class="n">target_class</span>
+
+<div class="viewcode-block" id="CroppedRotNet.get_gt_data_paths"><a class="viewcode-back" href="../../../../source/datamodules.RotNet.datasets.html#datamodules.RotNet.datasets.cropped_dataset.CroppedRotNet.get_gt_data_paths">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">get_gt_data_paths</span><span class="p">(</span><span class="n">directory</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">data_folder_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gt_folder_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">selection</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> \
+            <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates the list of paths to the original images.</span>
+
+<span class="sd">        Structure of the folder::</span>
+
+<span class="sd">            dictionary</span>
+<span class="sd">            ├── data_folder_name</span>
+<span class="sd">            │   ├── original_image_name_1</span>
+<span class="sd">            │   │   ├── image_crop_1.png</span>
+<span class="sd">            │   │   ├── ...</span>
+<span class="sd">            │   │   └── image_crop_N.png</span>
+<span class="sd">            │   └──original_image_name_N</span>
+<span class="sd">            │       ├── image_crop_1.png</span>
+<span class="sd">            │       ├── ...</span>
+<span class="sd">            │       └── image_crop_N.png</span>
+<span class="sd">            └── gt_folder_name</span>
+<span class="sd">                ├── original_image_name_1</span>
+<span class="sd">                │   ├── image_crop_1.png</span>
+<span class="sd">                │   ├── ...</span>
+<span class="sd">                │   └── image_crop_N.png</span>
+<span class="sd">                └──original_image_name_N</span>
+<span class="sd">                    ├── image_crop_1.png</span>
+<span class="sd">                    ├── ...</span>
+<span class="sd">                    └── image_crop_N.png</span>
+
+<span class="sd">        :param directory: Path to root dir of split</span>
+<span class="sd">        :type directory: Path</span>
+<span class="sd">        :param data_folder_name: Name of the folder containing the data</span>
+<span class="sd">        :type data_folder_name: str</span>
+<span class="sd">        :param gt_folder_name: Name of the folder containing the ground truth</span>
+<span class="sd">        :type gt_folder_name: str</span>
+<span class="sd">        :param selection: If you only want to use a subset of the dataset, you can specify the name of the files</span>
+<span class="sd">            (without the file extension) in a list. If you want to use all files, set this parameter to None.</span>
+<span class="sd">        :type selection: Union[int, List[str]]</span>
+<span class="sd">        :return: List of paths to the original images</span>
+<span class="sd">        :rtype: List[Path]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">paths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">directory</span> <span class="o">=</span> <span class="n">directory</span><span class="o">.</span><span class="n">expanduser</span><span class="p">()</span>
+
+        <span class="n">path_data_root</span> <span class="o">=</span> <span class="n">directory</span> <span class="o">/</span> <span class="n">data_folder_name</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">path_data_root</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;folder data or gt not found in &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">directory</span><span class="p">))</span>
+
+        <span class="c1"># get all subitems (and files) sorted</span>
+        <span class="n">subitems</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">path_data_root</span><span class="o">.</span><span class="n">iterdir</span><span class="p">())</span>
+
+        <span class="c1"># check the selection parameter</span>
+        <span class="k">if</span> <span class="n">selection</span><span class="p">:</span>
+            <span class="n">selection</span> <span class="o">=</span> <span class="n">selection_validation</span><span class="p">(</span><span class="n">subitems</span><span class="p">,</span> <span class="n">selection</span><span class="p">,</span> <span class="n">full_page</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># Counter for subdirectories, needed for selection parameter</span>
+
+        <span class="k">for</span> <span class="n">path_data_subdir</span> <span class="ow">in</span> <span class="n">subitems</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">path_data_subdir</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">has_file_allowed_extension</span><span class="p">(</span><span class="n">path_data_subdir</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">IMG_EXTENSIONS</span><span class="p">):</span>
+                    <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;image file found in data root: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">path_data_subdir</span><span class="p">))</span>
+                <span class="k">continue</span>
+
+            <span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="k">if</span> <span class="n">selection</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">selection</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">counter</span> <span class="o">&gt;</span> <span class="n">selection</span><span class="p">:</span>
+                        <span class="k">break</span>
+
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">selection</span><span class="p">,</span> <span class="n">ListConfig</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">selection</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">path_data_subdir</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">selection</span><span class="p">:</span>
+                        <span class="k">continue</span>
+
+            <span class="k">for</span> <span class="n">path_data_file</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">path_data_subdir</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()):</span>
+                <span class="k">if</span> <span class="n">has_file_allowed_extension</span><span class="p">(</span><span class="n">path_data_file</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">IMG_EXTENSIONS</span><span class="p">):</span>
+                    <span class="n">paths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path_data_file</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">paths</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lars Vögtlin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

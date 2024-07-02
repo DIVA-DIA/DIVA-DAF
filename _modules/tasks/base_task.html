@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tasks.base_task &mdash; DIVA-DAF 0.2.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            DIVA-DAF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../example.html">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../source/modules.html">src</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">DIVA-DAF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">tasks.base_task</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for tasks.base_task</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">abc</span> <span class="kn">import</span> <span class="n">ABCMeta</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sn</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">wandb</span>
+<span class="kn">from</span> <span class="nn">torchmetrics</span> <span class="kn">import</span> <span class="n">MetricCollection</span>
+<span class="kn">from</span> <span class="nn">torchmetrics.classification</span> <span class="kn">import</span> <span class="n">MulticlassConfusionMatrix</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span> <span class="nn">matplotlib.patches</span> <span class="kn">import</span> <span class="n">Rectangle</span>
+<span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">OmegaConf</span>
+<span class="kn">from</span> <span class="nn">pytorch_lightning.core.module</span> <span class="kn">import</span> <span class="n">LightningModule</span>
+<span class="kn">from</span> <span class="nn">pytorch_lightning.trainer.states</span> <span class="kn">import</span> <span class="n">RunningStage</span>
+<span class="kn">from</span> <span class="nn">pytorch_lightning.utilities.exceptions</span> <span class="kn">import</span> <span class="n">MisconfigurationException</span>
+<span class="kn">from</span> <span class="nn">torch</span> <span class="kn">import</span> <span class="n">nn</span>
+<span class="kn">from</span> <span class="nn">torch.optim</span> <span class="kn">import</span> <span class="n">Optimizer</span>
+<span class="kn">from</span> <span class="nn">torch.optim.lr_scheduler</span> <span class="kn">import</span> <span class="n">_LRScheduler</span>
+
+<span class="kn">from</span> <span class="nn">src.callbacks.wandb_callbacks</span> <span class="kn">import</span> <span class="n">get_wandb_logger</span>
+<span class="kn">from</span> <span class="nn">src.tasks.utils.outputs</span> <span class="kn">import</span> <span class="n">OutputKeys</span>
+<span class="kn">from</span> <span class="nn">src.tasks.utils.task_utils</span> <span class="kn">import</span> <span class="n">get_callable_dict</span>
+<span class="kn">from</span> <span class="nn">src.utils</span> <span class="kn">import</span> <span class="n">utils</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="AbstractTask"><a class="viewcode-back" href="../../source/tasks.html#tasks.base_task.AbstractTask">[docs]</a><span class="k">class</span> <span class="nc">AbstractTask</span><span class="p">(</span><span class="n">LightningModule</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">ABCMeta</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Inspired by `Pytorch Lightning &lt;https://github.com/PyTorchLightning/lightning-flash/blob/2ec52e633bb3679f50dd7e30526885a4547e1851/flash/core/model.py&gt;`_.</span>
+
+<span class="sd">    A general abstract Task. It provieds the basic functionality for training, validation and testing. A step method</span>
+<span class="sd">    is provided which can be overwritten for custom behavior. The step method is called in the training, validation and</span>
+<span class="sd">    testing loop. The step method should return a dictionary with the following keys:</span>
+<span class="sd">        - ``OutputKeys.PREDICTION``: The prediction of the model.</span>
+<span class="sd">        - ``OutputKeys.LOSS``: The loss of the model.</span>
+<span class="sd">        - ``OutputKeys.LOG``: A dictionary with all the logs. The keys are the metric names and the values are the</span>
+<span class="sd">            metric values.</span>
+<span class="sd">        - ``OutputKeys.TARGET``: The target of the model.</span>
+
+
+<span class="sd">    :param model: Composed model to use for the task.</span>
+<span class="sd">    :type model: nn.Module</span>
+<span class="sd">    :param loss_fn: Loss function for training</span>
+<span class="sd">    :type loss_fn: Union[Callable, Mapping, Sequence]</span>
+<span class="sd">    :param optimizer: Optimizer to use for training, defaults to :class:`torch.optim.Adam`.</span>
+<span class="sd">    :type optimizer: Union[Type[torch.optim.Optimizer], torch.optim.Optimizer]</span>
+<span class="sd">    :param optimizer_kwargs: Keyword arguments to pass to the optimizer.</span>
+<span class="sd">    :type optimizer_kwargs: Optional[Dict[str, Any]]</span>
+<span class="sd">    :param scheduler: Learning rate scheduler to use for training, defaults to None.</span>
+<span class="sd">    :type scheduler: Optional[Union[Type[_LRScheduler], str, _LRScheduler]]</span>
+<span class="sd">    :param scheduler_kwargs: Keyword arguments to pass to the scheduler.</span>
+<span class="sd">    :type scheduler_kwargs: Optional[Dict[str, Any]]</span>
+<span class="sd">    :param metric_train: Metrics to compute for training.</span>
+<span class="sd">    :type metric_train: Optional[MetricCollection]</span>
+<span class="sd">    :param metric_val: Metrics to compute for evaluation.</span>
+<span class="sd">    :type metric_val: Optional[MetricCollection]</span>
+<span class="sd">    :param metric_test: Metrics to compute for testing.</span>
+<span class="sd">    :type metric_test: Optional[MetricCollection]</span>
+<span class="sd">    :param confusion_matrix_val: Whether to compute the confusion matrix for the validation set.</span>
+<span class="sd">    :type confusion_matrix_val: bool</span>
+<span class="sd">    :param confusion_matrix_test: Whether to compute the confusion matrix for the test set.</span>
+<span class="sd">    :type confusion_matrix_test: bool</span>
+<span class="sd">    :param confusion_matrix_log_every_n_epoch: How often to compute the confusion matrix.</span>
+<span class="sd">    :type confusion_matrix_log_every_n_epoch: int</span>
+<span class="sd">    :param lr: Learning rate to use for training, defaults to ``5e-5``.</span>
+<span class="sd">    :type lr: float</span>
+<span class="sd">    :param test_output_path: Path relative to the normal output folder where to save the test output</span>
+<span class="sd">    :type test_output_path: Union[str, Path]</span>
+<span class="sd">    :param predict_output_path: Path relative to the normal output folder where to save the predict output</span>
+<span class="sd">    :type predict_output_path: Union[str, Path]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">model</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">loss_fn</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">optimizer</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">],</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Optimizer</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">optim</span><span class="o">.</span><span class="n">Adam</span><span class="p">,</span>
+            <span class="n">optimizer_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">scheduler</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Type</span><span class="p">[</span><span class="n">_LRScheduler</span><span class="p">],</span> <span class="nb">str</span><span class="p">,</span> <span class="n">_LRScheduler</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">scheduler_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">metric_train</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MetricCollection</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">metric_val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MetricCollection</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">metric_test</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">MetricCollection</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">confusion_matrix_val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="n">confusion_matrix_test</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">bool</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="n">confusion_matrix_log_every_n_epoch</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="n">lr</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-3</span><span class="p">,</span>
+            <span class="n">test_output_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]]</span> <span class="o">=</span> <span class="s1">&#39;test_output&#39;</span><span class="p">,</span>
+            <span class="n">predict_output_path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]]</span> <span class="o">=</span> <span class="s1">&#39;predict_output&#39;</span>
+
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="n">resolver_name</span> <span class="o">=</span> <span class="s1">&#39;task&#39;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">OmegaConf</span><span class="o">.</span><span class="n">has_resolver</span><span class="p">(</span><span class="n">resolver_name</span><span class="p">):</span>
+            <span class="n">OmegaConf</span><span class="o">.</span><span class="n">register_new_resolver</span><span class="p">(</span>
+                <span class="n">resolver_name</span><span class="p">,</span>
+                <span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span>
+                <span class="n">use_cache</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">model</span> <span class="o">=</span> <span class="n">model</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">loss_fn</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">get_callable_dict</span><span class="p">(</span><span class="n">loss_fn</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span> <span class="o">=</span> <span class="n">scheduler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_kwargs</span> <span class="o">=</span> <span class="n">optimizer_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scheduler_kwargs</span> <span class="o">=</span> <span class="n">scheduler_kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">metric_train</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">({})</span> <span class="k">if</span> <span class="n">metric_train</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">metric_train</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metric_val</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">({})</span> <span class="k">if</span> <span class="n">metric_val</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">metric_val</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metric_test</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">ModuleDict</span><span class="p">({})</span> <span class="k">if</span> <span class="n">metric_test</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">metric_test</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">confusion_matrix_val</span> <span class="o">=</span> <span class="n">confusion_matrix_val</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">confusion_matrix_test</span> <span class="o">=</span> <span class="n">confusion_matrix_test</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">confusion_matrix_log_every_n_epoch</span> <span class="o">=</span> <span class="n">confusion_matrix_log_every_n_epoch</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lr</span> <span class="o">=</span> <span class="n">lr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_output_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">test_output_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">predict_output_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">predict_output_path</span><span class="p">)</span>
+        <span class="c1"># self.save_hyperparameters()</span>
+
+<div class="viewcode-block" id="AbstractTask.setup"><a class="viewcode-back" href="../../source/tasks.html#tasks.base_task.AbstractTask.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">confusion_matrix_val</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metric_conf_mat_val</span> <span class="o">=</span> <span class="n">MulticlassConfusionMatrix</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span>
+                                                                 <span class="n">compute_on_step</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">confusion_matrix_test</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metric_conf_mat_test</span> <span class="o">=</span> <span class="n">MulticlassConfusionMatrix</span><span class="p">(</span><span class="n">num_classes</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span>
+                                                                  <span class="n">compute_on_step</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">strategy</span><span class="o">.</span><span class="n">strategy_name</span> <span class="o">==</span> <span class="s1">&#39;ddp&#39;</span><span class="p">:</span>
+            <span class="n">batch_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">batch_size</span>
+            <span class="k">if</span> <span class="n">stage</span> <span class="o">==</span> <span class="s1">&#39;fit&#39;</span><span class="p">:</span>
+                <span class="n">num_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">train</span><span class="p">)</span>
+                <span class="n">datasplit_name</span> <span class="o">=</span> <span class="s1">&#39;train&#39;</span>
+            <span class="k">elif</span> <span class="n">stage</span> <span class="o">==</span> <span class="s1">&#39;test&#39;</span><span class="p">:</span>
+                <span class="n">num_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">test</span><span class="p">)</span>
+                <span class="n">datasplit_name</span> <span class="o">=</span> <span class="s1">&#39;test&#39;</span>
+            <span class="k">elif</span> <span class="n">stage</span> <span class="o">==</span> <span class="s1">&#39;predict&#39;</span><span class="p">:</span>
+                <span class="n">num_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">predict</span><span class="p">)</span>
+                <span class="n">datasplit_name</span> <span class="o">=</span> <span class="s1">&#39;predict&#39;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Unknown stage (</span><span class="si">{</span><span class="n">stage</span><span class="si">}</span><span class="s1">) during setup!&#39;</span><span class="p">)</span>
+                <span class="n">num_samples</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+                <span class="n">datasplit_name</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="k">if</span> <span class="n">num_samples</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s1">&#39;Number of sample (</span><span class="si">{</span><span class="n">num_samples</span><span class="si">}</span><span class="s1">) in </span><span class="si">{</span><span class="n">datasplit_name</span><span class="si">}</span><span class="s1"> not dividable by batch size (</span><span class="si">{</span><span class="n">batch_size</span><span class="si">}</span><span class="s1">).&#39;</span><span class="p">)</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Last batch will be incomplete. Behavior depends on datamodule.drop_last setting.&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AbstractTask.step"><a class="viewcode-back" href="../../source/tasks.html#tasks.base_task.AbstractTask.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+             <span class="n">batch</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+             <span class="n">metric_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="n">OutputKeys</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The training/validation/test step. Override for custom behavior.</span>
+
+<span class="sd">        :param batch: the batch with the images (x) and the gt (y) in the order (x, y)</span>
+<span class="sd">        :type batch: Any</span>
+<span class="sd">        :param metric_kwargs: a dictionary with a entry with the additional arguments (pred and y always provided).</span>
+<span class="sd">            e.g. you have two metrics (A, B) and B takes an additional arguments x and y so the dictionary would</span>
+<span class="sd">            look like this: {&#39;B&#39;: {&#39;x&#39;: &#39;value&#39;, &#39;y&#39;: &#39;value&#39;}}</span>
+<span class="sd">        :type metric_kwargs: Optional[Dict[str, Dict[str, Any]]]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="s1">&#39;weight&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">weight</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">is_tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">weight</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="n">device</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">metric_kwargs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">metric_kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">batch</span>
+        <span class="n">y_hat</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">y_hat</span><span class="p">,</span> <span class="n">Dict</span><span class="p">):</span>
+            <span class="n">y_hat</span> <span class="o">=</span> <span class="n">y_hat</span><span class="p">[</span><span class="s1">&#39;out&#39;</span><span class="p">]</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="p">{</span><span class="n">OutputKeys</span><span class="o">.</span><span class="n">PREDICTION</span><span class="p">:</span> <span class="n">y_hat</span><span class="p">}</span>
+        <span class="n">y_hat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_loss_format</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="n">OutputKeys</span><span class="o">.</span><span class="n">PREDICTION</span><span class="p">])</span>
+        <span class="n">losses</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="n">l_fn</span><span class="p">(</span><span class="n">y_hat</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">l_fn</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss_fn</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">logs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">y_hat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_metrics_format</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="n">OutputKeys</span><span class="o">.</span><span class="n">PREDICTION</span><span class="p">])</span>
+        <span class="n">current_metric</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_current_metric</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">metric</span> <span class="ow">in</span> <span class="n">current_metric</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">metric_kwargs</span><span class="p">:</span>
+                <span class="n">logs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">metric</span><span class="p">(</span><span class="n">y_hat</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">metric_kwargs</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">logs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">metric</span><span class="p">(</span><span class="n">y_hat</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">logs</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">losses</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">losses</span><span class="o">.</span><span class="n">values</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">logs</span><span class="p">[</span><span class="s2">&quot;total_loss&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">losses</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+            <span class="k">return</span> <span class="n">logs</span><span class="p">[</span><span class="s2">&quot;total_loss&quot;</span><span class="p">],</span> <span class="n">logs</span>
+        <span class="n">output</span><span class="p">[</span><span class="n">OutputKeys</span><span class="o">.</span><span class="n">LOSS</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">losses</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">output</span><span class="p">[</span><span class="n">OutputKeys</span><span class="o">.</span><span class="n">LOG</span><span class="p">]</span> <span class="o">=</span> <span class="n">logs</span>
+        <span class="n">output</span><span class="p">[</span><span class="n">OutputKeys</span><span class="o">.</span><span class="n">TARGET</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span>
+        <span class="k">return</span> <span class="n">output</span></div>
+
+<div class="viewcode-block" id="AbstractTask.to_loss_format"><a class="viewcode-back" href="../../source/tasks.html#tasks.base_task.AbstractTask.to_loss_format">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">to_loss_format</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert the output of the model to the format needed for the loss function.</span>
+
+<span class="sd">        :param x: the output of the model</span>
+<span class="sd">        :type x: torch.Tensor</span>
+<span class="sd">        :param kwargs: additional arguments</span>
+<span class="sd">        :type kwargs: Any</span>
+<span class="sd">        :return: the output in the format needed for the loss function</span>
+<span class="sd">        :rtype: torch.Tensor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">x</span></div>
+
+<div class="viewcode-block" id="AbstractTask.to_metrics_format"><a class="viewcode-back" href="../../source/tasks.html#tasks.base_task.AbstractTask.to_metrics_format">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">to_metrics_format</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Convert the output of the model to the format needed for the metrics.</span>
+
+<span class="sd">        :param x: the output of the model</span>
+<span class="sd">        :type x: torch.Tensor</span>
+<span class="sd">        :param kwargs: additional arguments</span>
+<span class="sd">        :type kwargs: Any</span>
+<span class="sd">        :return: the output in the format needed for the metrics</span>
+<span class="sd">        :rtype: torch.Tensor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">x</span></div>
+
+<div class="viewcode-block" id="AbstractTask.forward"><a class="viewcode-back" href="../../source/tasks.html#tasks.base_task.AbstractTask.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="c1"># some frameworks like torchvision returns dict</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="c1"># this looks like a bug in pycharm</span>
+        <span class="k">if</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">isinstance</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]):</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="s1">&#39;out&#39;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">torch</span><span class="o">.</span><span class="n">is_tensor</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">x</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unsupported network output type: </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+
+<div class="viewcode-block" id="AbstractTask.training_step"><a class="viewcode-back" href="../../source/tasks.html#tasks.base_task.AbstractTask.training_step">[docs]</a>    <span class="k">def</span> <span class="nf">training_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        The training step. Calls the step method and logs the metrics and loss.</span>
+
+<span class="sd">        :param batch: The current batch to train on.</span>
+<span class="sd">        :type batch: Any</span>
+<span class="sd">        :param batch_idx: The index of the current batch.</span>
+<span class="sd">        :type batch_idx: int</span>
+<span class="sd">        :param kwargs: Additional arguments.</span>
+<span class="sd">        :type kwargs: Any</span>
+<span class="sd">        :return: The output of the step method.</span>
+<span class="sd">        :rtype: Any</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">batch</span><span class="o">=</span><span class="n">batch</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_metrics_and_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">stage</span><span class="o">=</span><span class="s1">&#39;train&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span></div>
+
+<div class="viewcode-block" id="AbstractTask.validation_step"><a class="viewcode-back" href="../../source/tasks.html#tasks.base_task.AbstractTask.validation_step">[docs]</a>    <span class="k">def</span> <span class="nf">validation_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        the validation step. Calls the step method and logs the metrics and loss.</span>
+
+<span class="sd">        :param batch: The current batch to validate on.</span>
+<span class="sd">        :type batch: Any</span>
+<span class="sd">        :param batch_idx: The index of the current batch.</span>
+<span class="sd">        :type batch_idx: int</span>
+<span class="sd">        :param kwargs: Additional arguments.</span>
+<span class="sd">        :type kwargs: Any</span>
+<span class="sd">        :return: The output of the step method.</span>
+<span class="sd">        :rtype: Any</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">batch</span><span class="o">=</span><span class="n">batch</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">stage</span> <span class="o">==</span> <span class="n">RunningStage</span><span class="o">.</span><span class="n">SANITY_CHECKING</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">output</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_metrics_and_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">stage</span><span class="o">=</span><span class="s1">&#39;val&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">confusion_matrix_val</span> <span class="ow">and</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">current_epoch</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">confusion_matrix_log_every_n_epoch</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metric_conf_mat_val</span><span class="p">(</span><span class="n">preds</span><span class="o">=</span><span class="n">output</span><span class="p">[</span><span class="n">OutputKeys</span><span class="o">.</span><span class="n">PREDICTION</span><span class="p">],</span> <span class="n">target</span><span class="o">=</span><span class="n">output</span><span class="p">[</span><span class="n">OutputKeys</span><span class="o">.</span><span class="n">TARGET</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">output</span></div>
+
+<div class="viewcode-block" id="AbstractTask.validation_epoch_end"><a class="viewcode-back" href="../../source/tasks.html#tasks.base_task.AbstractTask.validation_epoch_end">[docs]</a>    <span class="k">def</span> <span class="nf">validation_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outputs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">stage</span> <span class="o">==</span> <span class="n">RunningStage</span><span class="o">.</span><span class="n">SANITY_CHECKING</span> \
+                <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">confusion_matrix_val</span> \
+                <span class="ow">or</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">current_epoch</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">confusion_matrix_log_every_n_epoch</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">hist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metric_conf_mat_val</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+        <span class="n">hist</span> <span class="o">=</span> <span class="n">hist</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_conf_mat</span><span class="p">(</span><span class="n">matrix</span><span class="o">=</span><span class="n">hist</span><span class="p">,</span> <span class="n">stage</span><span class="o">=</span><span class="s1">&#39;val&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">metric_conf_mat_val</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="AbstractTask.test_step"><a class="viewcode-back" href="../../source/tasks.html#tasks.base_task.AbstractTask.test_step">[docs]</a>    <span class="k">def</span> <span class="nf">test_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">batch</span><span class="o">=</span><span class="n">batch</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">confusion_matrix_test</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">metric_conf_mat_test</span><span class="p">(</span><span class="n">preds</span><span class="o">=</span><span class="n">output</span><span class="p">[</span><span class="n">OutputKeys</span><span class="o">.</span><span class="n">PREDICTION</span><span class="p">],</span> <span class="n">target</span><span class="o">=</span><span class="n">output</span><span class="p">[</span><span class="n">OutputKeys</span><span class="o">.</span><span class="n">TARGET</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_metrics_and_loss</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">stage</span><span class="o">=</span><span class="s1">&#39;test&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span></div>
+
+<div class="viewcode-block" id="AbstractTask.test_epoch_end"><a class="viewcode-back" href="../../source/tasks.html#tasks.base_task.AbstractTask.test_epoch_end">[docs]</a>    <span class="k">def</span> <span class="nf">test_epoch_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outputs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">confusion_matrix_test</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">hist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">metric_conf_mat_test</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+        <span class="n">hist</span> <span class="o">=</span> <span class="n">hist</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_conf_mat</span><span class="p">(</span><span class="n">matrix</span><span class="o">=</span><span class="n">hist</span><span class="p">,</span> <span class="n">stage</span><span class="o">=</span><span class="s1">&#39;test&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">metric_conf_mat_test</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="AbstractTask.predict_step"><a class="viewcode-back" href="../../source/tasks.html#tasks.base_task.AbstractTask.predict_step">[docs]</a>    <span class="k">def</span> <span class="nf">predict_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">batch</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">batch_idx</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">dataloader_idx</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="n">y_hat</span> <span class="o">=</span> <span class="bp">self</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="n">OutputKeys</span><span class="o">.</span><span class="n">PREDICTION</span><span class="p">:</span> <span class="n">y_hat</span><span class="p">}</span></div>
+
+<div class="viewcode-block" id="AbstractTask.configure_optimizers"><a class="viewcode-back" href="../../source/tasks.html#tasks.base_task.AbstractTask.configure_optimizers">[docs]</a>    <span class="k">def</span> <span class="nf">configure_optimizers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Optimizer</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Optimizer</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">_LRScheduler</span><span class="p">]]]:</span>
+        <span class="n">optimizer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="p">,</span> <span class="n">Optimizer</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer_kwargs</span><span class="p">[</span><span class="s2">&quot;lr&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lr</span>
+            <span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">()),</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">optimizer_kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">optimizer</span><span class="p">],</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_instantiate_scheduler</span><span class="p">(</span><span class="n">optimizer</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">optimizer</span></div>
+
+    <span class="k">def</span> <span class="nf">_instantiate_scheduler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">:</span> <span class="n">Optimizer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_LRScheduler</span><span class="p">:</span>
+        <span class="n">scheduler</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">_LRScheduler</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">scheduler</span>
+        <span class="k">elif</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">scheduler</span><span class="p">,</span> <span class="n">_LRScheduler</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">scheduler</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">scheduler_kwargs</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">MisconfigurationException</span><span class="p">(</span>
+            <span class="s2">&quot;scheduler can be a scheduler, a scheduler type with `scheduler_kwargs` &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;or a built-in scheduler in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">available_schedulers</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_current_metric</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MetricCollection</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get the current metrics for the current stage.</span>
+
+<span class="sd">        :return: The current metrics.</span>
+<span class="sd">        :rtype: MetricCollection</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">stage</span> <span class="o">==</span> <span class="n">RunningStage</span><span class="o">.</span><span class="n">TRAINING</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">metric_train</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">stage</span> <span class="o">==</span> <span class="n">RunningStage</span><span class="o">.</span><span class="n">VALIDATING</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">metric_val</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">state</span><span class="o">.</span><span class="n">stage</span> <span class="o">==</span> <span class="n">RunningStage</span><span class="o">.</span><span class="n">TESTING</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">metric_test</span>
+        <span class="k">return</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">_log_metrics_and_loss</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">stage</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Log the metrics and loss for the current stage to the logger.</span>
+
+<span class="sd">        :param output:</span>
+<span class="sd">        :type output: Dict[str, Any]</span>
+<span class="sd">        :param stage: The current stage.</span>
+<span class="sd">        :type stage: str</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        :rtype: None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">output</span><span class="p">[</span><span class="n">OutputKeys</span><span class="o">.</span><span class="n">LOG</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">dim</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stage</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">_c_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">on_epoch</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">on_step</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sync_dist</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                             <span class="n">rank_zero_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">stage</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">on_epoch</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">on_step</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sync_dist</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">rank_zero_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_create_conf_mat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">matrix</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">stage</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;val&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Create and save confusion matrix to disc and wandb.</span>
+
+<span class="sd">        :param matrix: The confusion matrix.</span>
+<span class="sd">        :type matrix: np.ndarray</span>
+<span class="sd">        :param stage: The current stage.</span>
+<span class="sd">        :type stage: str</span>
+<span class="sd">        :return: None</span>
+<span class="sd">        :rtype: None</span>
+<span class="sd">        :raises ValueError: If the sum of the confusion matrix is not close to the expected sum.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># verify sum of conf mat entries</span>
+        <span class="n">pixels_per_crop</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">dims</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">datamodule</span><span class="o">.</span><span class="n">dims</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">num_processes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">num_devices</span>
+        <span class="k">if</span> <span class="n">stage</span> <span class="o">==</span> <span class="s1">&#39;val&#39;</span><span class="p">:</span>
+            <span class="n">dataloader</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">val_dataloaders</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">stage</span> <span class="o">==</span> <span class="s1">&#39;test&#39;</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">test_dataloaders</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">drop_last</span>
+            <span class="n">dataloader</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">test_dataloaders</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;_create_conf_mat received unexpected stage (</span><span class="si">{</span><span class="n">stage</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
+
+        <span class="n">num_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataloader</span><span class="o">.</span><span class="n">dataset</span><span class="p">)</span>
+        <span class="n">batch_size</span> <span class="o">=</span> <span class="n">dataloader</span><span class="o">.</span><span class="n">batch_size</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dataloader</span><span class="o">.</span><span class="n">drop_last</span><span class="p">:</span>
+            <span class="n">num_samples_in_last_step</span> <span class="o">=</span> <span class="n">num_samples</span> <span class="o">%</span> <span class="p">(</span><span class="n">batch_size</span> <span class="o">*</span> <span class="n">num_processes</span><span class="p">)</span>  <span class="c1"># == 0, when last step is filled</span>
+            <span class="n">num_process_filled</span> <span class="o">=</span> <span class="n">num_samples_in_last_step</span> <span class="o">%</span> <span class="n">num_processes</span>  <span class="c1"># == 0, when all evenly filled</span>
+            <span class="n">additional_crops</span> <span class="o">=</span> <span class="n">num_processes</span> <span class="o">-</span> <span class="n">num_process_filled</span> <span class="k">if</span> <span class="n">num_process_filled</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>
+            <span class="n">total_samples</span> <span class="o">=</span> <span class="n">num_samples</span> <span class="o">+</span> <span class="n">additional_crops</span>
+            <span class="n">expected_sum</span> <span class="o">=</span> <span class="n">total_samples</span> <span class="o">*</span> <span class="n">pixels_per_crop</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">num_steps</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dataloader</span><span class="p">)</span>
+            <span class="n">expected_sum</span> <span class="o">=</span> <span class="n">num_steps</span> <span class="o">*</span> <span class="n">num_processes</span> <span class="o">*</span> <span class="n">batch_size</span> <span class="o">*</span> <span class="n">pixels_per_crop</span>
+
+        <span class="n">matrix_sum</span> <span class="o">=</span> <span class="n">matrix</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">expected_sum</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="n">matrix_sum</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">2.5e-7</span><span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;matrix.sum() is not close to expected_sum &#39;</span>
+                        <span class="sa">f</span><span class="s1">&#39;(</span><span class="si">{</span><span class="n">matrix_sum</span><span class="si">}</span><span class="s1"> != </span><span class="si">{</span><span class="n">expected_sum</span><span class="si">}</span><span class="s1">, &#39;</span>
+                        <span class="sa">f</span><span class="s1">&#39;diff: </span><span class="si">{</span><span class="n">matrix_sum</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">expected_sum</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="c1"># print(f&#39;With all_gather: {str(len(outputs[0][OutputKeys.PREDICTION][0]))}&#39;)</span>
+        <span class="n">conf_mat_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;CM_epoch_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">current_epoch</span><span class="si">}</span><span class="s1">&#39;</span>
+
+        <span class="c1"># set figure size</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+        <span class="c1"># set labels size</span>
+        <span class="n">sn</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">font_scale</span><span class="o">=</span><span class="mf">1.4</span><span class="p">)</span>
+        <span class="c1"># set font size</span>
+        <span class="n">fig</span> <span class="o">=</span> <span class="n">sn</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">matrix</span><span class="p">,</span> <span class="n">annot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">annot_kws</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;size&quot;</span><span class="p">:</span> <span class="mi">8</span><span class="p">},</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;g&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">matrix</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">fig</span><span class="o">.</span><span class="n">add_patch</span><span class="p">(</span><span class="n">Rectangle</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">fill</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">edgecolor</span><span class="o">=</span><span class="s1">&#39;yellow&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Predictions&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Targets&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">conf_mat_name</span><span class="p">)</span>
+        <span class="n">conf_mat_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span> <span class="o">/</span> <span class="s1">&#39;conf_mats&#39;</span> <span class="o">/</span> <span class="n">stage</span>
+        <span class="n">conf_mat_path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">conf_mat_file_path</span> <span class="o">=</span> <span class="n">conf_mat_path</span> <span class="o">/</span> <span class="p">(</span><span class="n">conf_mat_name</span> <span class="o">+</span> <span class="s1">&#39;.txt&#39;</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
+
+        <span class="c1"># save as csv or tsv to disc</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">is_global_zero</span><span class="p">:</span>
+            <span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="n">path_or_buf</span><span class="o">=</span><span class="n">conf_mat_file_path</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># save tsv to wandb</span>
+            <span class="n">logger</span> <span class="o">=</span> <span class="n">get_wandb_logger</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="p">)</span>
+            <span class="n">experiment</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">experiment</span>
+            <span class="n">experiment</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">glob_str</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">conf_mat_file_path</span><span class="p">),</span> <span class="n">base_path</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">())</span>
+            <span class="c1"># names should be uniqe or else charts from different experiments in wandb will overlap</span>
+            <span class="n">experiment</span><span class="o">.</span><span class="n">log</span><span class="p">({</span><span class="sa">f</span><span class="s2">&quot;confusion_matrix_</span><span class="si">{</span><span class="n">stage</span><span class="si">}</span><span class="s2">_img/ep_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">current_epoch</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="n">wandb</span><span class="o">.</span><span class="n">Image</span><span class="p">(</span><span class="n">plt</span><span class="p">)},</span>
+                           <span class="n">commit</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;No wandb logger found. Confusion matrix images are not saved.&#39;</span><span class="p">)</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lars Vögtlin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

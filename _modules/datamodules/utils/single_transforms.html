@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>datamodules.utils.single_transforms &mdash; DIVA-DAF 0.2.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            DIVA-DAF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../example.html">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/modules.html">src</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">DIVA-DAF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">datamodules.utils.single_transforms</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for datamodules.utils.single_transforms</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">itertools</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">skimage.filters.thresholding</span> <span class="kn">import</span> <span class="n">threshold_otsu</span>
+<span class="kn">from</span> <span class="nn">torchvision.transforms</span> <span class="kn">import</span> <span class="n">functional</span><span class="p">,</span> <span class="n">ToTensor</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">kornia.morphology</span> <span class="kn">import</span> <span class="n">closing</span><span class="p">,</span> <span class="n">opening</span>
+
+<span class="kn">import</span> <span class="nn">src.datamodules.utils.functional</span>
+
+
+<div class="viewcode-block" id="OneHotToPixelLabelling"><a class="viewcode-back" href="../../../source/datamodules.utils.html#datamodules.utils.single_transforms.OneHotToPixelLabelling">[docs]</a><span class="k">class</span> <span class="nc">OneHotToPixelLabelling</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Transforms a one-hot encoded tensor to a pixel labelling tensor.</span>
+
+<span class="sd">    :param tensor: The one-hot encoded tensor</span>
+<span class="sd">    :type tensor: torch.Tensor</span>
+<span class="sd">    :returns: The pixel labelling tensor</span>
+<span class="sd">    :rtype: torch.Tensor</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">src</span><span class="o">.</span><span class="n">datamodules</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">functional</span><span class="o">.</span><span class="n">argmax_onehot</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RightAngleRotation"><a class="viewcode-back" href="../../../source/datamodules.utils.html#datamodules.utils.single_transforms.RightAngleRotation">[docs]</a><span class="k">class</span> <span class="nc">RightAngleRotation</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Rotates the input tensor by a random angle from the list of angles.</span>
+<span class="sd">    To also get the class if this is used in a gt generation context, the class is accessible via .target_class.</span>
+
+<span class="sd">    :param angle_list: The list of angles to choose from</span>
+<span class="sd">    :type angle_list: List[int]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">angle_list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">angle_list</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">angle_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="mi">270</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">angles</span> <span class="o">=</span> <span class="n">angle_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_class</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_update_target_class</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates the target class to a random class from the list of angles.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_class</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">angles</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">long</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensor</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Rotates the input tensor by the angle of the target class.</span>
+
+<span class="sd">        :param tensor: to turn</span>
+<span class="sd">        :type tensor: torch.Tensor</span>
+<span class="sd">        :return: the rotated tensor (class is accessible via .target_class)</span>
+<span class="sd">        :rtype: torch.Tensor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_target_class</span><span class="p">()</span>
+        <span class="n">rotation_angle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">angles</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_class</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">functional</span><span class="o">.</span><span class="n">rotate</span><span class="p">(</span><span class="n">img</span><span class="o">=</span><span class="n">tensor</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="n">rotation_angle</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="TilesBuilding"><a class="viewcode-back" href="../../../source/datamodules.utils.html#datamodules.utils.single_transforms.TilesBuilding">[docs]</a><span class="k">class</span> <span class="nc">TilesBuilding</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Applies the idea of an embedded jigsaw puzzle on an image. The image is divided into a grid of tiles and then the</span>
+<span class="sd">    tiles are shuffled. The number of rows and columns of the grid, the number of fixed positions and the size of the</span>
+<span class="sd">    center crop can be set. The number of fixed positions must be less than the number of tiles - 1 and less than the</span>
+<span class="sd">    number of tiles.</span>
+<span class="sd">    To also get the class if this is used in a gt generation context, the class is accessible via .target_class.</span>
+
+<span class="sd">    :param rows: The number of rows of the grid</span>
+<span class="sd">    :type rows: int</span>
+<span class="sd">    :param cols: The number of columns of the grid</span>
+<span class="sd">    :type cols: int</span>
+<span class="sd">    :param fixed_positions: The number of fixed positions in the grid</span>
+<span class="sd">    :type fixed_positions: int</span>
+<span class="sd">    :param width_center_crop: The width of the center crop</span>
+<span class="sd">    :type width_center_crop: int</span>
+<span class="sd">    :param height_center_crop: The height of the center crop</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rows</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">cols</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">fixed_positions</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">width_center_crop</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">840</span><span class="p">,</span>
+                 <span class="n">height_center_crop</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1200</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="o">=</span> <span class="n">rows</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cols</span> <span class="o">=</span> <span class="n">cols</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">permutations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">itertools</span><span class="o">.</span><span class="n">permutations</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">rows</span> <span class="o">*</span> <span class="n">cols</span><span class="p">)))))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">rows</span> <span class="o">*</span> <span class="n">cols</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fixed_positions</span> <span class="o">=</span> <span class="n">fixed_positions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">filtered_perms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_perms_with_n_fixed_positions</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_class</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">width_center_crop</span> <span class="o">=</span> <span class="n">width_center_crop</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">height_center_crop</span> <span class="o">=</span> <span class="n">height_center_crop</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">width_tile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">width_center_crop</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">height_tile</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">height_center_crop</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_values</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_check_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed_positions</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The number of fixed positions must be less than the number of tiles - 1&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rows</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed_positions</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;The number of fixed positions must be less than the number of tiles&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_update_target_perm</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_class</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filtered_perms</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,))</span>
+
+    <span class="k">def</span> <span class="nf">_get_perms_with_n_fixed_positions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">p</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">permutations</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">p</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">classes</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">fixed_positions</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tensor</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_target_perm</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tile_image</span><span class="p">(</span><span class="n">tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">filtered_perms</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">target_class</span><span class="p">]))</span>
+
+    <span class="k">def</span> <span class="nf">_get_tile_image</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current_img</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">permutation</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+        <span class="n">cropped_img</span> <span class="o">=</span> <span class="n">functional</span><span class="o">.</span><span class="n">center_crop</span><span class="p">(</span><span class="n">current_img</span><span class="p">,</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">height_center_crop</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">width_center_crop</span><span class="p">])</span>
+        <span class="n">permutation</span> <span class="o">=</span> <span class="n">permutation</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">rows</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">))</span>
+        <span class="n">new_img_tensor</span> <span class="o">=</span> <span class="n">current_img</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span>
+        <span class="n">w_offset</span> <span class="o">=</span> <span class="p">((</span><span class="n">current_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">cropped_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">h_offset</span> <span class="o">=</span> <span class="p">((</span><span class="n">current_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">cropped_img</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>
+
+        <span class="n">random_width_offset</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,))</span>
+        <span class="n">random_height_offset</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,))</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rows</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">):</span>
+                <span class="n">w_begin_crop</span> <span class="o">=</span> <span class="p">((</span><span class="n">permutation</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">width_tile</span><span class="p">)</span>
+                <span class="n">w_stop_crop</span> <span class="o">=</span> <span class="n">w_begin_crop</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">width_tile</span>
+                <span class="n">h_begin_crop</span> <span class="o">=</span> <span class="p">((</span><span class="n">permutation</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">//</span> <span class="bp">self</span><span class="o">.</span><span class="n">cols</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">height_tile</span><span class="p">)</span>
+                <span class="n">h_stop_crop</span> <span class="o">=</span> <span class="n">h_begin_crop</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">height_tile</span>
+
+                <span class="n">w_begin_o</span> <span class="o">=</span> <span class="n">w_offset</span> <span class="o">+</span> <span class="p">(</span><span class="n">j</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">width_tile</span><span class="p">)</span> <span class="o">+</span> <span class="n">random_width_offset</span>
+                <span class="n">w_stop_o</span> <span class="o">=</span> <span class="n">w_offset</span> <span class="o">+</span> <span class="p">((</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">width_tile</span><span class="p">)</span> <span class="o">+</span> <span class="n">random_width_offset</span>
+                <span class="n">h_begin_o</span> <span class="o">=</span> <span class="n">h_offset</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">height_tile</span><span class="p">)</span> <span class="o">+</span> <span class="n">random_height_offset</span>
+                <span class="n">h_stop_o</span> <span class="o">=</span> <span class="n">h_offset</span> <span class="o">+</span> <span class="p">((</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">height_tile</span><span class="p">)</span> <span class="o">+</span> <span class="n">random_height_offset</span>
+
+                <span class="n">new_img_tensor</span><span class="p">[:,</span> <span class="n">h_begin_o</span><span class="p">:</span> <span class="n">h_stop_o</span><span class="p">,</span> <span class="n">w_begin_o</span><span class="p">:</span> <span class="n">w_stop_o</span><span class="p">]</span> <span class="o">=</span> <span class="n">cropped_img</span><span class="p">[:,</span>
+                                                                              <span class="n">h_begin_crop</span><span class="p">:</span><span class="n">h_stop_crop</span><span class="p">,</span>
+                                                                              <span class="n">w_begin_crop</span><span class="p">:</span><span class="n">w_stop_crop</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">new_img_tensor</span></div>
+
+
+<div class="viewcode-block" id="MorphoBuilding"><a class="viewcode-back" href="../../../source/datamodules.utils.html#datamodules.utils.single_transforms.MorphoBuilding">[docs]</a><span class="k">class</span> <span class="nc">MorphoBuilding</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Applies the idea of morphological operators to build the GT base on the paper `Historical document image analysis using controlled data for pre-training &lt;https://link.springer.com/article/10.1007/s10032-023-00437-8/&gt;`_.</span>
+<span class="sd">    It takes an :class:`.PIL.Image` extracts the blue color channel and binarizes it with the Otsu method.</span>
+<span class="sd">    On this image we cut away the border and use twice a closing followed by an opening operation onto the image to create two binary images.</span>
+<span class="sd">    These images are then used as the red and green channel of a new image where the blue channel contains zeros.</span>
+
+<span class="sd">    :param first_filter_size: The size of the first filter</span>
+<span class="sd">    :type first_filter_size: Tuple[int, int]</span>
+<span class="sd">    :param second_filter_size: The size of the second filter</span>
+<span class="sd">    :type second_filter_size: Tuple[int, int]</span>
+<span class="sd">    :param border_cut_horizontal: Pixel to remove on top and bottom</span>
+<span class="sd">    :type border_cut_horizontal: int</span>
+<span class="sd">    :param border_cut_vertical: Pixel to removeleft and right</span>
+<span class="sd">    :type border_cut_vertical: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">first_filter_size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">second_filter_size</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+                 <span class="n">border_cut_horizontal</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">border_cut_vertical</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">first_filter</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">first_filter_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">second_filter</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">second_filter_size</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">border_h</span> <span class="o">=</span> <span class="n">border_cut_horizontal</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">border_w</span> <span class="o">=</span> <span class="n">border_cut_vertical</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">:</span> <span class="s2">&quot;PIL.Image&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;img should be PIL Image. Got </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">img</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">morpho_filter_1</span><span class="p">,</span> <span class="n">morpho_filter_2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_filters</span><span class="p">(</span><span class="n">img</span><span class="o">=</span><span class="n">img</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">stack</span><span class="p">((</span><span class="n">morpho_filter_1</span><span class="p">,</span> <span class="n">morpho_filter_2</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">morpho_filter_1</span><span class="o">.</span><span class="n">shape</span><span class="p">)),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_get_filters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img</span><span class="p">:</span> <span class="n">Image</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Creates the two filter for the read and green channel with the morphological operations.</span>
+
+<span class="sd">        :param img: The image to build the two channels from</span>
+<span class="sd">        :type img: PIL.Image</span>
+<span class="sd">        :return: The two filter</span>
+<span class="sd">        :rtype: Tuple[torch.Tensor, torch.Tensor]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">b_channel</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">getchannel</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># get blue channel but need to have B x C (1) x W x H</span>
+        <span class="n">b_channel</span> <span class="o">=</span> <span class="n">b_channel</span> <span class="o">&gt;</span> <span class="n">threshold_otsu</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">b_channel</span><span class="p">))</span>
+        <span class="n">bin_img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">b_channel</span><span class="p">)</span>
+        <span class="c1"># https://kornia.readthedocs.io/en/stable/morphology.html</span>
+        <span class="n">b_channel_tensor</span> <span class="o">=</span> <span class="n">ToTensor</span><span class="p">()(</span><span class="n">bin_img</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">border_w</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_border_remove_w</span><span class="p">(</span><span class="n">b_channel_tensor</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">border_h</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_border_remove_h</span><span class="p">(</span><span class="n">b_channel_tensor</span><span class="p">)</span>
+        <span class="n">b_channel_tensor</span> <span class="o">=</span> <span class="n">b_channel_tensor</span><span class="o">.</span><span class="n">expand</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">*</span><span class="n">b_channel</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">closing</span><span class="p">(</span><span class="n">opening</span><span class="p">(</span><span class="n">b_channel_tensor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">first_filter</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">first_filter</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">closing</span><span class="p">(</span>
+            <span class="n">opening</span><span class="p">(</span><span class="n">b_channel_tensor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">second_filter</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">second_filter</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_border_remove_w</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img_tensor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Removes the border on the left and right in place.</span>
+
+<span class="sd">        :param img_tensor: The image to remove the border</span>
+<span class="sd">        :type img_tensor: torch.Tensor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">img_w</span> <span class="o">=</span> <span class="n">img_tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">img_tensor</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">border_w</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span>
+        <span class="n">img_tensor</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">img_w</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">border_w</span><span class="p">:]</span> <span class="o">=</span> <span class="mf">1.</span>
+
+    <span class="k">def</span> <span class="nf">_border_remove_h</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">img_tensor</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Removes the boarder at the top and bottom in place.</span>
+
+<span class="sd">        :param img_tensor: The image to remove the border</span>
+<span class="sd">        :type img_tensor: torch.Tensor</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">img_h</span> <span class="o">=</span> <span class="n">img_tensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">img_tensor</span><span class="p">[:,</span> <span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">border_h</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mf">1.</span>
+        <span class="n">img_tensor</span><span class="p">[:,</span> <span class="n">img_h</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">border_h</span><span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="mf">1.</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lars Vögtlin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

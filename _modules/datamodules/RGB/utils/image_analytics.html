@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>datamodules.RGB.utils.image_analytics &mdash; DIVA-DAF 0.2.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            DIVA-DAF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example.html">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../source/modules.html">src</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">DIVA-DAF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">datamodules.RGB.utils.image_analytics</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for datamodules.RGB.utils.image_analytics</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Utils</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="c1"># Torch related stuff</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torchvision.datasets</span> <span class="k">as</span> <span class="nn">datasets</span>
+<span class="kn">import</span> <span class="nn">torchvision.transforms</span> <span class="k">as</span> <span class="nn">transforms</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">torchvision.datasets.folder</span> <span class="kn">import</span> <span class="n">pil_loader</span>
+
+<span class="kn">from</span> <span class="nn">src.datamodules.utils.misc</span> <span class="kn">import</span> <span class="n">check_missing_analytics</span><span class="p">,</span> <span class="n">save_json</span>
+<span class="kn">from</span> <span class="nn">src.datamodules.utils.image_analytics</span> <span class="kn">import</span> <span class="n">compute_mean_std</span>
+
+
+<div class="viewcode-block" id="get_analytics"><a class="viewcode-back" href="../../../../source/datamodules.RGB.utils.html#datamodules.RGB.utils.image_analytics.get_analytics">[docs]</a><span class="k">def</span> <span class="nf">get_analytics</span><span class="p">(</span><span class="n">input_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">data_folder_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gt_folder_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">train_folder_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                  <span class="n">get_img_gt_path_list_func</span><span class="p">:</span> <span class="nb">callable</span><span class="p">,</span> <span class="n">inmem</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">)</span> \
+        <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the analytics for the dataset. If the analytics file is not complete, it will be computed and saved.</span>
+
+<span class="sd">    :param workers: The amount of workers to use for the mean/std computation</span>
+<span class="sd">    :type workers: int</span>
+<span class="sd">    :param inmem: If the dataset should be loaded fully into memory</span>
+<span class="sd">    :type inmem: bool</span>
+<span class="sd">    :param input_path: Path to the dataset folder</span>
+<span class="sd">    :type input_path: Path</span>
+<span class="sd">    :param data_folder_name: Name of the folder that contains the data</span>
+<span class="sd">    :type data_folder_name: str</span>
+<span class="sd">    :param gt_folder_name: Name of the folder that contains the ground truth</span>
+<span class="sd">    :type gt_folder_name: str</span>
+<span class="sd">    :param train_folder_name: Name of the folder that contains the training data</span>
+<span class="sd">    :type train_folder_name: str</span>
+<span class="sd">    :param get_img_gt_path_list_func: Function that returns a list of tuples with the image and gt path</span>
+<span class="sd">    :type get_img_gt_path_list_func: callable</span>
+<span class="sd">    :return:</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">expected_keys_data</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">,</span> <span class="s1">&#39;std&#39;</span><span class="p">,</span> <span class="s1">&#39;width&#39;</span><span class="p">,</span> <span class="s1">&#39;height&#39;</span><span class="p">]</span>
+    <span class="n">expected_keys_gt</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;class_weights&#39;</span><span class="p">,</span> <span class="s1">&#39;class_encodings&#39;</span><span class="p">]</span>
+
+    <span class="n">analytics_path_data</span> <span class="o">=</span> <span class="n">input_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;analytics.data.</span><span class="si">{</span><span class="n">data_folder_name</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">train_folder_name</span><span class="si">}</span><span class="s1">.json&#39;</span>
+    <span class="n">analytics_path_gt</span> <span class="o">=</span> <span class="n">input_path</span> <span class="o">/</span> <span class="sa">f</span><span class="s1">&#39;analytics.gt.</span><span class="si">{</span><span class="n">gt_folder_name</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">train_folder_name</span><span class="si">}</span><span class="s1">.json&#39;</span>
+
+    <span class="n">analytics_data</span><span class="p">,</span> <span class="n">missing_analytics_data</span> <span class="o">=</span> <span class="n">check_missing_analytics</span><span class="p">(</span><span class="n">analytics_path_data</span><span class="p">,</span> <span class="n">expected_keys_data</span><span class="p">)</span>
+    <span class="n">analytics_gt</span><span class="p">,</span> <span class="n">missing_analytics_gt</span> <span class="o">=</span> <span class="n">check_missing_analytics</span><span class="p">(</span><span class="n">analytics_path_gt</span><span class="p">,</span> <span class="n">expected_keys_gt</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">missing_analytics_data</span> <span class="ow">or</span> <span class="n">missing_analytics_gt</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">analytics_data</span><span class="p">,</span> <span class="n">analytics_gt</span>
+
+    <span class="n">train_path</span> <span class="o">=</span> <span class="n">input_path</span> <span class="o">/</span> <span class="n">train_folder_name</span>
+    <span class="n">img_gt_path_list</span> <span class="o">=</span> <span class="n">get_img_gt_path_list_func</span><span class="p">(</span><span class="n">train_path</span><span class="p">,</span> <span class="n">data_folder_name</span><span class="o">=</span><span class="n">data_folder_name</span><span class="p">,</span>
+                                                 <span class="n">gt_folder_name</span><span class="o">=</span><span class="n">gt_folder_name</span><span class="p">)</span>
+    <span class="n">file_names_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">img_gt_path_list</span><span class="p">])</span>
+    <span class="n">file_names_gt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">img_gt_path_list</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="n">missing_analytics_data</span><span class="p">:</span>
+        <span class="n">mean</span><span class="p">,</span> <span class="n">std</span> <span class="o">=</span> <span class="n">compute_mean_std</span><span class="p">(</span><span class="n">file_names</span><span class="o">=</span><span class="n">file_names_data</span><span class="p">,</span> <span class="n">inmem</span><span class="o">=</span><span class="n">inmem</span><span class="p">,</span> <span class="n">workers</span><span class="o">=</span><span class="n">workers</span><span class="p">)</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">file_names_data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">)</span>
+
+        <span class="n">analytics_data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;mean&#39;</span><span class="p">:</span> <span class="n">mean</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                          <span class="s1">&#39;std&#39;</span><span class="p">:</span> <span class="n">std</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                          <span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="n">img</span><span class="o">.</span><span class="n">width</span><span class="p">,</span>
+                          <span class="s1">&#39;height&#39;</span><span class="p">:</span> <span class="n">img</span><span class="o">.</span><span class="n">height</span><span class="p">}</span>
+        <span class="c1"># save json</span>
+        <span class="n">save_json</span><span class="p">(</span><span class="n">analytics_data</span><span class="p">,</span> <span class="n">analytics_path_data</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">missing_analytics_gt</span><span class="p">:</span>
+        <span class="c1"># Measure weights for class balancing</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Measuring class weights&#39;</span><span class="p">)</span>
+        <span class="c1"># create a list with all gt file paths</span>
+        <span class="n">class_weights</span><span class="p">,</span> <span class="n">class_encodings</span> <span class="o">=</span> <span class="n">_get_class_frequencies_weights_segmentation</span><span class="p">(</span><span class="n">gt_images</span><span class="o">=</span><span class="n">file_names_gt</span><span class="p">)</span>
+        <span class="n">analytics_gt</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;class_weights&#39;</span><span class="p">:</span> <span class="n">class_weights</span><span class="p">,</span>
+                        <span class="s1">&#39;class_encodings&#39;</span><span class="p">:</span> <span class="n">class_encodings</span><span class="p">}</span>
+        <span class="c1"># save json</span>
+        <span class="n">save_json</span><span class="p">(</span><span class="n">analytics_gt</span><span class="p">,</span> <span class="n">analytics_path_gt</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">analytics_data</span><span class="p">,</span> <span class="n">analytics_gt</span></div>
+
+
+<div class="viewcode-block" id="get_class_weights"><a class="viewcode-back" href="../../../../source/datamodules.RGB.utils.html#datamodules.RGB.utils.image_analytics.get_class_weights">[docs]</a><span class="k">def</span> <span class="nf">get_class_weights</span><span class="p">(</span><span class="n">input_folder</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">workers</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the weights proportional to the inverse of their class frequencies.</span>
+<span class="sd">    The vector sums up to 1</span>
+
+<span class="sd">    :param input_folder: Path to the dataset folder (see above for details)</span>
+<span class="sd">    :type input_folder: Path</span>
+<span class="sd">    :param workers: Number of workers to use for the mean/std computation</span>
+<span class="sd">    :type workers: int</span>
+<span class="sd">    :return: The weights vector as a 1D array normalized (sum up to 1)</span>
+<span class="sd">    :rtype: ndarray[double]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Sanity check on the folder</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">input_folder</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Folder </span><span class="si">{</span><span class="n">input_folder</span><span class="si">}</span><span class="s2"> does not exist&quot;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span>
+
+    <span class="c1"># Load the dataset</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">ImageFolder</span><span class="p">(</span><span class="n">input_folder</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span><span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">()]))</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Begin computing class frequencies weights&#39;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="s1">&#39;targets&#39;</span><span class="p">):</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">targets</span>
+    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="s1">&#39;labels&#39;</span><span class="p">):</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">ds</span><span class="o">.</span><span class="n">labels</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># This is a fail-safe net in case a custom dataset changed the name of the internal variables</span>
+        <span class="n">data_loader</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">DataLoader</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="n">workers</span><span class="p">)</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">target</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">data_loader</span><span class="p">:</span>
+            <span class="n">labels</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ds</span><span class="p">))</span>
+
+    <span class="n">class_support</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">return_counts</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">class_frequencies</span> <span class="o">=</span> <span class="n">class_support</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+    <span class="c1"># Class weights are the inverse of the class frequencies</span>
+    <span class="n">class_weights</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">class_frequencies</span>
+    <span class="c1"># Normalize vector to sum up to 1.0 (in case the Loss function does not do it)</span>
+    <span class="n">class_weights</span> <span class="o">/=</span> <span class="n">class_weights</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Finished computing class frequencies weights &#39;</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Class frequencies (rounded): </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">class_frequencies</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="n">decimals</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Class weights (rounded): </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">around</span><span class="p">(</span><span class="n">class_weights</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="n">decimals</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">class_weights</span></div>
+
+
+<span class="k">def</span> <span class="nf">_get_class_frequencies_weights_segmentation</span><span class="p">(</span><span class="n">gt_images</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the weights proportional to the inverse of their class frequencies.</span>
+<span class="sd">    The vector sums up to 1</span>
+
+<span class="sd">    :param gt_images: Path to all ground truth images, which contain the pixel-wise label</span>
+<span class="sd">    :type gt_images: List[str]</span>
+<span class="sd">    :return: The weights vector as a 1D array normalized (sum up to 1)</span>
+<span class="sd">    :rtype: Tuple[np.ndarray, List[int]]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Begin computing class frequencies weights&#39;</span><span class="p">)</span>
+
+    <span class="n">label_counter</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">gt_images</span><span class="p">:</span>
+        <span class="n">img_raw</span> <span class="o">=</span> <span class="n">pil_loader</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">colors</span> <span class="o">=</span> <span class="n">img_raw</span><span class="o">.</span><span class="n">getcolors</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">count</span><span class="p">,</span> <span class="n">color</span> <span class="ow">in</span> <span class="n">colors</span><span class="p">:</span>
+            <span class="n">label_counter</span><span class="p">[</span><span class="n">color</span><span class="p">]</span> <span class="o">=</span> <span class="n">label_counter</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">count</span>
+
+    <span class="n">classes</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">label_counter</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+    <span class="n">num_samples_per_class</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">label_counter</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">classes</span><span class="p">])</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Finished computing class frequencies weights&#39;</span><span class="p">)</span>
+    <span class="c1"># Normalize vector to sum up to 1.0 (in case the Loss function does not do it)</span>
+    <span class="n">class_weights</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">num_samples_per_class</span><span class="p">)</span>  <span class="c1"># / ((1 / num_samples_per_class).sum())</span>
+    <span class="k">return</span> <span class="n">class_weights</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">classes</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lars Vögtlin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
