@@ -171,7 +171,7 @@ class MorphoBuilding:
         morpho_filter_1, morpho_filter_2 = self._get_filters(img=img)
         return torch.stack((morpho_filter_1, morpho_filter_2, torch.zeros(morpho_filter_1.shape)), dim=1)[0]
 
-    def _get_filters(self, img: "PIL.Image") -> Tuple[torch.Tensor, torch.Tensor]:
+    def _get_filters(self, img: Image) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Creates the two filter for the read and green channel with the morphological operations.
 
