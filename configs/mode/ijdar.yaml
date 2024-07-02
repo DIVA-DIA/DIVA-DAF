@@ -2,11 +2,7 @@
 
 experiment_mode: True
 
-run_root_dir: outputs/ijdar
+mode_name: ijdar
 
 # name of the experiment
 name: ???
-
-hydra:
-    run:
-        dir: ${run_root_dir}/${name}/${now:%Y-%m-%d}/${now:%H-%M-%S}
