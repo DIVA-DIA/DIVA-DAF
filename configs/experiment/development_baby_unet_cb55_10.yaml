@@ -2,7 +2,7 @@
 
 defaults:
     - /mode: development.yaml
-    - trainer: default_trainer.yaml
+    - /trainer: default_trainer.yaml
     - /plugins: null
     - /task: semantic_segmentation_HisDB_cropped.yaml
     - /loss: crossentropyloss.yaml
@@ -13,7 +13,7 @@ defaults:
         - f1_score_class_wise.yaml
     - /model/backbone: baby_unet.yaml
     - /model/header: unet_segmentation.yaml
-    - datamodule: cb55_10_cropped_datamodule.yaml
+    - /datamodule: cb55_10_cropped_datamodule.yaml
     - /optimizer: adam.yaml
     - /callbacks:
           - check_compatibility.yaml
