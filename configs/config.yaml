@@ -10,6 +10,10 @@ defaults:
     - override hydra/job_logging: colorlog
     - override hydra/hydra_logging: colorlog
 
+hydra:
+    run:
+        dir: outputs/${mode_name}/${name}/${now:%Y-%m-%d}/${now:%H-%M-%S}
+
 
 save_config: True
 

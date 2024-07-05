@@ -32,6 +32,7 @@ class AbstractDatamodule(pl.LightningDataModule):
     def setup(self, stage: Optional[str] = None) -> None:
         if not self.dims:
             raise ValueError("the dimensions of the data needs to be set! self.dims")
+        self._check_attributes()
 
     def _check_attributes(self):
         """

@@ -144,9 +144,6 @@ class DataModuleCroppedRGB(AbstractDatamodule):
 
         self.dims = (3, crop_size, crop_size)
 
-        # Check default attributes using base_datamodule function
-        self._check_attributes()
-
     def setup(self, stage: Optional[str] = None):
         super().setup()
         if stage == 'fit' or stage is None:
