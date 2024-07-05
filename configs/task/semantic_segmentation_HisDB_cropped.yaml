@@ -1,2 +1,5 @@
 _target_: src.tasks.DivaHisDB.semantic_segmentation_cropped.SemanticSegmentationCroppedHisDB
 
+confusion_matrix_log_every_n_epoch: 1
+confusion_matrix_val: True
+confusion_matrix_test: True
