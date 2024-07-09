@@ -37,7 +37,7 @@ trainer:
     devices: [0]
     strategy: 'ddp_find_unused_parameters_false'
     min_epochs: 1
-    max_epochs: 10
+    max_epochs: 1
     precision: 32
     check_val_every_n_epoch: 1
 
@@ -64,7 +64,7 @@ optimizer:
 
 callbacks:
     model_checkpoint:
-        monitor: "val/accuracy"
+        monitor: "val/crossentropyloss"
         mode: "max"
         filename: ${checkpoint_folder_name}_${name}
 
