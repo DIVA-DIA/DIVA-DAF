@@ -50,13 +50,15 @@ def get_img_paths(directory):
 
 
 class TiledDatasetGenerator:
-    def __init__(self, input_path: Path, output_path: Path, rows: int, cols: int, override_existing=False,
-                 segmentation: bool = False):
+    def __init__(self, input_path: Path, output_path: Path, rows: int, cols: int, center_width: int, center_height: int,
+                 override_existing=False, segmentation: bool = False):
         # Init list
         self.input_path = input_path
         self.output_path = output_path
         self.rows = rows
         self.cols = cols
+        self.center_width = center_width
+        self.center_height = center_height
 
         self.override_existing = override_existing
 
@@ -66,6 +68,8 @@ class TiledDatasetGenerator:
                                        output_path=output_path,
                                        rows=rows,
                                        cols=cols,
+                                       center_width=center_width,
+                                       center_height=center_height,
                                        permutations=self.permutations,
                                        segmentation=segmentation,
                                        override_existing=override_existing,
@@ -118,13 +122,15 @@ class TiledDatasetGenerator:
 
 
 class TileGenerator:
-    def __init__(self, input_path, output_path, rows, cols, permutations, segmentation: bool,
-                 override_existing=False, progress_title=''):
+    def __init__(self, input_path, output_path, rows, cols, center_width: int, center_height: int, permutations,
+                 segmentation: bool, override_existing=False, progress_title=''):
         # Init list
         self.input_path = input_path
         self.output_path = output_path
         self.rows = rows
         self.cols = cols
+        self.center_width = center_width
+        self.center_height = center_height
         self.permutations = permutations
         self.override_existing = override_existing
         self.progress_title = progress_title
@@ -232,7 +238,7 @@ class TileGenerator:
 
         # Center crop image 866 x 1236 should be the size at the end. We need an offset on all sides of 3 pixels
         # to get during training a size of 860 x 1230
-        self.center_cropped_image = self._center_crop(width=840, height=1200)
+        self.center_cropped_image = self._center_crop(width=self.center_width, height=self.center_height)
 
         # Update pointer to current image
         self.current_img_index = img_index
@@ -301,6 +307,14 @@ if __name__ == '__main__':
                         help='Number of columns in the tiled image',
                         type=int,
                         required=True)
+    parser.add_argument('-w', '--center_width',
+                        help='width of the center crop',
+                        type=int,
+                        default=840)
+    parser.add_argument('-h', '--center_height',
+                        help='Height of the center crop',
+                        type=int,
+                        default=1200)
     parser.add_argument('-oe', '--override_existing',
                         help='If true overrides the images ',
                         type=bool,
