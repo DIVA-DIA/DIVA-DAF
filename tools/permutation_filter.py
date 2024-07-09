@@ -1,3 +1,4 @@
+import argparse
 import itertools
 import json
 from pathlib import Path
@@ -13,11 +14,12 @@ def get_perms_with_n_fixed_positions(permutations: List, classes: List[int], mat
     return np.array([p for p in perms if np.sum(p == cls) == matches])
 
 
-def filter_by_permutations(classes: List[int], matches: int, root_path: Path) -> None:
+def filter_by_permutations(number_of_tiles: int, pos_not_change: int, input_path: Path) -> None:
+    classes = list(range(number_of_tiles))
     all_perms = list(itertools.permutations(classes))
-    used_perms = get_perms_with_n_fixed_positions(all_perms, classes, matches)
-    perm_mapping_path = root_path / 'permutations.json'
-    output_path = root_path.parent / f'{matches}_fixed_positions'
+    used_perms = get_perms_with_n_fixed_positions(all_perms, classes, pos_not_change)
+    perm_mapping_path = input_path / 'permutations.json'
+    output_path = input_path.parent / f'{pos_not_change}_fixed_positions'
     output_path_info = output_path / 'permutations.json'
     output_path.mkdir(exist_ok=True)
     perm_mappings = np.asarray(json.load(perm_mapping_path.open()))
@@ -28,7 +30,7 @@ def filter_by_permutations(classes: List[int], matches: int, root_path: Path) ->
     for i, perm_cls in tqdm(enumerate(permutation_classes)):
         class_folder = output_path / str(i)
         class_folder.mkdir(exist_ok=True)
-        for file_path in (root_path / str(perm_cls)).iterdir():
+        for file_path in (input_path / str(perm_cls)).iterdir():
             if (class_folder / file_path.name).exists():
                 continue
             (class_folder / file_path.name).symlink_to(file_path)
@@ -36,6 +38,18 @@ def filter_by_permutations(classes: List[int], matches: int, root_path: Path) ->
 
 
 if __name__ == '__main__':
-    positions_w_do_not_change = 2
-    input_path = Path('/net/research-hisdoc/datasets/self-supervised/CB55/tiles_960_1344_embeded/all_files')
-    filter_by_permutations(classes=list(range(6)), matches=positions_w_do_not_change, root_path=input_path)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-p', '--pos_not_change',
+                        help="Amount of positions that do not change. Hence, are at the correct position",
+                        type=int, default=3)
+    parser.add_argument('-i', '--input_path',
+                        help="Path to all generated permutations.",
+                        type=Path, required=True)
+    parser.add_argument('-n', '--number_of_tiles',
+                        help="Number of tiles that exists in one image",
+                        type=Path, required=True)
+
+    args = parser.parse_args()
+    # positions_w_do_not_change = 2
+    # input_path = Path('/net/research-hisdoc/datasets/self-supervised/CB55/tiles_960_1344_embeded/all_files')
+    filter_by_permutations(**args.__dict__)
