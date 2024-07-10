@@ -94,12 +94,12 @@ def check_config(config: DictConfig) -> None:
         sys.exit(1)
 
     # Set seed for random number generators in pytorch, numpy and python.random
-    if "seed" in config:
-        seed_everything(config.seed, workers=True)
-    else:
+    if "seed" not in config:
         seed = random.randint(np.iinfo(np.uint32).min, np.iinfo(np.uint32).max)
         config['seed'] = seed
         log.info(f"No seed specified! Seed set to {seed}")
+
+    seed_everything(config.seed, workers=True)
 
     if 'freeze' in config.model.backbone and 'freeze' in config.model.header and config.train:
         if config.model.backbone.freeze and config.model.header.freeze:
