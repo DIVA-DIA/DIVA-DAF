@@ -57,7 +57,7 @@ model:
         in_channels: 2048
 
 datamodule:
-    _target_: src.datamodules.Classification.datamodule_imagenet.ClassificationDatamodule
+    _target_: src.datamodules.Classification.datamodule.ClassificationDatamodule
 
     data_dir: /net/research-hisdoc/datasets/classification/ImageNet/resized
     num_workers: 4
