@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>datamodules.utils package &mdash; DIVA-DAF 0.2.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="execute module" href="execute.html" />
+    <link rel="prev" title="datamodules.RotNet.utils package" href="datamodules.RotNet.utils.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            DIVA-DAF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example.html">Example</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="callbacks.html">callbacks package</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="datamodules.html">datamodules package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="datamodules.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="datamodules.Classification.html">datamodules.Classification package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.DivaHisDB.html">datamodules.DivaHisDB package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.IndexedFormats.html">datamodules.IndexedFormats package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RGB.html">datamodules.RGB package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RolfFormat.html">datamodules.RolfFormat package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RotNet.html">datamodules.RotNet package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">datamodules.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="datamodules.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="datamodules.html#module-datamodules.base_datamodule">datamodules.base_datamodule module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="datamodules.html#module-datamodules">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="execute.html">execute module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="metrics.html">metrics package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html">models package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html">tasks package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">utils package</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DIVA-DAF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">src</a></li>
+          <li class="breadcrumb-item"><a href="datamodules.html">datamodules package</a></li>
+      <li class="breadcrumb-item active">datamodules.utils package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/source/datamodules.utils.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="datamodules-utils-package">
+<h1>datamodules.utils package<a class="headerlink" href="#datamodules-utils-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-datamodules.utils.dataset_predict">
+<span id="datamodules-utils-dataset-predict-module"></span><h2>datamodules.utils.dataset_predict module<a class="headerlink" href="#module-datamodules.utils.dataset_predict" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="datamodules.utils.dataset_predict.DatasetPredict">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DatasetPredict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_path_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_dims</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ImageDimensions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">image_transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">twin_transform</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/datamodules/utils/dataset_predict.html#DatasetPredict"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.dataset_predict.DatasetPredict" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Dataset</span></code></p>
+<p>Dataset class for the prediction of the test set. It takes a folder of images and creates the prediction of these images.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>image_path_list</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – list of image paths</p></li>
+<li><p><strong>image_dims</strong> (<a class="reference internal" href="#datamodules.utils.misc.ImageDimensions" title="datamodules.utils.misc.ImageDimensions"><em>ImageDimensions</em></a>) – image dimensions</p></li>
+<li><p><strong>image_transform</strong> (<em>Callable</em>) – image transformation</p></li>
+<li><p><strong>target_transform</strong> (<em>Callable</em>) – target transformation</p></li>
+<li><p><strong>twin_transform</strong> (<em>Callable</em>) – twin transformation</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="datamodules.utils.dataset_predict.DatasetPredict.expend_glob_path_list">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">expend_glob_path_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">glob_path_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/datamodules/utils/dataset_predict.html#DatasetPredict.expend_glob_path_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.dataset_predict.DatasetPredict.expend_glob_path_list" title="Permalink to this definition"></a></dt>
+<dd><p>Expends the glob path list to a list of paths.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>glob_path_list</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – list of glob paths</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of paths</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[Path]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-datamodules.utils.exceptions">
+<span id="datamodules-utils-exceptions-module"></span><h2>datamodules.utils.exceptions module<a class="headerlink" href="#module-datamodules.utils.exceptions" title="Permalink to this heading"></a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="datamodules.utils.exceptions.PathMissingDirinSplitDir">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PathMissingDirinSplitDir</span></span><a class="reference internal" href="../_modules/datamodules/utils/exceptions.html#PathMissingDirinSplitDir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.exceptions.PathMissingDirinSplitDir" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Raised when a path is missing a directory in a split directory</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="datamodules.utils.exceptions.PathMissingSplitDir">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PathMissingSplitDir</span></span><a class="reference internal" href="../_modules/datamodules/utils/exceptions.html#PathMissingSplitDir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.exceptions.PathMissingSplitDir" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Raised when a path is missing a split directory</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="datamodules.utils.exceptions.PathNone">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PathNone</span></span><a class="reference internal" href="../_modules/datamodules/utils/exceptions.html#PathNone"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.exceptions.PathNone" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Raised when a path is None</p>
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="datamodules.utils.exceptions.PathNotDir">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PathNotDir</span></span><a class="reference internal" href="../_modules/datamodules/utils/exceptions.html#PathNotDir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.exceptions.PathNotDir" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Raised when a path is not a directory</p>
+</dd></dl>
+
+</section>
+<section id="module-datamodules.utils.functional">
+<span id="datamodules-utils-functional-module"></span><h2>datamodules.utils.functional module<a class="headerlink" href="#module-datamodules.utils.functional" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="datamodules.utils.functional.argmax_onehot">
+<span class="sig-name descname"><span class="pre">argmax_onehot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tensor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tensor</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/datamodules/utils/functional.html#argmax_onehot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.functional.argmax_onehot" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the argmax of a one-hot encoded tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>tensor</strong> (<em>torch.Tensor</em>) – The one-hot encoded tensor</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The argmax of the one-hot encoded tensor</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-datamodules.utils.image_analytics">
+<span id="datamodules-utils-image-analytics-module"></span><h2>datamodules.utils.image_analytics module<a class="headerlink" href="#module-datamodules.utils.image_analytics" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="datamodules.utils.image_analytics.compute_mean_std">
+<span class="sig-name descname"><span class="pre">compute_mean_std</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">ndarray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inmem</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">8</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/datamodules/utils/image_analytics.html#compute_mean_std"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.image_analytics.compute_mean_std" title="Permalink to this definition"></a></dt>
+<dd><p>Computes mean and std of all images present at target folder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>file_names</strong> (<em>Union</em><em>[</em><em>np.ndarray</em><em>[</em><em>str</em><em>]</em><em>, </em><em>List</em><em>[</em><em>Path</em><em>]</em><em>]</em>) – List of the file names of the images</p></li>
+<li><p><strong>inmem</strong> (<em>bool</em>) – Specifies whether is should be computed i nan online of offline fashion.</p></li>
+<li><p><strong>workers</strong> (<em>int</em>) – Number of workers to use for the mean/std computation</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>mean and std</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[float, float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-datamodules.utils.misc">
+<span id="datamodules-utils-misc-module"></span><h2>datamodules.utils.misc module<a class="headerlink" href="#module-datamodules.utils.misc" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="datamodules.utils.misc.ImageDimensions">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ImageDimensions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/datamodules/utils/misc.html#ImageDimensions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.misc.ImageDimensions" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Dataclass to store the dimensions of an image</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>width</strong> (<em>int</em>) – Width of the image</p></li>
+<li><p><strong>height</strong> (<em>int</em>) – Height of the image</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datamodules.utils.misc.ImageDimensions.height">
+<span class="sig-name descname"><span class="pre">height</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#datamodules.utils.misc.ImageDimensions.height" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="datamodules.utils.misc.ImageDimensions.width">
+<span class="sig-name descname"><span class="pre">width</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><a class="headerlink" href="#datamodules.utils.misc.ImageDimensions.width" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datamodules.utils.misc.check_missing_analytics">
+<span class="sig-name descname"><span class="pre">check_missing_analytics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">analytics_path_gt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expected_keys_gt</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/datamodules/utils/misc.html#check_missing_analytics"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.misc.check_missing_analytics" title="Permalink to this definition"></a></dt>
+<dd><p>Check if the analytics file for the ground truth is missing and if it is complete. If its is present, it will be
+loaded and the contained keys checked for completeness.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>analytics_path_gt</strong> (<em>Path</em>) – Path where the analytics file should be</p></li>
+<li><p><strong>expected_keys_gt</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of expected keys in the analytics file</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tuple of the loaded analytics and a boolean indicating if the analytics file is missing</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[Dict[str, Any], bool]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datamodules.utils.misc.find_new_filename">
+<span class="sig-name descname"><span class="pre">find_new_filename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="../_modules/datamodules/utils/misc.html#find_new_filename"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.misc.find_new_filename" title="Permalink to this definition"></a></dt>
+<dd><p>Finds a new filename that is not in the current list.
+If the filename is not in the list, it is returned.
+If the filename is in the list, a number is appended to the filename until it is unique.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>str</em>) – Filename to check</p></li>
+<li><p><strong>current_list</strong> (<em>List</em><em>[</em><em>str</em><em>]</em>) – List of filenames to check against</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>New filename that is not in the current list</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datamodules.utils.misc.get_image_dims">
+<span class="sig-name descname"><span class="pre">get_image_dims</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_gt_path_list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#datamodules.utils.misc.ImageDimensions" title="datamodules.utils.misc.ImageDimensions"><span class="pre">ImageDimensions</span></a></span></span><a class="reference internal" href="../_modules/datamodules/utils/misc.html#get_image_dims"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.misc.get_image_dims" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the image dimensions of the first image in the list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data_gt_path_list</strong> (<em>List</em><em>[</em><em>Path</em><em>]</em>) – List of image paths</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Image dimensions of the first image in the list</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#datamodules.utils.misc.ImageDimensions" title="datamodules.utils.misc.ImageDimensions">ImageDimensions</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datamodules.utils.misc.get_output_file_list">
+<span class="sig-name descname"><span class="pre">get_output_file_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_path_list</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/datamodules/utils/misc.html#get_output_file_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.misc.get_output_file_list" title="Permalink to this definition"></a></dt>
+<dd><p>Creates a list of output filenames from a list of image paths.
+If there are duplicate filenames, the duplicates are renamed to be unique.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>image_path_list</strong> (<em>List</em><em>[</em><em>Path</em><em>]</em>) – List of image paths</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of output filenames</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[str]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datamodules.utils.misc.pil_loader_gif">
+<span class="sig-name descname"><span class="pre">pil_loader_gif</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">&lt;module</span> <span class="pre">'PIL.Image'</span> <span class="pre">from</span> <span class="pre">'/opt/hostedtoolcache/Python/3.8.18/x64/lib/python3.8/site-packages/PIL/Image.py'&gt;</span></span></span><a class="reference internal" href="../_modules/datamodules/utils/misc.html#pil_loader_gif"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.misc.pil_loader_gif" title="Permalink to this definition"></a></dt>
+<dd><p>Loads a gif image using PIL.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>Path</em>) – Path to the image</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Image loaded in palette mode</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datamodules.utils.misc.save_json">
+<span class="sig-name descname"><span class="pre">save_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">analytics</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">analytics_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/datamodules/utils/misc.html#save_json"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.misc.save_json" title="Permalink to this definition"></a></dt>
+<dd><p>Saves the analytics dict to a json file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>analytics</strong> (<em>Dict</em>) – The analytics dict that should be saved</p></li>
+<li><p><strong>analytics_path</strong> (<em>Path</em>) – Path to the json file</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datamodules.utils.misc.selection_validation">
+<span class="sig-name descname"><span class="pre">selection_validation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">files_in_data_root</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Path</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">selection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ListConfig</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_page</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">ListConfig</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/datamodules/utils/misc.html#selection_validation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.misc.selection_validation" title="Permalink to this definition"></a></dt>
+<dd><p>Validates the selection parameter for the segmentation dataset.
+If selection is an integer, it is checked if it is in the range of the number of files.
+If selection is a list, it is checked if all elements are in the list of files.
+If selection is None, it is returned.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>files_in_data_root</strong> (<em>List</em><em>[</em><em>Path</em><em>]</em>) – List of files in the data root directory</p></li>
+<li><p><strong>selection</strong> (<em>Union</em><em>[</em><em>int</em><em>, </em><em>List</em><em>[</em><em>str</em><em>]</em><em>, </em><em>ListConfig</em><em>]</em>) – Selection parameter</p></li>
+<li><p><strong>full_page</strong> (<em>bool</em>) – If True, the selection parameter is used to select a page.
+If False, the selection parameter is used to select a subdirectory.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Validated selection parameter</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[int, List[str], ListConfig]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="datamodules.utils.misc.validate_path_for_segmentation">
+<span class="sig-name descname"><span class="pre">validate_path_for_segmentation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_folder_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gt_folder_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">split_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Path</span></span></span><a class="reference internal" href="../_modules/datamodules/utils/misc.html#validate_path_for_segmentation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.misc.validate_path_for_segmentation" title="Permalink to this definition"></a></dt>
+<dd><p>Checks if the data_dir folder has the following structure:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>data_dir
+    ├── train_folder_name
+    │   ├── data_folder_name
+    │   └── gt_folder_name
+    ├── val_folder_name
+    │   ├── data_folder_name
+    │   └── gt_folder_name
+    └── test_folder_name
+        ├── data_folder_name
+        └── gt_folder_name
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_dir</strong> (<em>str</em>) – Path to the root dir of the dataset</p></li>
+<li><p><strong>data_folder_name</strong> (<em>str</em>) – Name of the data folder</p></li>
+<li><p><strong>gt_folder_name</strong> (<em>str</em>) – Name of the gt folder</p></li>
+<li><p><strong>split_name</strong> (<em>str</em>) – Name of the split folder (train/val/test)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Path to the data_dir</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Path</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-datamodules.utils.output_tools">
+<span id="datamodules-utils-output-tools-module"></span><h2>datamodules.utils.output_tools module<a class="headerlink" href="#module-datamodules.utils.output_tools" title="Permalink to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="datamodules.utils.output_tools.merge_patches">
+<span class="sig-name descname"><span class="pre">merge_patches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">patch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinates</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_output</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ndarray</span></span></span><a class="reference internal" href="../_modules/datamodules/utils/output_tools.html#merge_patches"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.output_tools.merge_patches" title="Permalink to this definition"></a></dt>
+<dd><p>This function merges the patch into the full output image
+Overlapping values are resolved by taking the max.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>patch</strong> (<em>np.ndarray</em>) – numpy matrix of size [#classes x crop_size x crop_size]
+a patch from the larger image</p></li>
+<li><p><strong>coordinates</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>]</em>) – tuple of ints
+top left coordinates of the patch within the larger image for all patches in a batch</p></li>
+<li><p><strong>full_output</strong> (<em>np.ndarray</em>) – numpy matrix of size [#C x H x W]
+output image at full size</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>full_output: numpy matrix [#C x Htot x Wtot]
+output image at full size with patch inserted</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-datamodules.utils.single_transforms">
+<span id="datamodules-utils-single-transforms-module"></span><h2>datamodules.utils.single_transforms module<a class="headerlink" href="#module-datamodules.utils.single_transforms" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="datamodules.utils.single_transforms.MorphoBuilding">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">MorphoBuilding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">first_filter_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">second_filter_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">border_cut_horizontal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">border_cut_vertical</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/datamodules/utils/single_transforms.html#MorphoBuilding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.single_transforms.MorphoBuilding" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Applies the idea of morphological operators to build the GT base on the paper <a class="reference external" href="https://link.springer.com/article/10.1007/s10032-023-00437-8/">Historical document image analysis using controlled data for pre-training</a>.
+It takes an <code class="xref py py-class docutils literal notranslate"><span class="pre">PIL.Image</span></code> extracts the blue color channel and binarizes it with the Otsu method.
+On this image we cut away the border and use twice a closing followed by an opening operation onto the image to create two binary images.
+These images are then used as the red and green channel of a new image where the blue channel contains zeros.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>first_filter_size</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>]</em>) – The size of the first filter</p></li>
+<li><p><strong>second_filter_size</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>]</em>) – The size of the second filter</p></li>
+<li><p><strong>border_cut_horizontal</strong> (<em>int</em>) – Pixel to remove on top and bottom</p></li>
+<li><p><strong>border_cut_vertical</strong> (<em>int</em>) – Pixel to removeleft and right</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datamodules.utils.single_transforms.OneHotToPixelLabelling">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">OneHotToPixelLabelling</span></span><a class="reference internal" href="../_modules/datamodules/utils/single_transforms.html#OneHotToPixelLabelling"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.single_transforms.OneHotToPixelLabelling" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Transforms a one-hot encoded tensor to a pixel labelling tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>tensor</strong> (<em>torch.Tensor</em>) – The one-hot encoded tensor</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The pixel labelling tensor</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.Tensor</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datamodules.utils.single_transforms.RightAngleRotation">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">RightAngleRotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/datamodules/utils/single_transforms.html#RightAngleRotation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.single_transforms.RightAngleRotation" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Rotates the input tensor by a random angle from the list of angles.
+To also get the class if this is used in a gt generation context, the class is accessible via .target_class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>angle_list</strong> (<em>List</em><em>[</em><em>int</em><em>]</em>) – The list of angles to choose from</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datamodules.utils.single_transforms.TilesBuilding">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TilesBuilding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cols</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fixed_positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">width_center_crop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">840</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height_center_crop</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1200</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/datamodules/utils/single_transforms.html#TilesBuilding"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.single_transforms.TilesBuilding" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Applies the idea of an embedded jigsaw puzzle on an image. The image is divided into a grid of tiles and then the
+tiles are shuffled. The number of rows and columns of the grid, the number of fixed positions and the size of the
+center crop can be set. The number of fixed positions must be less than the number of tiles - 1 and less than the
+number of tiles.
+To also get the class if this is used in a gt generation context, the class is accessible via .target_class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rows</strong> (<em>int</em>) – The number of rows of the grid</p></li>
+<li><p><strong>cols</strong> (<em>int</em>) – The number of columns of the grid</p></li>
+<li><p><strong>fixed_positions</strong> (<em>int</em>) – The number of fixed positions in the grid</p></li>
+<li><p><strong>width_center_crop</strong> (<em>int</em>) – The width of the center crop</p></li>
+<li><p><strong>height_center_crop</strong> – The height of the center crop</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-datamodules.utils.twin_transforms">
+<span id="datamodules-utils-twin-transforms-module"></span><h2>datamodules.utils.twin_transforms module<a class="headerlink" href="#module-datamodules.utils.twin_transforms" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="datamodules.utils.twin_transforms.ToTensorSlidingWindowCrop">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ToTensorSlidingWindowCrop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">crop_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/datamodules/utils/twin_transforms.html#ToTensorSlidingWindowCrop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.twin_transforms.ToTensorSlidingWindowCrop" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Crop the data and ground truth image at the specified coordinates to the specified size and convert
+them to a tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>crop_size</strong> (<em>int</em>) – Size of the crop.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datamodules.utils.twin_transforms.TwinCompose">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TwinCompose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transforms</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/datamodules/utils/twin_transforms.html#TwinCompose"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.twin_transforms.TwinCompose" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Composes several transforms together and applies it to both, the codex image and the ground truth.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>transforms</strong> – List of transforms to compose.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datamodules.utils.twin_transforms.TwinImageToTensor">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TwinImageToTensor</span></span><a class="reference internal" href="../_modules/datamodules/utils/twin_transforms.html#TwinImageToTensor"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.twin_transforms.TwinImageToTensor" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Convert a <code class="docutils literal notranslate"><span class="pre">PIL</span> <span class="pre">Image</span></code> or <code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code> to tensor.
+Converts a PIL Image or numpy.ndarray (W x H x C) in the range
+[0, 255] to a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>img</strong> (<em>PIL Image</em><em> or </em><em>numpy.ndarray</em>) – Image to be converted to tensor.</p></li>
+<li><p><strong>gt</strong> (<em>PIL Image</em><em> or </em><em>numpy.ndarray</em>) – Image to be converted to tensor.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Converted image.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[Tensor, Tensor]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datamodules.utils.twin_transforms.TwinRandomCrop">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">TwinRandomCrop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">crop_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/datamodules/utils/twin_transforms.html#TwinRandomCrop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.twin_transforms.TwinRandomCrop" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Crop the given PIL Images at the same random location</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>crop_size</strong> (<em>int</em>) – Desired output size of the crop.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="datamodules.utils.twin_transforms.TwinRandomCrop.get_params">
+<span class="sig-name descname"><span class="pre">get_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/datamodules/utils/twin_transforms.html#TwinRandomCrop.get_params"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.twin_transforms.TwinRandomCrop.get_params" title="Permalink to this definition"></a></dt>
+<dd><p>Get parameters for <code class="docutils literal notranslate"><span class="pre">crop</span></code> for a random crop</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>img_size</strong> (<em>Tuple</em><em>[</em><em>int</em><em>, </em><em>int</em><em>]</em>) – Image size (h, w)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>params (i, j, h, w) to be passed to <code class="docutils literal notranslate"><span class="pre">crop</span></code> for random crop.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[int, int, int, int]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-datamodules.utils.wrapper_transforms">
+<span id="datamodules-utils-wrapper-transforms-module"></span><h2>datamodules.utils.wrapper_transforms module<a class="headerlink" href="#module-datamodules.utils.wrapper_transforms" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="datamodules.utils.wrapper_transforms.OnlyImage">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">OnlyImage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/datamodules/utils/wrapper_transforms.html#OnlyImage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.wrapper_transforms.OnlyImage" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Wrapper function around a single parameter transform. It will be cast only on image</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>transform</strong> (<em>Callable</em>) – Transformation to apply to the codex image</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="datamodules.utils.wrapper_transforms.OnlyTarget">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">OnlyTarget</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">transform</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/datamodules/utils/wrapper_transforms.html#OnlyTarget"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.utils.wrapper_transforms.OnlyTarget" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Wrapper function around a single parameter transform. It will be cast only on target</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>transform</strong> (<em>Callable</em>) – Transformation to apply to the ground truth image</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-datamodules.utils">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-datamodules.utils" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="datamodules.RotNet.utils.html" class="btn btn-neutral float-left" title="datamodules.RotNet.utils package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="execute.html" class="btn btn-neutral float-right" title="execute module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lars Vögtlin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

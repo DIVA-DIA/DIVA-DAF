@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>datamodules.utils.misc &mdash; DIVA-DAF 0.2.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            DIVA-DAF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../example.html">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/modules.html">src</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">DIVA-DAF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">datamodules.utils.misc</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for datamodules.utils.misc</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Any</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">from</span> <span class="nn">omegaconf</span> <span class="kn">import</span> <span class="n">ListConfig</span>
+
+<span class="kn">from</span> <span class="nn">src.datamodules.utils.exceptions</span> <span class="kn">import</span> <span class="n">PathNone</span><span class="p">,</span> <span class="n">PathNotDir</span><span class="p">,</span> <span class="n">PathMissingSplitDir</span><span class="p">,</span> <span class="n">PathMissingDirinSplitDir</span>
+<span class="kn">from</span> <span class="nn">src.utils</span> <span class="kn">import</span> <span class="n">utils</span>
+
+<span class="n">log</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ImageDimensions"><a class="viewcode-back" href="../../../source/datamodules.utils.html#datamodules.utils.misc.ImageDimensions">[docs]</a><span class="nd">@dataclass</span>
+<span class="k">class</span> <span class="nc">ImageDimensions</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Dataclass to store the dimensions of an image</span>
+
+<span class="sd">    :param width: Width of the image</span>
+<span class="sd">    :type width: int</span>
+<span class="sd">    :param height: Height of the image</span>
+<span class="sd">    :type height: int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">width</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">height</span><span class="p">:</span> <span class="nb">int</span></div>
+
+
+<span class="k">def</span> <span class="nf">_get_argmax</span><span class="p">(</span><span class="n">output</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    takes the biggest value from a pixel across all classes</span>
+
+<span class="sd">    :param output: (Batch_size x num_classes x W x H)</span>
+<span class="sd">        matrix with the given attributes</span>
+<span class="sd">    :type output: torch.Tensor or np.ndarray</span>
+<span class="sd">    :param dim: dimension to take the argmax over</span>
+<span class="sd">    :type dim: int</span>
+<span class="sd">    :returns: (Batch_size x W x H)</span>
+<span class="sd">        matrix with the hisdb class number for each pixel</span>
+<span class="sd">    :type output: torch.Tensor or np.ndarray</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="n">dim</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span>
+
+
+<div class="viewcode-block" id="validate_path_for_segmentation"><a class="viewcode-back" href="../../../source/datamodules.utils.html#datamodules.utils.misc.validate_path_for_segmentation">[docs]</a><span class="k">def</span> <span class="nf">validate_path_for_segmentation</span><span class="p">(</span><span class="n">data_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">data_folder_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">gt_folder_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                   <span class="n">split_name</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Path</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Checks if the data_dir folder has the following structure::</span>
+
+<span class="sd">        data_dir</span>
+<span class="sd">            ├── train_folder_name</span>
+<span class="sd">            │   ├── data_folder_name</span>
+<span class="sd">            │   └── gt_folder_name</span>
+<span class="sd">            ├── val_folder_name</span>
+<span class="sd">            │   ├── data_folder_name</span>
+<span class="sd">            │   └── gt_folder_name</span>
+<span class="sd">            └── test_folder_name</span>
+<span class="sd">                ├── data_folder_name</span>
+<span class="sd">                └── gt_folder_name</span>
+
+<span class="sd">    :param data_dir: Path to the root dir of the dataset</span>
+<span class="sd">    :type data_dir: str</span>
+<span class="sd">    :param data_folder_name: Name of the data folder</span>
+<span class="sd">    :type data_folder_name: str</span>
+<span class="sd">    :param gt_folder_name: Name of the gt folder</span>
+<span class="sd">    :type gt_folder_name: str</span>
+<span class="sd">    :param split_name: Name of the split folder (train/val/test)</span>
+<span class="sd">    :type split_name: str</span>
+
+<span class="sd">    :returns: Path to the data_dir</span>
+<span class="sd">    :rtype: Path</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">data_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">PathNone</span><span class="p">(</span><span class="s2">&quot;Please provide the path to root dir of the dataset &quot;</span>
+                       <span class="s2">&quot;(folder containing the split(train/val/test) folders)&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">split_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">split_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">split_name</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">split_names</span> <span class="o">=</span> <span class="n">split_name</span>
+    <span class="n">type_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">data_folder_name</span><span class="p">,</span> <span class="n">gt_folder_name</span><span class="p">]</span>
+
+    <span class="n">data_folder</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">data_dir</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">data_folder</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="n">PathNotDir</span><span class="p">(</span><span class="s2">&quot;Please provide the path to root dir of the dataset &quot;</span>
+                         <span class="s2">&quot;(folder containing the split(train/val/test) folder)&quot;</span><span class="p">)</span>
+    <span class="n">split_folders</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">data_folder</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span> <span class="ow">and</span> <span class="n">d</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">split_names</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">split_folders</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">split_names</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">PathMissingSplitDir</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s1">&#39;Your path needs to contain the folder(s) &quot;</span><span class="si">{</span><span class="n">split_name</span><span class="si">}</span><span class="s1">&quot;&#39;</span>
+            <span class="sa">f</span><span class="s1">&#39;each of them a folder </span><span class="si">{</span><span class="n">data_folder_name</span><span class="si">}</span><span class="s1"> and </span><span class="si">{</span><span class="n">gt_folder_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="c1"># check if we have train/test/val</span>
+    <span class="k">for</span> <span class="n">split</span> <span class="ow">in</span> <span class="n">split_folders</span><span class="p">:</span>
+        <span class="n">type_folders</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">split</span><span class="o">.</span><span class="n">iterdir</span><span class="p">()</span> <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()</span> <span class="ow">and</span> <span class="n">d</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">type_names</span><span class="p">]</span>
+        <span class="c1"># check if we have data/gt</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">type_folders</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">PathMissingDirinSplitDir</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Folder </span><span class="si">{</span><span class="n">split</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s1"> does not contain a </span><span class="si">{</span><span class="n">data_folder_name</span><span class="si">}</span><span class="s1"> &#39;</span>
+                                           <span class="sa">f</span><span class="s1">&#39;and </span><span class="si">{</span><span class="n">gt_folder_name</span><span class="si">}</span><span class="s1"> folder&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Path</span><span class="p">(</span><span class="n">data_dir</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_output_file_list"><a class="viewcode-back" href="../../../source/datamodules.utils.html#datamodules.utils.misc.get_output_file_list">[docs]</a><span class="k">def</span> <span class="nf">get_output_file_list</span><span class="p">(</span><span class="n">image_path_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Path</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a list of output filenames from a list of image paths.</span>
+<span class="sd">    If there are duplicate filenames, the duplicates are renamed to be unique.</span>
+
+<span class="sd">    :param image_path_list: List of image paths</span>
+<span class="sd">    :type image_path_list: List[Path]</span>
+<span class="sd">    :returns: List of output filenames</span>
+<span class="sd">    :rtype: List[str]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">duplicate_filenames</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">output_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">image_path_list</span><span class="p">:</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">stem</span>
+        <span class="k">if</span> <span class="n">filename</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">output_list</span><span class="p">:</span>
+            <span class="n">output_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">duplicate_filenames</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+            <span class="n">new_filename</span> <span class="o">=</span> <span class="n">find_new_filename</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="n">filename</span><span class="p">,</span> <span class="n">current_list</span><span class="o">=</span><span class="n">output_list</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">new_filename</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_filename</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+            <span class="k">assert</span> <span class="n">new_filename</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">output_list</span>
+            <span class="n">output_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_filename</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">image_path_list</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">output_list</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">duplicate_filenames</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Duplicate filenames in output list. &#39;</span>
+                    <span class="sa">f</span><span class="s1">&#39;Output filenames have been changed to be unique. Duplicates:</span><span class="se">\n</span><span class="s1">&#39;</span>
+                    <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">duplicate_filenames</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">output_list</span></div>
+
+
+<div class="viewcode-block" id="find_new_filename"><a class="viewcode-back" href="../../../source/datamodules.utils.html#datamodules.utils.misc.find_new_filename">[docs]</a><span class="k">def</span> <span class="nf">find_new_filename</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">current_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Finds a new filename that is not in the current list.</span>
+<span class="sd">    If the filename is not in the list, it is returned.</span>
+<span class="sd">    If the filename is in the list, a number is appended to the filename until it is unique.</span>
+
+<span class="sd">    :param filename: Filename to check</span>
+<span class="sd">    :type filename: str</span>
+<span class="sd">    :param current_list: List of filenames to check against</span>
+<span class="sd">    :type current_list: List[str]</span>
+<span class="sd">    :returns: New filename that is not in the current list</span>
+<span class="sd">    :rtype: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">filename</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">current_list</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">filename</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">current_list</span><span class="p">)):</span>
+        <span class="n">new_filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="k">if</span> <span class="n">new_filename</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">current_list</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">new_filename</span>
+
+    <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;Unexpected error: Did not find new filename that is not a duplicate!&#39;</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">AssertionError</span></div>
+
+
+<div class="viewcode-block" id="selection_validation"><a class="viewcode-back" href="../../../source/datamodules.utils.html#datamodules.utils.misc.selection_validation">[docs]</a><span class="k">def</span> <span class="nf">selection_validation</span><span class="p">(</span><span class="n">files_in_data_root</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Path</span><span class="p">],</span> <span class="n">selection</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">ListConfig</span><span class="p">],</span>
+                         <span class="n">full_page</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">ListConfig</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Validates the selection parameter for the segmentation dataset.</span>
+<span class="sd">    If selection is an integer, it is checked if it is in the range of the number of files.</span>
+<span class="sd">    If selection is a list, it is checked if all elements are in the list of files.</span>
+<span class="sd">    If selection is None, it is returned.</span>
+
+<span class="sd">    :param files_in_data_root: List of files in the data root directory</span>
+<span class="sd">    :type files_in_data_root: List[Path]</span>
+<span class="sd">    :param selection: Selection parameter</span>
+<span class="sd">    :type selection: Union[int, List[str], ListConfig]</span>
+<span class="sd">    :param full_page: If True, the selection parameter is used to select a page.</span>
+<span class="sd">                        If False, the selection parameter is used to select a subdirectory.</span>
+<span class="sd">    :type full_page: bool</span>
+<span class="sd">    :returns: Validated selection parameter</span>
+<span class="sd">    :rtype: Union[int, List[str], ListConfig]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">full_page</span><span class="p">:</span>
+        <span class="n">subdirectories</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">files_in_data_root</span> <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">is_dir</span><span class="p">()]</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">selection</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">selection</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Parameter &quot;selection&quot; is a negative integer (</span><span class="si">{</span><span class="n">selection</span><span class="si">}</span><span class="s1">). &#39;</span> \
+                  <span class="sa">f</span><span class="s1">&#39;Negative values are not supported!&#39;</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">selection</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">selection</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">elif</span> <span class="p">(</span><span class="n">selection</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">files_in_data_root</span><span class="p">)</span> <span class="ow">and</span> <span class="n">full_page</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="ow">not</span> <span class="n">full_page</span> <span class="ow">and</span> <span class="n">selection</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">subdirectories</span><span class="p">)):</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Parameter &quot;selection&quot; is larger (</span><span class="si">{</span><span class="n">selection</span><span class="si">}</span><span class="s1">) than &#39;</span> \
+                  <span class="sa">f</span><span class="s1">&#39;number of files (</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">files_in_data_root</span><span class="p">)</span><span class="si">}</span><span class="s1">).&#39;</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">selection</span><span class="p">,</span> <span class="n">ListConfig</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">selection</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">full_page</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">x</span> <span class="ow">in</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">stem</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">files_in_data_root</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">selection</span><span class="p">):</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Parameter &quot;selection&quot; contains a non-existing file names.)&#39;</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">x</span> <span class="ow">in</span> <span class="n">subdirectories</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">selection</span><span class="p">):</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39;Parameter &quot;selection&quot; contains a non-existing subdirectory.)&#39;</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;Parameter &quot;selection&quot; exists, but it is of unsupported type (</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">selection</span><span class="p">)</span><span class="si">}</span><span class="s1">)&#39;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">selection</span></div>
+
+
+<div class="viewcode-block" id="get_image_dims"><a class="viewcode-back" href="../../../source/datamodules.utils.html#datamodules.utils.misc.get_image_dims">[docs]</a><span class="k">def</span> <span class="nf">get_image_dims</span><span class="p">(</span><span class="n">data_gt_path_list</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ImageDimensions</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the image dimensions of the first image in the list.</span>
+
+<span class="sd">    :param data_gt_path_list: List of image paths</span>
+<span class="sd">    :type data_gt_path_list: List[Path]</span>
+<span class="sd">    :returns: Image dimensions of the first image in the list</span>
+<span class="sd">    :rtype: ImageDimensions</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_gt_path_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">data_gt_path_list</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">data_gt_path_list</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">)</span>
+
+    <span class="n">image_dims</span> <span class="o">=</span> <span class="n">ImageDimensions</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="n">img</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">img</span><span class="o">.</span><span class="n">height</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">image_dims</span></div>
+
+
+<div class="viewcode-block" id="pil_loader_gif"><a class="viewcode-back" href="../../../source/datamodules.utils.html#datamodules.utils.misc.pil_loader_gif">[docs]</a><span class="k">def</span> <span class="nf">pil_loader_gif</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Image</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Loads a gif image using PIL.</span>
+
+<span class="sd">    :param path: Path to the image</span>
+<span class="sd">    :type path: Path</span>
+<span class="sd">    :returns: Image loaded in palette mode</span>
+<span class="sd">    :rtype: Image</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">gt_img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">gt_img</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">&#39;P&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="save_json"><a class="viewcode-back" href="../../../source/datamodules.utils.html#datamodules.utils.misc.save_json">[docs]</a><span class="k">def</span> <span class="nf">save_json</span><span class="p">(</span><span class="n">analytics</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">analytics_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Saves the analytics dict to a json file.</span>
+
+<span class="sd">    :param analytics: The analytics dict that should be saved</span>
+<span class="sd">    :type analytics: Dict</span>
+<span class="sd">    :param analytics_path: Path to the json file</span>
+<span class="sd">    :type analytics_path: Path</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">analytics_path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">obj</span><span class="o">=</span><span class="n">analytics</span><span class="p">,</span> <span class="n">fp</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;WARNING: No permissions to write analytics file (</span><span class="si">{</span><span class="n">analytics_path</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="check_missing_analytics"><a class="viewcode-back" href="../../../source/datamodules.utils.html#datamodules.utils.misc.check_missing_analytics">[docs]</a><span class="k">def</span> <span class="nf">check_missing_analytics</span><span class="p">(</span><span class="n">analytics_path_gt</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">expected_keys_gt</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span> <span class="nb">bool</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if the analytics file for the ground truth is missing and if it is complete. If its is present, it will be</span>
+<span class="sd">    loaded and the contained keys checked for completeness.</span>
+
+<span class="sd">    :param analytics_path_gt: Path where the analytics file should be</span>
+<span class="sd">    :type analytics_path_gt: Path</span>
+<span class="sd">    :param expected_keys_gt: List of expected keys in the analytics file</span>
+<span class="sd">    :type expected_keys_gt: List[str]</span>
+<span class="sd">    :return: Tuple of the loaded analytics and a boolean indicating if the analytics file is missing</span>
+<span class="sd">    :rtype: Tuple[Dict[str, Any], bool]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">missing_analytics</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">analytics</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">analytics_path_gt</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">with</span> <span class="n">analytics_path_gt</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">analytics</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
+        <span class="c1"># check if analytics file is complete</span>
+        <span class="k">if</span> <span class="nb">all</span><span class="p">(</span><span class="n">k</span> <span class="ow">in</span> <span class="n">analytics</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">expected_keys_gt</span><span class="p">):</span>
+            <span class="n">missing_analytics</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="n">analytics</span><span class="p">,</span> <span class="n">missing_analytics</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lars Vögtlin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

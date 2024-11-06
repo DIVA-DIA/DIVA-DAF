@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>models.backbones package &mdash; DIVA-DAF 0.2.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="models.headers package" href="models.headers.html" />
+    <link rel="prev" title="models package" href="models.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            DIVA-DAF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example.html">Example</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="callbacks.html">callbacks package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.html">datamodules package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="execute.html">execute module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="metrics.html">metrics package</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="models.html">models package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="models.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">models.backbones package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="models.headers.html">models.headers package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#module-models.backbone_header_model">models.backbone_header_model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="models.html#module-models">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html">tasks package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">utils package</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DIVA-DAF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">src</a></li>
+          <li class="breadcrumb-item"><a href="models.html">models package</a></li>
+      <li class="breadcrumb-item active">models.backbones package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/source/models.backbones.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="models-backbones-package">
+<h1>models.backbones package<a class="headerlink" href="#models-backbones-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-models.backbones.VGG">
+<span id="models-backbones-vgg-module"></span><h2>models.backbones.VGG module<a class="headerlink" href="#module-models.backbones.VGG" title="Permalink to this heading"></a></h2>
+<p>Model definition adapted from: <a class="reference external" href="https://github.com/pytorch/vision/blob/master/torchvision/models/vgg.py">https://github.com/pytorch/vision/blob/master/torchvision/models/vgg.py</a></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.VGG.VGG">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">VGG</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/VGG.html#VGG"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.VGG.VGG" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.VGG.VGG.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/VGG.html#VGG.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.VGG.VGG.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.VGG.VGG.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.VGG.VGG.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.VGG.make_layers">
+<span class="sig-name descname"><span class="pre">make_layers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_norm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/VGG.html#make_layers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.VGG.make_layers" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.VGG.vgg11">
+<span class="sig-name descname"><span class="pre">vgg11</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/VGG.html#vgg11"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.VGG.vgg11" title="Permalink to this definition"></a></dt>
+<dd><p>VGG 11-layer model (configuration “A”)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.VGG.vgg11_bn">
+<span class="sig-name descname"><span class="pre">vgg11_bn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/VGG.html#vgg11_bn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.VGG.vgg11_bn" title="Permalink to this definition"></a></dt>
+<dd><p>VGG 11-layer model (configuration “A”) with batch normalization</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.VGG.vgg13">
+<span class="sig-name descname"><span class="pre">vgg13</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/VGG.html#vgg13"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.VGG.vgg13" title="Permalink to this definition"></a></dt>
+<dd><p>VGG 13-layer model (configuration “B”)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.VGG.vgg13_bn">
+<span class="sig-name descname"><span class="pre">vgg13_bn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/VGG.html#vgg13_bn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.VGG.vgg13_bn" title="Permalink to this definition"></a></dt>
+<dd><p>VGG 13-layer model (configuration “B”) with batch normalization</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.VGG.vgg16">
+<span class="sig-name descname"><span class="pre">vgg16</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/VGG.html#vgg16"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.VGG.vgg16" title="Permalink to this definition"></a></dt>
+<dd><p>VGG 16-layer model (configuration “D”)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.VGG.vgg16_bn">
+<span class="sig-name descname"><span class="pre">vgg16_bn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/VGG.html#vgg16_bn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.VGG.vgg16_bn" title="Permalink to this definition"></a></dt>
+<dd><p>VGG 16-layer model (configuration “D”) with batch normalization</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.VGG.vgg19">
+<span class="sig-name descname"><span class="pre">vgg19</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/VGG.html#vgg19"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.VGG.vgg19" title="Permalink to this definition"></a></dt>
+<dd><p>VGG 19-layer model (configuration “E”)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.VGG.vgg19_bn">
+<span class="sig-name descname"><span class="pre">vgg19_bn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/VGG.html#vgg19_bn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.VGG.vgg19_bn" title="Permalink to this definition"></a></dt>
+<dd><p>VGG 19-layer model (configuration ‘E’) with batch normalization</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pretrained</strong> (<em>bool</em>) – If True, returns a model pre-trained on ImageNet</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-models.backbones.adaptive_unet">
+<span id="models-backbones-adaptive-unet-module"></span><h2>models.backbones.adaptive_unet module<a class="headerlink" href="#module-models.backbones.adaptive_unet" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.adaptive_unet.Adaptive_Unet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Adaptive_Unet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[32,</span> <span class="pre">64,</span> <span class="pre">128,</span> <span class="pre">256]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/adaptive_unet.html#Adaptive_Unet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.adaptive_unet.Adaptive_Unet" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.adaptive_unet.Adaptive_Unet.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/adaptive_unet.html#Adaptive_Unet.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.adaptive_unet.Adaptive_Unet.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.adaptive_unet.Adaptive_Unet.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.adaptive_unet.Adaptive_Unet.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.adaptive_unet.decoding_block">
+<span class="sig-name descname"><span class="pre">decoding_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_c</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/adaptive_unet.html#decoding_block"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.adaptive_unet.decoding_block" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.adaptive_unet.encoding_block">
+<span class="sig-name descname"><span class="pre">encoding_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_c</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/adaptive_unet.html#encoding_block"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.adaptive_unet.encoding_block" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.adaptive_unet.encoding_block1">
+<span class="sig-name descname"><span class="pre">encoding_block1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_c</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/adaptive_unet.html#encoding_block1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.adaptive_unet.encoding_block1" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-models.backbones.baby_cnn">
+<span id="models-backbones-baby-cnn-module"></span><h2>models.backbones.baby_cnn module<a class="headerlink" href="#module-models.backbones.baby_cnn" title="Permalink to this heading"></a></h2>
+<p>CNN with 3 conv layers and a fully connected classification layer</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.baby_cnn.CNN_basic">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CNN_basic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/baby_cnn.html#CNN_basic"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.baby_cnn.CNN_basic" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Simple feed forward convolutional neural network</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.baby_cnn.CNN_basic.expected_input_size">
+<span class="sig-name descname"><span class="pre">expected_input_size</span></span><a class="headerlink" href="#models.backbones.baby_cnn.CNN_basic.expected_input_size" title="Permalink to this definition"></a></dt>
+<dd><p>Expected input size (width, height)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple(int,int)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.baby_cnn.CNN_basic.conv1">
+<span class="sig-name descname"><span class="pre">conv1</span></span><a class="headerlink" href="#models.backbones.baby_cnn.CNN_basic.conv1" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.nn.Sequential</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.baby_cnn.CNN_basic.conv2">
+<span class="sig-name descname"><span class="pre">conv2</span></span><a class="headerlink" href="#models.backbones.baby_cnn.CNN_basic.conv2" title="Permalink to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.nn.Sequential</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.baby_cnn.CNN_basic.conv3">
+<span class="sig-name descname"><span class="pre">conv3</span></span><a class="headerlink" href="#models.backbones.baby_cnn.CNN_basic.conv3" title="Permalink to this definition"></a></dt>
+<dd><p>Convolutional layers of the network</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.nn.Sequential</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.baby_cnn.CNN_basic.fc">
+<span class="sig-name descname"><span class="pre">fc</span></span><a class="headerlink" href="#models.backbones.baby_cnn.CNN_basic.fc" title="Permalink to this definition"></a></dt>
+<dd><p>Final classification fully connected layer</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>torch.nn.Linear</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.baby_cnn.CNN_basic.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/baby_cnn.html#CNN_basic.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.baby_cnn.CNN_basic.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Computes forward pass on the network</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>Variable</em>) – Sample to run forward pass on. (input to the model)</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Activations of the fully connected layer</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Variable</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.baby_cnn.CNN_basic.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.baby_cnn.CNN_basic.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-models.backbones.backboned_unet">
+<span id="models-backbones-backboned-unet-module"></span><h2>models.backbones.backboned_unet module<a class="headerlink" href="#module-models.backbones.backboned_unet" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.backboned_unet.Unet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Unet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backbone_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'resnet50'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoder_freeze</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">21</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder_filters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(256,</span> <span class="pre">128,</span> <span class="pre">64,</span> <span class="pre">32,</span> <span class="pre">16)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parametric_upsampling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shortcut_features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decoder_use_batchnorm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/backboned_unet.html#Unet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.backboned_unet.Unet" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>U-Net (<a class="reference external" href="https://arxiv.org/pdf/1505.04597.pdf">https://arxiv.org/pdf/1505.04597.pdf</a>) implementation with pre-trained torchvision backbones.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.backboned_unet.Unet.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">input</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/backboned_unet.html#Unet.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.backboned_unet.Unet.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Forward propagation in U-Net.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.backboned_unet.Unet.forward_backbone">
+<span class="sig-name descname"><span class="pre">forward_backbone</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/backboned_unet.html#Unet.forward_backbone"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.backboned_unet.Unet.forward_backbone" title="Permalink to this definition"></a></dt>
+<dd><p>Forward propagation in backbone encoder network.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.backboned_unet.Unet.freeze_encoder">
+<span class="sig-name descname"><span class="pre">freeze_encoder</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/backboned_unet.html#Unet.freeze_encoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.backboned_unet.Unet.freeze_encoder" title="Permalink to this definition"></a></dt>
+<dd><p>Freezing encoder parameters, the newly initialized decoder parameters are remaining trainable.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.backboned_unet.Unet.infer_skip_channels">
+<span class="sig-name descname"><span class="pre">infer_skip_channels</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/backboned_unet.html#Unet.infer_skip_channels"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.backboned_unet.Unet.infer_skip_channels" title="Permalink to this definition"></a></dt>
+<dd><p>Getting the number of channels at skip connections and at the output of the encoder.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.backboned_unet.Unet.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.backboned_unet.Unet.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.backboned_unet.UnetDownModule">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UnetDownModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">downsample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/backboned_unet.html#UnetDownModule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.backboned_unet.UnetDownModule" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>U-Net downsampling block.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.backboned_unet.UnetDownModule.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/backboned_unet.html#UnetDownModule.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.backboned_unet.UnetDownModule.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.backboned_unet.UnetDownModule.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.backboned_unet.UnetDownModule.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.backboned_unet.UnetEncoder">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UnetEncoder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_channels</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/backboned_unet.html#UnetEncoder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.backboned_unet.UnetEncoder" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>U-Net encoder. <a class="reference external" href="https://arxiv.org/pdf/1505.04597.pdf">https://arxiv.org/pdf/1505.04597.pdf</a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.backboned_unet.UnetEncoder.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/backboned_unet.html#UnetEncoder.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.backboned_unet.UnetEncoder.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.backboned_unet.UnetEncoder.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.backboned_unet.UnetEncoder.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.backboned_unet.UpsampleBlock">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UpsampleBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_in</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_bn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parametric</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/backboned_unet.html#UpsampleBlock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.backboned_unet.UpsampleBlock" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.backboned_unet.UpsampleBlock.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_connection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/backboned_unet.html#UpsampleBlock.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.backboned_unet.UpsampleBlock.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.backboned_unet.UpsampleBlock.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.backboned_unet.UpsampleBlock.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.backboned_unet.get_backbone">
+<span class="sig-name descname"><span class="pre">get_backbone</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/backboned_unet.html#get_backbone"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.backboned_unet.get_backbone" title="Permalink to this definition"></a></dt>
+<dd><p>Loading backbone, defining names for skip-connections and encoder output.</p>
+</dd></dl>
+
+</section>
+<section id="module-models.backbones.deeplabv3">
+<span id="models-backbones-deeplabv3-module"></span><h2>models.backbones.deeplabv3 module<a class="headerlink" href="#module-models.backbones.deeplabv3" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3.DeepLabV3">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DeepLabV3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretrained</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3.html#DeepLabV3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3.DeepLabV3" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3.DeepLabV3.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3.html#DeepLabV3.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3.DeepLabV3.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3.DeepLabV3.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.deeplabv3.DeepLabV3.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3.deeplabv3">
+<span class="sig-name descname"><span class="pre">deeplabv3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3.html#deeplabv3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3.deeplabv3" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3.deeplabv3_builder">
+<span class="sig-name descname"><span class="pre">deeplabv3_builder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resume</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cityscapes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3.html#deeplabv3_builder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3.deeplabv3_builder" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3.deeplabv3_resnet101_os16">
+<span class="sig-name descname"><span class="pre">deeplabv3_resnet101_os16</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3.html#deeplabv3_resnet101_os16"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3.deeplabv3_resnet101_os16" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3.deeplabv3_resnet152_os16">
+<span class="sig-name descname"><span class="pre">deeplabv3_resnet152_os16</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3.html#deeplabv3_resnet152_os16"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3.deeplabv3_resnet152_os16" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3.deeplabv3_resnet18_os16">
+<span class="sig-name descname"><span class="pre">deeplabv3_resnet18_os16</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3.html#deeplabv3_resnet18_os16"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3.deeplabv3_resnet18_os16" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3.deeplabv3_resnet18_os8">
+<span class="sig-name descname"><span class="pre">deeplabv3_resnet18_os8</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3.html#deeplabv3_resnet18_os8"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3.deeplabv3_resnet18_os8" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3.deeplabv3_resnet34_os16">
+<span class="sig-name descname"><span class="pre">deeplabv3_resnet34_os16</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3.html#deeplabv3_resnet34_os16"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3.deeplabv3_resnet34_os16" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3.deeplabv3_resnet34_os8">
+<span class="sig-name descname"><span class="pre">deeplabv3_resnet34_os8</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3.html#deeplabv3_resnet34_os8"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3.deeplabv3_resnet34_os8" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3.deeplabv3_resnet50_os16">
+<span class="sig-name descname"><span class="pre">deeplabv3_resnet50_os16</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3.html#deeplabv3_resnet50_os16"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3.deeplabv3_resnet50_os16" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3.get_cityscapes_model_path">
+<span class="sig-name descname"><span class="pre">get_cityscapes_model_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3.html#get_cityscapes_model_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3.get_cityscapes_model_path" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-models.backbones.deeplabv3_aspp">
+<span id="models-backbones-deeplabv3-aspp-module"></span><h2>models.backbones.deeplabv3_aspp module<a class="headerlink" href="#module-models.backbones.deeplabv3_aspp" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_aspp.ASPP">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ASPP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3_aspp.html#ASPP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3_aspp.ASPP" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_aspp.ASPP.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature_map</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3_aspp.html#ASPP.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3_aspp.ASPP.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_aspp.ASPP.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.deeplabv3_aspp.ASPP.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_aspp.ASPP_Bottleneck">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ASPP_Bottleneck</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3_aspp.html#ASPP_Bottleneck"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3_aspp.ASPP_Bottleneck" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_aspp.ASPP_Bottleneck.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature_map</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3_aspp.html#ASPP_Bottleneck.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3_aspp.ASPP_Bottleneck.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_aspp.ASPP_Bottleneck.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.deeplabv3_aspp.ASPP_Bottleneck.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-models.backbones.deeplabv3_resnet">
+<span id="models-backbones-deeplabv3-resnet-module"></span><h2>models.backbones.deeplabv3_resnet module<a class="headerlink" href="#module-models.backbones.deeplabv3_resnet" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_resnet.BasicBlock">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">BasicBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dilation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3_resnet.html#BasicBlock"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3_resnet.BasicBlock" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_resnet.BasicBlock.expansion">
+<span class="sig-name descname"><span class="pre">expansion</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#models.backbones.deeplabv3_resnet.BasicBlock.expansion" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_resnet.BasicBlock.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3_resnet.html#BasicBlock.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3_resnet.BasicBlock.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_resnet.BasicBlock.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.deeplabv3_resnet.BasicBlock.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_resnet.Bottleneck">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Bottleneck</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dilation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3_resnet.html#Bottleneck"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3_resnet.Bottleneck" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_resnet.Bottleneck.expansion">
+<span class="sig-name descname"><span class="pre">expansion</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#models.backbones.deeplabv3_resnet.Bottleneck.expansion" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_resnet.Bottleneck.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3_resnet.html#Bottleneck.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3_resnet.Bottleneck.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_resnet.Bottleneck.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.deeplabv3_resnet.Bottleneck.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_resnet.ResNet101_OS16">
+<span class="sig-name descname"><span class="pre">ResNet101_OS16</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3_resnet.html#ResNet101_OS16"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3_resnet.ResNet101_OS16" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_resnet.ResNet152_OS16">
+<span class="sig-name descname"><span class="pre">ResNet152_OS16</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3_resnet.html#ResNet152_OS16"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3_resnet.ResNet152_OS16" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_resnet.ResNet18_OS16">
+<span class="sig-name descname"><span class="pre">ResNet18_OS16</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3_resnet.html#ResNet18_OS16"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3_resnet.ResNet18_OS16" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_resnet.ResNet18_OS8">
+<span class="sig-name descname"><span class="pre">ResNet18_OS8</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3_resnet.html#ResNet18_OS8"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3_resnet.ResNet18_OS8" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_resnet.ResNet34_OS16">
+<span class="sig-name descname"><span class="pre">ResNet34_OS16</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3_resnet.html#ResNet34_OS16"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3_resnet.ResNet34_OS16" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_resnet.ResNet34_OS8">
+<span class="sig-name descname"><span class="pre">ResNet34_OS8</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3_resnet.html#ResNet34_OS8"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3_resnet.ResNet34_OS8" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_resnet.ResNet50_OS16">
+<span class="sig-name descname"><span class="pre">ResNet50_OS16</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3_resnet.html#ResNet50_OS16"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3_resnet.ResNet50_OS16" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_resnet.ResNet_BasicBlock_OS16">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ResNet_BasicBlock_OS16</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_layers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3_resnet.html#ResNet_BasicBlock_OS16"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3_resnet.ResNet_BasicBlock_OS16" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_resnet.ResNet_BasicBlock_OS16.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3_resnet.html#ResNet_BasicBlock_OS16.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3_resnet.ResNet_BasicBlock_OS16.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_resnet.ResNet_BasicBlock_OS16.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.deeplabv3_resnet.ResNet_BasicBlock_OS16.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_resnet.ResNet_BasicBlock_OS8">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ResNet_BasicBlock_OS8</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_layers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3_resnet.html#ResNet_BasicBlock_OS8"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3_resnet.ResNet_BasicBlock_OS8" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_resnet.ResNet_BasicBlock_OS8.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3_resnet.html#ResNet_BasicBlock_OS8.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3_resnet.ResNet_BasicBlock_OS8.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_resnet.ResNet_BasicBlock_OS8.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.deeplabv3_resnet.ResNet_BasicBlock_OS8.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_resnet.ResNet_Bottleneck_OS16">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ResNet_Bottleneck_OS16</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_layers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3_resnet.html#ResNet_Bottleneck_OS16"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3_resnet.ResNet_Bottleneck_OS16" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_resnet.ResNet_Bottleneck_OS16.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3_resnet.html#ResNet_Bottleneck_OS16.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3_resnet.ResNet_Bottleneck_OS16.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_resnet.ResNet_Bottleneck_OS16.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.deeplabv3_resnet.ResNet_Bottleneck_OS16.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.deeplabv3_resnet.make_layer">
+<span class="sig-name descname"><span class="pre">make_layer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">in_channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channels</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_blocks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dilation</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/deeplabv3_resnet.html#make_layer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.deeplabv3_resnet.make_layer" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-models.backbones.doc_ufcn">
+<span id="models-backbones-doc-ufcn-module"></span><h2>models.backbones.doc_ufcn module<a class="headerlink" href="#module-models.backbones.doc_ufcn" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.doc_ufcn.Doc_ufcn">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Doc_ufcn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">out_channels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[32,</span> <span class="pre">64,</span> <span class="pre">128,</span> <span class="pre">256]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/doc_ufcn.html#Doc_ufcn"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.doc_ufcn.Doc_ufcn" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.doc_ufcn.Doc_ufcn.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/doc_ufcn.html#Doc_ufcn.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.doc_ufcn.Doc_ufcn.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.doc_ufcn.Doc_ufcn.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.doc_ufcn.Doc_ufcn.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.doc_ufcn.decoding_block">
+<span class="sig-name descname"><span class="pre">decoding_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_c</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/doc_ufcn.html#decoding_block"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.doc_ufcn.decoding_block" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.doc_ufcn.dil_block">
+<span class="sig-name descname"><span class="pre">dil_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_c</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/doc_ufcn.html#dil_block"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.doc_ufcn.dil_block" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.doc_ufcn.encoding_block">
+<span class="sig-name descname"><span class="pre">encoding_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_c</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/doc_ufcn.html#encoding_block"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.doc_ufcn.encoding_block" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-models.backbones.resnet">
+<span id="models-backbones-resnet-module"></span><h2>models.backbones.resnet module<a class="headerlink" href="#module-models.backbones.resnet" title="Permalink to this heading"></a></h2>
+<p>Model definition adapted from: <a class="reference external" href="https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py">https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py</a></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.resnet.ResNet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ResNet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">BasicBlock</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Bottleneck</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replace_stride_with_dilation</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/resnet.html#ResNet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.resnet.ResNet" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.resnet.ResNet.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/resnet.html#ResNet.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.resnet.ResNet.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.resnet.ResNet.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.resnet.ResNet.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.resnet.ResNet101">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ResNet101</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/resnet.html#ResNet101"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.resnet.ResNet101" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#models.backbones.resnet.ResNet" title="models.backbones.resnet.ResNet"><code class="xref py py-class docutils literal notranslate"><span class="pre">ResNet</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.resnet.ResNet101.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.resnet.ResNet101.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.resnet.ResNet152">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ResNet152</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/resnet.html#ResNet152"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.resnet.ResNet152" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#models.backbones.resnet.ResNet" title="models.backbones.resnet.ResNet"><code class="xref py py-class docutils literal notranslate"><span class="pre">ResNet</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.resnet.ResNet152.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.resnet.ResNet152.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.resnet.ResNet18">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ResNet18</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/resnet.html#ResNet18"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.resnet.ResNet18" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#models.backbones.resnet.ResNet" title="models.backbones.resnet.ResNet"><code class="xref py py-class docutils literal notranslate"><span class="pre">ResNet</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.resnet.ResNet18.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.resnet.ResNet18.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.resnet.ResNet34">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ResNet34</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/resnet.html#ResNet34"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.resnet.ResNet34" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#models.backbones.resnet.ResNet" title="models.backbones.resnet.ResNet"><code class="xref py py-class docutils literal notranslate"><span class="pre">ResNet</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.resnet.ResNet34.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.resnet.ResNet34.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.resnet.ResNet50">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ResNet50</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/resnet.html#ResNet50"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.resnet.ResNet50" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#models.backbones.resnet.ResNet" title="models.backbones.resnet.ResNet"><code class="xref py py-class docutils literal notranslate"><span class="pre">ResNet</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.resnet.ResNet50.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.resnet.ResNet50.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.resnet.conv3x3">
+<span class="sig-name descname"><span class="pre">conv3x3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_planes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_planes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/resnet.html#conv3x3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.resnet.conv3x3" title="Permalink to this definition"></a></dt>
+<dd><p>3x3 convolution with padding</p>
+</dd></dl>
+
+</section>
+<section id="module-models.backbones.resnetdd">
+<span id="models-backbones-resnetdd-module"></span><h2>models.backbones.resnetdd module<a class="headerlink" href="#module-models.backbones.resnetdd" title="Permalink to this heading"></a></h2>
+<p>Model definition adapted from: <a class="reference external" href="https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py">https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py</a></p>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.resnetdd.ResNet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ResNet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layers</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ablate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/resnetdd.html#ResNet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.resnetdd.ResNet" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.resnetdd.ResNet.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/resnetdd.html#ResNet.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.resnetdd.ResNet.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.resnetdd.ResNet.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.resnetdd.ResNet.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.resnetdd.conv3x3">
+<span class="sig-name descname"><span class="pre">conv3x3</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_planes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_planes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stride</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/resnetdd.html#conv3x3"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.resnetdd.conv3x3" title="Permalink to this definition"></a></dt>
+<dd><p>3x3 convolution with padding</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.resnetdd.resnet101">
+<span class="sig-name descname"><span class="pre">resnet101</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/resnetdd.html#resnet101"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.resnetdd.resnet101" title="Permalink to this definition"></a></dt>
+<dd><p>Constructs a _ResNet-101 model.
+:param pretrained: If True, returns a model pre-trained on ImageNet
+:type pretrained: bool</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.resnetdd.resnet152">
+<span class="sig-name descname"><span class="pre">resnet152</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/resnetdd.html#resnet152"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.resnetdd.resnet152" title="Permalink to this definition"></a></dt>
+<dd><p>Constructs a _ResNet-152 model.
+:param pretrained: If True, returns a model pre-trained on ImageNet
+:type pretrained: bool</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.resnetdd.resnet18">
+<span class="sig-name descname"><span class="pre">resnet18</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/resnetdd.html#resnet18"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.resnetdd.resnet18" title="Permalink to this definition"></a></dt>
+<dd><p>Constructs a _ResNet-18 model.
+:param pretrained: If True, returns a model pre-trained on ImageNet
+:type pretrained: bool</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.resnetdd.resnet34">
+<span class="sig-name descname"><span class="pre">resnet34</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/resnetdd.html#resnet34"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.resnetdd.resnet34" title="Permalink to this definition"></a></dt>
+<dd><p>Constructs a _ResNet-34 model.
+:param pretrained: If True, returns a model pre-trained on ImageNet
+:type pretrained: bool</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.resnetdd.resnet50">
+<span class="sig-name descname"><span class="pre">resnet50</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/resnetdd.html#resnet50"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.resnetdd.resnet50" title="Permalink to this definition"></a></dt>
+<dd><p>Constructs a _ResNet-50 model.
+:param pretrained: If True, returns a model pre-trained on ImageNet
+:type pretrained: bool</p>
+</dd></dl>
+
+</section>
+<section id="module-models.backbones.segnet">
+<span id="models-backbones-segnet-module"></span><h2>models.backbones.segnet module<a class="headerlink" href="#module-models.backbones.segnet" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.segnet.SegNet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SegNet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pretrained</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/segnet.html#SegNet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.segnet.SegNet" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.segnet.SegNet.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/segnet.html#SegNet.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.segnet.SegNet.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.segnet.SegNet.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.segnet.SegNet.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.segnet.initialize_weights">
+<span class="sig-name descname"><span class="pre">initialize_weights</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">models</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/segnet.html#initialize_weights"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.segnet.initialize_weights" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-models.backbones.unet">
+<span id="models-backbones-unet-module"></span><h2>models.backbones.unet module<a class="headerlink" href="#module-models.backbones.unet" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.unet.Baby_UNet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Baby_UNet</span></span><a class="reference internal" href="../_modules/models/backbones/unet.html#Baby_UNet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.unet.Baby_UNet" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#models.backbones.unet.UNet" title="models.backbones.unet.UNet"><code class="xref py py-class docutils literal notranslate"><span class="pre">UNet</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.unet.Baby_UNet.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.unet.Baby_UNet.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.unet.DoubleConv">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DoubleConv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_ch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_ch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/unet.html#DoubleConv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.unet.DoubleConv" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>[ Conv2d =&gt; BatchNorm (optional) =&gt; ReLU ] x 2.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.unet.DoubleConv.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/unet.html#DoubleConv.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.unet.DoubleConv.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.unet.DoubleConv.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.unet.DoubleConv.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.unet.Down">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Down</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_ch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_ch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/unet.html#Down"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.unet.Down" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Downscale with MaxPool =&gt; DoubleConvolution block.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.unet.Down.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/unet.html#Down.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.unet.Down.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.unet.Down.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.unet.Down.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.unet.OldUNet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">OldUNet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_layers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bilinear</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/unet.html#OldUNet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.unet.OldUNet" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Paper: <a class="reference external" href="https://arxiv.org/abs/1505.04597">U-Net: Convolutional Networks for Biomedical Image Segmentation</a>
+Paper authors: Olaf Ronneberger, Philipp Fischer, Thomas Brox
+Implemented by:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference external" href="https://github.com/annikabrundyn">Annika Brundyn</a></p></li>
+<li><p><a class="reference external" href="https://github.com/akshaykvnit">Akshay Kulkarni</a></p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_classes</strong> – Number of output classes required</p></li>
+<li><p><strong>input_channels</strong> – Number of channels in input images (default 3)</p></li>
+<li><p><strong>num_layers</strong> – Number of layers in each side of U-net (default 5)</p></li>
+<li><p><strong>features_start</strong> – Number of features in first layer (default 64)</p></li>
+<li><p><strong>bilinear</strong> – Whether to use bilinear interpolation or transposed convolutions (default) for upsampling.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.unet.OldUNet.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/unet.html#OldUNet.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.unet.OldUNet.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.unet.OldUNet.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.unet.OldUNet.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.unet.UNet">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UNet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_layers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features_start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bilinear</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/unet.html#UNet"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.unet.UNet" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Paper: <a class="reference external" href="https://arxiv.org/abs/1505.04597">U-Net: Convolutional Networks for Biomedical Image Segmentation</a></p>
+<p>Paper authors: Olaf Ronneberger, Philipp Fischer, Thomas Brox</p>
+<p>Implemented by:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference external" href="https://github.com/annikabrundyn">Annika Brundyn</a></p></li>
+<li><p><a class="reference external" href="https://github.com/akshaykvnit">Akshay Kulkarni</a></p></li>
+</ul>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_classes</strong> – Number of output classes required</p></li>
+<li><p><strong>input_channels</strong> – Number of channels in input images (default 3)</p></li>
+<li><p><strong>num_layers</strong> – Number of layers in each side of U-net (default 5)</p></li>
+<li><p><strong>features_start</strong> – Number of features in first layer (default 64)</p></li>
+<li><p><strong>bilinear</strong> – Whether to use bilinear interpolation or transposed convolutions (default) for upsampling.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.unet.UNet.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/unet.html#UNet.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.unet.UNet.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.unet.UNet.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.unet.UNet.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.unet.UNet16">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UNet16</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/unet.html#UNet16"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.unet.UNet16" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#models.backbones.unet.UNetNajoua" title="models.backbones.unet.UNetNajoua"><code class="xref py py-class docutils literal notranslate"><span class="pre">UNetNajoua</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.unet.UNet16.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.unet.UNet16.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.unet.UNet32">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UNet32</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/unet.html#UNet32"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.unet.UNet32" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#models.backbones.unet.UNetNajoua" title="models.backbones.unet.UNetNajoua"><code class="xref py py-class docutils literal notranslate"><span class="pre">UNetNajoua</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.unet.UNet32.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.unet.UNet32.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.unet.UNet64">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UNet64</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/unet.html#UNet64"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.unet.UNet64" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#models.backbones.unet.UNetNajoua" title="models.backbones.unet.UNetNajoua"><code class="xref py py-class docutils literal notranslate"><span class="pre">UNetNajoua</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.unet.UNet64.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.unet.UNet64.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.unet.UNetNajoua">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UNetNajoua</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_classes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[16,</span> <span class="pre">32]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/unet.html#UNetNajoua"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.unet.UNetNajoua" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.unet.UNetNajoua.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/unet.html#UNetNajoua.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.unet.UNetNajoua.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.unet.UNetNajoua.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.unet.UNetNajoua.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="models.backbones.unet.Up">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Up</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_ch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_ch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bilinear</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/unet.html#Up"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.unet.Up" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code></p>
+<p>Upsampling (by either bilinear interpolation or transpose convolutions) followed by concatenation of feature
+map from contracting path, followed by DoubleConv.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="models.backbones.unet.Up.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/unet.html#Up.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.unet.Up.forward" title="Permalink to this definition"></a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="models.backbones.unet.Up.training">
+<span class="sig-name descname"><span class="pre">training</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">bool</span></em><a class="headerlink" href="#models.backbones.unet.Up.training" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.unet.encoding_block">
+<span class="sig-name descname"><span class="pre">encoding_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_c</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/unet.html#encoding_block"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.unet.encoding_block" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.unet.one_conv1">
+<span class="sig-name descname"><span class="pre">one_conv1</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_c</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/unet.html#one_conv1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.unet.one_conv1" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="models.backbones.unet.one_conv2">
+<span class="sig-name descname"><span class="pre">one_conv2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">in_c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_c</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/models/backbones/unet.html#one_conv2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#models.backbones.unet.one_conv2" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-models.backbones">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-models.backbones" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="models.html" class="btn btn-neutral float-left" title="models package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="models.headers.html" class="btn btn-neutral float-right" title="models.headers package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lars Vögtlin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

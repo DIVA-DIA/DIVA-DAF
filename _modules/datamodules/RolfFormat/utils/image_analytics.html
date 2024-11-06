@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>datamodules.RolfFormat.utils.image_analytics &mdash; DIVA-DAF 0.2.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            DIVA-DAF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../example.html">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../source/modules.html">src</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">DIVA-DAF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">datamodules.RolfFormat.utils.image_analytics</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for datamodules.RolfFormat.utils.image_analytics</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Utils</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Any</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="c1"># Torch related stuff</span>
+
+<span class="kn">from</span> <span class="nn">src.datamodules.RGB.utils.image_analytics</span> <span class="kn">import</span> <span class="n">_get_class_frequencies_weights_segmentation</span>
+<span class="kn">from</span> <span class="nn">src.datamodules.utils.image_analytics</span> <span class="kn">import</span> <span class="n">compute_mean_std</span>
+
+
+<div class="viewcode-block" id="get_analytics_data"><a class="viewcode-back" href="../../../../source/datamodules.RolfFormat.utils.html#datamodules.RolfFormat.utils.image_analytics.get_analytics_data">[docs]</a><span class="k">def</span> <span class="nf">get_analytics_data</span><span class="p">(</span><span class="n">img_gt_path_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="n">Path</span><span class="p">]],</span> <span class="n">inmem</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">workers</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">8</span><span class="p">)</span>\
+        <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes mean and std of the dataset</span>
+
+<span class="sd">    :param img_gt_path_list: Images and their corresponding ground truth paths to be used for computing mean and std</span>
+<span class="sd">    :type img_gt_path_list: List[Tuple[Path, Path]]</span>
+<span class="sd">    :param inmem: Whether to load the images in memory or not</span>
+<span class="sd">    :type inmem: bool</span>
+<span class="sd">    :param workers: Number of workers to use for loading and calculating mean and std</span>
+<span class="sd">    :type workers: int</span>
+<span class="sd">    :return: Dictionary containing mean and std</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">file_names_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">img_gt_path_list</span><span class="p">])</span>
+
+    <span class="n">mean</span><span class="p">,</span> <span class="n">std</span> <span class="o">=</span> <span class="n">compute_mean_std</span><span class="p">(</span><span class="n">file_names</span><span class="o">=</span><span class="n">file_names_data</span><span class="p">,</span> <span class="n">inmem</span><span class="o">=</span><span class="n">inmem</span><span class="p">,</span> <span class="n">workers</span><span class="o">=</span><span class="n">workers</span><span class="p">)</span>
+    <span class="n">analytics_data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;mean&#39;</span><span class="p">:</span> <span class="n">mean</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+                      <span class="s1">&#39;std&#39;</span><span class="p">:</span> <span class="n">std</span><span class="o">.</span><span class="n">tolist</span><span class="p">()}</span>
+
+    <span class="k">return</span> <span class="n">analytics_data</span></div>
+
+
+<div class="viewcode-block" id="get_analytics_gt"><a class="viewcode-back" href="../../../../source/datamodules.RolfFormat.utils.html#datamodules.RolfFormat.utils.image_analytics.get_analytics_gt">[docs]</a><span class="k">def</span> <span class="nf">get_analytics_gt</span><span class="p">(</span><span class="n">img_gt_path_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="n">Path</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes class weights and encodings of the dataset based on the ground truth</span>
+
+<span class="sd">    :param img_gt_path_list: Images and their corresponding ground truth paths to be used for computing class weights</span>
+<span class="sd">    :type img_gt_path_list: List[Tuple[Path, Path]]</span>
+<span class="sd">    :return: Dictionary containing class weights and encodings</span>
+<span class="sd">    :rtype: Dict[str, float]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">file_names_gt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">img_gt_path_list</span><span class="p">])</span>
+
+    <span class="c1"># Measure weights for class balancing</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Measuring class weights&#39;</span><span class="p">)</span>
+    <span class="c1"># create a list with all gt file paths</span>
+    <span class="n">class_weights</span><span class="p">,</span> <span class="n">class_encodings</span> <span class="o">=</span> <span class="n">_get_class_frequencies_weights_segmentation</span><span class="p">(</span><span class="n">gt_images</span><span class="o">=</span><span class="n">file_names_gt</span><span class="p">)</span>
+    <span class="n">analytics_gt</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;class_weights&#39;</span><span class="p">:</span> <span class="n">class_weights</span><span class="p">,</span>
+                    <span class="s1">&#39;class_encodings&#39;</span><span class="p">:</span> <span class="n">class_encodings</span><span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">analytics_gt</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lars Vögtlin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

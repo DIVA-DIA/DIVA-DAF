@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>datamodules package &mdash; DIVA-DAF 0.2.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="datamodules.Classification package" href="datamodules.Classification.html" />
+    <link rel="prev" title="callbacks package" href="callbacks.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            DIVA-DAF
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../example.html">Example</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">src</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="callbacks.html">callbacks package</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">datamodules package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.Classification.html">datamodules.Classification package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.DivaHisDB.html">datamodules.DivaHisDB package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.IndexedFormats.html">datamodules.IndexedFormats package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RGB.html">datamodules.RGB package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RolfFormat.html">datamodules.RolfFormat package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RotNet.html">datamodules.RotNet package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.utils.html">datamodules.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-datamodules.base_datamodule">datamodules.base_datamodule module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-datamodules">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="execute.html">execute module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="metrics.html">metrics package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="models.html">models package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tasks.html">tasks package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">utils package</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DIVA-DAF</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">src</a></li>
+      <li class="breadcrumb-item active">datamodules package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/source/datamodules.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="datamodules-package">
+<h1>datamodules package<a class="headerlink" href="#datamodules-package" title="Permalink to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="datamodules.Classification.html">datamodules.Classification package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.Classification.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="datamodules.Classification.utils.html">datamodules.Classification.utils package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.Classification.utils.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.Classification.utils.html#module-datamodules.Classification.utils.image_analytics">datamodules.Classification.utils.image_analytics module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.Classification.utils.html#module-datamodules.Classification.utils.misc">datamodules.Classification.utils.misc module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.Classification.utils.html#module-datamodules.Classification.utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.Classification.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.Classification.html#module-datamodules.Classification.datamodule">datamodules.Classification.datamodule module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.Classification.html#module-datamodules.Classification">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="datamodules.DivaHisDB.html">datamodules.DivaHisDB package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.DivaHisDB.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="datamodules.DivaHisDB.datasets.html">datamodules.DivaHisDB.datasets package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.DivaHisDB.datasets.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.DivaHisDB.datasets.html#module-datamodules.DivaHisDB.datasets.cropped_dataset">datamodules.DivaHisDB.datasets.cropped_dataset module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.DivaHisDB.datasets.html#module-datamodules.DivaHisDB.datasets">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="datamodules.DivaHisDB.utils.html">datamodules.DivaHisDB.utils package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.DivaHisDB.utils.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.DivaHisDB.utils.html#module-datamodules.DivaHisDB.utils.functional">datamodules.DivaHisDB.utils.functional module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.DivaHisDB.utils.html#module-datamodules.DivaHisDB.utils.image_analytics">datamodules.DivaHisDB.utils.image_analytics module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.DivaHisDB.utils.html#module-datamodules.DivaHisDB.utils.output_tools">datamodules.DivaHisDB.utils.output_tools module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.DivaHisDB.utils.html#module-datamodules.DivaHisDB.utils.single_transform">datamodules.DivaHisDB.utils.single_transform module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.DivaHisDB.utils.html#module-datamodules.DivaHisDB.utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.DivaHisDB.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.DivaHisDB.html#module-datamodules.DivaHisDB.datamodule_cropped">datamodules.DivaHisDB.datamodule_cropped module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.DivaHisDB.html#module-datamodules.DivaHisDB">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="datamodules.IndexedFormats.html">datamodules.IndexedFormats package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.IndexedFormats.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="datamodules.IndexedFormats.datasets.html">datamodules.IndexedFormats.datasets package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.IndexedFormats.datasets.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.IndexedFormats.datasets.html#module-datamodules.IndexedFormats.datasets.full_page_dataset">datamodules.IndexedFormats.datasets.full_page_dataset module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.IndexedFormats.datasets.html#module-datamodules.IndexedFormats.datasets">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="datamodules.IndexedFormats.utils.html">datamodules.IndexedFormats.utils package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.IndexedFormats.utils.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.IndexedFormats.utils.html#module-datamodules.IndexedFormats.utils.image_analytics">datamodules.IndexedFormats.utils.image_analytics module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.IndexedFormats.utils.html#module-datamodules.IndexedFormats.utils.output_tools">datamodules.IndexedFormats.utils.output_tools module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.IndexedFormats.utils.html#module-datamodules.IndexedFormats.utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.IndexedFormats.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.IndexedFormats.html#module-datamodules.IndexedFormats.datamodule">datamodules.IndexedFormats.datamodule module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.IndexedFormats.html#module-datamodules.IndexedFormats">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="datamodules.RGB.html">datamodules.RGB package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.RGB.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="datamodules.RGB.datasets.html">datamodules.RGB.datasets package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RGB.datasets.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RGB.datasets.html#module-datamodules.RGB.datasets.cropped_dataset">datamodules.RGB.datasets.cropped_dataset module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RGB.datasets.html#module-datamodules.RGB.datasets.full_page_dataset">datamodules.RGB.datasets.full_page_dataset module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RGB.datasets.html#module-datamodules.RGB.datasets">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="datamodules.RGB.utils.html">datamodules.RGB.utils package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RGB.utils.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RGB.utils.html#module-datamodules.RGB.utils.functional">datamodules.RGB.utils.functional module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RGB.utils.html#module-datamodules.RGB.utils.image_analytics">datamodules.RGB.utils.image_analytics module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RGB.utils.html#module-datamodules.RGB.utils.output_tools">datamodules.RGB.utils.output_tools module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RGB.utils.html#module-datamodules.RGB.utils.single_transform">datamodules.RGB.utils.single_transform module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RGB.utils.html#module-datamodules.RGB.utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.RGB.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.RGB.html#module-datamodules.RGB.datamodule">datamodules.RGB.datamodule module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.RGB.html#module-datamodules.RGB.datamodule_cropped">datamodules.RGB.datamodule_cropped module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.RGB.html#module-datamodules.RGB">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="datamodules.RolfFormat.html">datamodules.RolfFormat package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.RolfFormat.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="datamodules.RolfFormat.datasets.html">datamodules.RolfFormat.datasets package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RolfFormat.datasets.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RolfFormat.datasets.html#module-datamodules.RolfFormat.datasets.dataset">datamodules.RolfFormat.datasets.dataset module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RolfFormat.datasets.html#module-datamodules.RolfFormat.datasets">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="datamodules.RolfFormat.utils.html">datamodules.RolfFormat.utils package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RolfFormat.utils.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RolfFormat.utils.html#module-datamodules.RolfFormat.utils.image_analytics">datamodules.RolfFormat.utils.image_analytics module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RolfFormat.utils.html#module-datamodules.RolfFormat.utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.RolfFormat.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.RolfFormat.html#module-datamodules.RolfFormat.datamodule">datamodules.RolfFormat.datamodule module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.RolfFormat.html#module-datamodules.RolfFormat">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="datamodules.RotNet.html">datamodules.RotNet package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.RotNet.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="datamodules.RotNet.datasets.html">datamodules.RotNet.datasets package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RotNet.datasets.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RotNet.datasets.html#module-datamodules.RotNet.datasets.cropped_dataset">datamodules.RotNet.datasets.cropped_dataset module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RotNet.datasets.html#module-datamodules.RotNet.datasets">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="datamodules.RotNet.utils.html">datamodules.RotNet.utils package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RotNet.utils.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RotNet.utils.html#module-datamodules.RotNet.utils.image_analytics">datamodules.RotNet.utils.image_analytics module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RotNet.utils.html#module-datamodules.RotNet.utils.misc">datamodules.RotNet.utils.misc module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="datamodules.RotNet.utils.html#module-datamodules.RotNet.utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.RotNet.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.RotNet.html#module-datamodules.RotNet.datamodule_cropped">datamodules.RotNet.datamodule_cropped module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.RotNet.html#module-datamodules.RotNet">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="datamodules.utils.html">datamodules.utils package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.utils.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.utils.html#module-datamodules.utils.dataset_predict">datamodules.utils.dataset_predict module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.utils.html#module-datamodules.utils.exceptions">datamodules.utils.exceptions module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.utils.html#module-datamodules.utils.functional">datamodules.utils.functional module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.utils.html#module-datamodules.utils.image_analytics">datamodules.utils.image_analytics module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.utils.html#module-datamodules.utils.misc">datamodules.utils.misc module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.utils.html#module-datamodules.utils.output_tools">datamodules.utils.output_tools module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.utils.html#module-datamodules.utils.single_transforms">datamodules.utils.single_transforms module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.utils.html#module-datamodules.utils.twin_transforms">datamodules.utils.twin_transforms module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.utils.html#module-datamodules.utils.wrapper_transforms">datamodules.utils.wrapper_transforms module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datamodules.utils.html#module-datamodules.utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-datamodules.base_datamodule">
+<span id="datamodules-base-datamodule-module"></span><h2>datamodules.base_datamodule module<a class="headerlink" href="#module-datamodules.base_datamodule" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="datamodules.base_datamodule.AbstractDatamodule">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">AbstractDatamodule</span></span><a class="reference internal" href="../_modules/datamodules/base_datamodule.html#AbstractDatamodule"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.base_datamodule.AbstractDatamodule" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">LightningDataModule</span></code></p>
+<p>Abstract class for all datamodules. All datamodules should inherit from this class.
+It provides some basic functionality like checking the number of samples and the number of classes.
+Also, it provides a resolver for the datamodule object itself, so that it can be used in the config.
+The class variable <cite>dims</cite> must be set in the subclass.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="datamodules.base_datamodule.AbstractDatamodule.check_min_num_samples">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">check_min_num_samples</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_devices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size_input</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_split</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_last</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/datamodules/base_datamodule.html#AbstractDatamodule.check_min_num_samples"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.base_datamodule.AbstractDatamodule.check_min_num_samples" title="Permalink to this definition"></a></dt>
+<dd><p>Checks if the number of samples is sufficient for the given batch size and number of devices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_devices</strong> (<em>int</em>) – The number of devices</p></li>
+<li><p><strong>batch_size_input</strong> (<em>int</em>) – The batch size</p></li>
+<li><p><strong>num_samples</strong> (<em>int</em>) – The number of samples</p></li>
+<li><p><strong>data_split</strong> (<em>str</em>) – The data split (train, val, test)</p></li>
+<li><p><strong>drop_last</strong> (<em>bool</em>) – Whether to drop the last batch if it is smaller than the batch size</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the number of samples is not sufficient</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="datamodules.base_datamodule.AbstractDatamodule.setup">
+<span class="sig-name descname"><span class="pre">setup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stage</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/datamodules/base_datamodule.html#AbstractDatamodule.setup"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#datamodules.base_datamodule.AbstractDatamodule.setup" title="Permalink to this definition"></a></dt>
+<dd><p>Called at the beginning of fit (train + validate), validate, test, or predict. This is a good hook when
+you need to build models dynamically or adjust something about them. This hook is called on every process
+when using DDP.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>stage</strong> – either <code class="docutils literal notranslate"><span class="pre">'fit'</span></code>, <code class="docutils literal notranslate"><span class="pre">'validate'</span></code>, <code class="docutils literal notranslate"><span class="pre">'test'</span></code>, or <code class="docutils literal notranslate"><span class="pre">'predict'</span></code></p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">LitModel</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l1</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">prepare_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">download_data</span><span class="p">()</span>
+        <span class="n">tokenize</span><span class="p">()</span>
+
+        <span class="c1"># don&#39;t do this</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">something</span> <span class="o">=</span> <span class="k">else</span>
+
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stage</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">load_data</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-datamodules">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-datamodules" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="callbacks.html" class="btn btn-neutral float-left" title="callbacks package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="datamodules.Classification.html" class="btn btn-neutral float-right" title="datamodules.Classification package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, Lars Vögtlin.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
